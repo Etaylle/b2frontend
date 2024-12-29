@@ -294,18 +294,27 @@ const uiManager = {
 };
 
 const authManager = {
-  async fetchCurrentUser() {
+   async fetchCurrentUser() {
     try {
       const response = await fetch(`${BASE_URL}/api/users/current`, {
         method: "GET",
         credentials: "include",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        }
       });
 
       if (response.ok) {
         const user = await response.json();
         return user;
+      } else if (response.status === 401) {
+        // Handle unauthorized error gracefully
+        console.log("User not authenticated");
+        return null;
+      } else {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      return null;
     } catch (error) {
       console.error("Error fetching current user:", error);
       return null;
@@ -321,7 +330,9 @@ const authManager = {
     try {
       const response = await fetch(`${BASE_URL}/api/auth/login`, {
         method: "POST",
+        credentials: "include",
         headers: {
+          "Accept": "application/json",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
@@ -334,13 +345,12 @@ const authManager = {
         uiManager.closeLogin();
         window.location.reload();
       } else {
-        showNotification(data.message, "error");
+        showNotification(data.message || "Login failed", "error");
       }
     } catch (error) {
-      showNotification(error.message, "error");
+      showNotification("Error during login: " + error.message, "error");
     }
   },
-
   async register(event) {
     event.preventDefault();
 
