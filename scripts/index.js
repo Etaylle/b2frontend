@@ -319,7 +319,7 @@ const authManager = {
 
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
-    const sessionId = document.getElementById("sessionId").value;
+    
     try {
       const response = await fetch(`https://backend-3mvr.onrender.com/api/auth/login`, {
         method: "POST",
@@ -444,7 +444,7 @@ const paymentManager = {
 
   async initiateCheckout() {
     try {
-      const response = await fetch("/api/create-checkout-session", {
+      const response = await fetch(`${BACKEND_URL}/api/create-checkout-session`, {
         method: "POST",
         credentials: "include",
       });
@@ -489,14 +489,13 @@ const categoryManager = {
 
       if (this.state.selectedCategory) {
         // If a category is selected, search within that category
-        const response = await fetch(
-          `/api/products/category/${this.state.selectedCategory}`
+        const response = await fetch(`${BACKEND_URL}/api/products/category/${this.state.selectedCategory}`
         );
         if (!response.ok) throw new Error("Failed to fetch category products");
         filteredProducts = await response.json();
       } else {
         // If no category is selected, search all products
-        const response = await fetch("/api/products");
+        const response = await fetch(`${BACKEND_URL}/api/products`);
         if (!response.ok) throw new Error("Failed to fetch products");
         filteredProducts = await response.json();
       }
