@@ -294,30 +294,21 @@ const uiManager = {
 };
 
 const authManager = {
-   
-  
-  async fetchCurrentUser() {
+ async fetchCurrentUser() {
     try {
-      const response = await fetch(`${BASE_URL}/api/users/current`, {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `https://backend-3mvr.onrender.com/api/user/current`,
+        {
+          method: "GET",
+          credentials: "include",
         }
-      });
-      
-      if (!response.ok) {
-        if (response.status === 401) {
-          // Clear any stale session data
-          document.cookie = "session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-          return null;
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
+      );
+
+      if (response.ok) {
+        const user = await response.json();
+        return user;
       }
-      
-      const userData = await response.json();
-      return userData;
+      return null;
     } catch (error) {
       console.error("Error fetching current user:", error);
       return null;
@@ -331,59 +322,28 @@ const authManager = {
     const password = document.getElementById("password").value;
 
     try {
-      const response = await fetch(
-        `https://backend-3mvr.onrender.com/api/auth/login`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, password }),
-        }
-      );
+      const response = await fetch(`https://backend-3mvr.onrender.com/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
       const data = await response.json();
-
+      
       if (response.ok) {
-        // Store some minimal user data in localStorage as a fallback
-        localStorage.setItem('userLoggedIn', 'true');
-        showNotification("Login successful!", "success");
+        showNotification('Login successful!', 'success');
         uiManager.closeLogin();
         window.location.reload();
       } else {
-        throw new Error(data.message || "Login failed");
+        showNotification(data.message, 'error');
       }
     } catch (error) {
-      console.error("Login error:", error);
-      showNotification(error.message || "Error during login", "error");
+      showNotification(error.message, 'error');
     }
   },
 
-  async logout() {
-    try {
-      const response = await fetch(`${BASE_URL}/api/auth/logout`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json",
-        }
-      });
-
-      if (response.ok) {
-        // Clear all stored auth data
-        localStorage.removeItem('userLoggedIn');
-        document.cookie = "session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        window.location.reload();
-      } else {
-        showNotification("Failed to log out", "error");
-      }
-    } catch (error) {
-      showNotification("Error logging out", "error");
-    }
-  },
   async register(event) {
     event.preventDefault();
 
@@ -394,49 +354,55 @@ const authManager = {
     const password = document.getElementById("reg-password").value;
 
     try {
-      const response = await fetch(`${BASE_URL}/api/auth/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username,
-          firstname,
-          lastname,
-          email,
-          password,
-        }),
-      });
+      const response = await fetch(
+        `https://backend-3mvr.onrender.com/api/auth/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username,
+            firstname,
+            lastname,
+            email,
+            password,
+          }),
+        }
+      );
 
       if (response.ok) {
-        showNotification("Registration successful!", "success");
+        showNotification('Registration successful!', 'success');
         uiManager.closeRegister();
         window.location.href = "index.html";
       } else {
         const data = await response.json();
-        showNotification(data.message, "error");
+        showNotification(data.message, 'error');
       }
     } catch (error) {
-      showNotification(error.message, "error");
+      showNotification(error.message, 'error');
     }
   },
-/*
+
   async logout() {
     try {
-      const response = await fetch(`${BASE_URL}/api/auth/logout`, {
-        method: "POST",
-      });
+      const response = await fetch(
+        `https://backend-3mvr.onrender.com/api/auth/logout`,
+        {
+          method: "POST",
+        }
+      );
 
       if (response.ok) {
         window.location.reload();
       } else {
-        showNotification("Failed to log out", "error");
+        showNotification('Failed to log out', 'error');
       }
     } catch (error) {
-      showNotification("Error logging out", "error");
+      showNotification('Error logging out', 'error');
     }
   },
-*/
+
   async displayUserInfo() {
     const userInfoDisplay = document.getElementById("user-info-display");
     const currentUser = await this.fetchCurrentUser();
@@ -447,29 +413,28 @@ const authManager = {
       userInfoDisplay.textContent = "Not logged in";
     }
   },
-
+  
   async checkAdminAccess() {
     const user = await authManager.fetchCurrentUser();
-    return user && user.role === "admin";
+    return user && user.role === 'admin';
   },
 
   async displayUserAvatar() {
     const currentUser = await this.fetchCurrentUser();
     if (!currentUser || !currentUser.firstname) {
-      console.error("User data is missing or invalid");
+      console.error('User data is missing or invalid');
       return;
     }
 
     const userAvatarDisplay = document.getElementById("user-avatar-display");
-    const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      currentUser.firstname
-    )}+${encodeURIComponent(currentUser.lastname)}`;
+    const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.firstname)}+${encodeURIComponent(currentUser.lastname)}`;
 
     userAvatarDisplay.innerHTML = `
       <img src="${avatarUrl}" alt="${currentUser.firstname}'s avatar" />
     `;
-  },
+  }
 };
+
 
 // Payment Management
 const paymentManager = {
