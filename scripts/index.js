@@ -1,4 +1,5 @@
 // Global state
+BACKEND_URL = `https://backend-3mvr.onrender.com`;
 let currentUser;
 let cart = {};
 let products = [];
@@ -9,7 +10,7 @@ let logo2;
 const cartManager = {
   async fetchCart() {
     try {
-      const response = await fetch('/api/cart', { credentials: 'include' });
+      const response = await fetch(`${BACKEND_URL}/api/cart`, { credentials: 'include' });
       if (!response.ok) {
         return { user_id, items: [], total: 0 };
       }
@@ -23,7 +24,7 @@ const cartManager = {
 
   async addItem(productId) {
     try {
-      const response = await fetch('/api/cart/add', {
+      const response = await fetch(`${BACKEND_URL}/api/cart/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId, quantity: 1 }),
@@ -44,7 +45,7 @@ const cartManager = {
       console.error('Invalid product ID');
       return;}
     try {
-      const response = await fetch('/api/cart/remove', {
+      const response = await fetch(`${BACKEND_URL}/api/cart/remove`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId }),
@@ -62,7 +63,7 @@ const cartManager = {
 
   async updateQuantity(productId, quantity) {
     try {
-      const response = await fetch('/api/cart/update', {
+      const response = await fetch(`${BACKEND_URL}/api/cart/update`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId, quantity }),
@@ -318,7 +319,7 @@ const authManager = {
 
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
-
+    const sessionId = document.getElementById("sessionId").value;
     try {
       const response = await fetch(`https://backend-3mvr.onrender.com/api/auth/login`, {
         method: "POST",
@@ -332,6 +333,7 @@ const authManager = {
       
       if (response.ok) {
         showNotification('Login successful!', 'success');
+
         uiManager.closeLogin();
         //window.location.reload();
       } else {
