@@ -352,8 +352,7 @@ const authManager = {
     const password = document.getElementById("reg-password").value;
 
     try {
-      const response = await fetch(
-        `https://backend-3mvr.onrender.com/api/auth/register`,
+      const response = await fetch(`https://backend-3mvr.onrender.com/api/auth/register`,
         {
           method: "POST",
           headers: {
@@ -384,8 +383,7 @@ const authManager = {
 
   async logout() {
     try {
-      const response = await fetch(
-        `https://backend-3mvr.onrender.com/api/auth/logout`,
+      const response = await fetch(`https://backend-3mvr.onrender.com/api/auth/logout`,
         {
           method: "POST",
         }
