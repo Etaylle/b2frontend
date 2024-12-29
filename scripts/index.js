@@ -9,72 +9,71 @@ let logo2;
 const cartManager = {
   async fetchCart() {
     try {
-      const response = await fetch(`https://backend-3mvr.onrender.com/api/cart`, { credentials: "include" });
+      const response = await fetch('/api/cart', { credentials: 'include' });
       if (!response.ok) {
         return { user_id, items: [], total: 0 };
       }
       const data = await response.json();
       return data.cart;
     } catch (error) {
-      console.error("Error fetching cart:", error);
+      console.error('Error fetching cart:', error);
       return { items: [], total: 0 };
     }
   },
 
   async addItem(productId) {
     try {
-      const response = await fetch(`https://backend-3mvr.onrender.com/api/cart/add`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/cart/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId, quantity: 1 }),
-        credentials: "include",
+        credentials: 'include',
       });
 
-      if (!response.ok) throw new Error("Failed to add to cart");
+      if (!response.ok) throw new Error('Failed to add to cart');
       await this.updateDisplay();
-      showNotification("Added to cart!", "success");
+      showNotification('Added to cart!', 'success');
     } catch (error) {
-      console.error("Error:", error);
-      showNotification("Out of stock!", "error");
+      console.error('Error:', error);
+      showNotification('Out of stock!', 'error');
     }
   },
 
   async removeItem(productId) {
     if (!productId) {
-      console.error("Invalid product ID");
-      return;
-    }
+      console.error('Invalid product ID');
+      return;}
     try {
-      const response = await fetch(`https://backend-3mvr.onrender.com/api/cart/remove`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/cart/remove', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId }),
-        credentials: "include",
+        credentials: 'include',
       });
 
-      if (!response.ok) throw new Error("Failed to remove item");
+      if (!response.ok) throw new Error('Failed to remove item');
       await this.updateDisplay();
-      showNotification("Item removed from cart", "success");
+      showNotification('Item removed from cart', 'success');
     } catch (error) {
-      console.error("Error:", error);
-      showNotification("Failed to remove item", "error");
+      console.error('Error:', error);
+      showNotification('Failed to remove item', 'error');
     }
   },
 
   async updateQuantity(productId, quantity) {
     try {
-      const response = await fetch(`https://backend-3mvr.onrender.com/api/cart/update`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/cart/update', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId, quantity }),
-        credentials: "include",
+        credentials: 'include'
       });
 
-      if (!response.ok) throw new Error("Failed to update quantity");
+      if (!response.ok) throw new Error('Failed to update quantity');
       await this.updateDisplay();
     } catch (error) {
-      console.error("Error updating quantity:", error);
-      showNotification("Failed to update quantity", "error");
+      console.error('Error updating quantity:', error);
+      showNotification('Failed to update quantity', 'error');
     }
   },
   async clearCart(afterPurchase = false) {
