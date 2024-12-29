@@ -544,7 +544,7 @@ const categoryManager = {
 
   async fetchProducts(categoryId = null) {
     try {
-      const baseUrl = `https://backend-3mvr.onrender.com/api/categories`;
+      const baseUrl = `https://backend-3mvr.onrender.com/api/products`;
       const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
       const response = await fetch(url);
 
