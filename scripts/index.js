@@ -1,5 +1,4 @@
 // Global state
-const BASE_URL = 'https://backend-3mvr.onrender.com';
 let currentUser;
 let cart = {};
 let products = [];
@@ -10,7 +9,7 @@ let logo2;
 const cartManager = {
   async fetchCart() {
     try {
-      const response = await fetch("/api/cart", { credentials: "include" });
+      const response = await fetch(`https://backend-3mvr.onrender.com/api/cart`, { credentials: "include" });
       if (!response.ok) {
         return { user_id, items: [], total: 0 };
       }
@@ -24,7 +23,7 @@ const cartManager = {
 
   async addItem(productId) {
     try {
-      const response = await fetch("/api/cart/add", {
+      const response = await fetch(`https://backend-3mvr.onrender.com/api/cart/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productId, quantity: 1 }),
@@ -46,7 +45,7 @@ const cartManager = {
       return;
     }
     try {
-      const response = await fetch("/api/cart/remove", {
+      const response = await fetch(`https://backend-3mvr.onrender.com/api/cart/remove`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productId }),
@@ -64,7 +63,7 @@ const cartManager = {
 
   async updateQuantity(productId, quantity) {
     try {
-      const response = await fetch("/api/cart/update", {
+      const response = await fetch(`https://backend-3mvr.onrender.com/api/cart/update`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productId, quantity }),
@@ -80,7 +79,7 @@ const cartManager = {
   },
   async clearCart(afterPurchase = false) {
     try {
-      const response = await fetch(`${BASE_URL}/api/cart/clear`, {
+      const response = await fetch(`https://backend-3mvr.onrender.com/api/cart/clear`, {
         method: "DELETE",
         credentials: "include",
         headers: {
@@ -123,7 +122,7 @@ const cartManager = {
   async completePurchase() {
     
     try {
-      const response = await fetch(`${BASE_URL}/api/cart/complete-purchase`, {
+      const response = await fetch(`https://backend-3mvr.onrender.com/api/cart/complete-purchase`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -526,7 +525,7 @@ const categoryManager = {
   },
   async fetchCategories() {
     try {
-      const response = await fetch(`/api/categories`);
+      const response = await fetch(`https://backend-3mvr.onrender.com/api/categories`);
       if (!response.ok)
         throw new Error(`Failed to fetch categories: ${response.statusText}`);
 
@@ -545,7 +544,7 @@ const categoryManager = {
 
   async fetchProducts(categoryId = null) {
     try {
-      const baseUrl = `${BASE_URL}/api/categories`;
+      const baseUrl = `https://backend-3mvr.onrender.com/api/categories`;
       const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
       const response = await fetch(url);
 
@@ -792,7 +791,7 @@ window.uiManager = uiManager;
 window.categoryManager = categoryManager;
 async function fetchProducts() {
   try {
-    const response = await fetch(`${BASE_URL}/api/products`); // Fixed the mismatched quotes
+    const response = await fetch(`https://backend-3mvr.onrender.com/api/products`); 
     const products = await response.json();
     displayProducts(products);
   } catch (error) {
