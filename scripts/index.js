@@ -297,7 +297,7 @@ const authManager = {
  async fetchCurrentUser() {
     try {
       const response = await fetch(
-        `https://backend-3mvr.onrender.com/api/user/current`,
+        `https://backend-3mvr.onrender.com/api/users/current`,
         {
           method: "GET",
           credentials: "include",
