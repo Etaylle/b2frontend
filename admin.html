@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <!-- React -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation Bar -->
+    <nav class="bg-blue-600 p-4 text-white">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">Admin Dashboard</h1>
+            <div class="flex items-center space-x-4">
+                <a href="/" class="hover:text-blue-200">Back to Shop</a>
+                
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Admin Panel Root -->
+    <div id="admin-root"></div>
+
+    <!-- Your React component -->
+    <script type="text/babel" src="/scripts/adminControlPanel.js"></script>
+</body>
+</html>

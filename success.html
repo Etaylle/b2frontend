@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Successful</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .success-message {
+            background-color: #f7d8d8;
+            border: 1px solid #e9c6c6;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            position: relative;
+            max-width: 500px;
+            margin-top: -600px;
+        }
+
+        .success-message::before {
+            content: "";
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            background-color: rgb(219, 29, 29);
+            z-index: -1;
+        }
+
+        .success-message h1 {
+            color: #000000;
+        }
+
+        .success-message p {
+            color: #31708f;
+        }
+
+        .return-home-link {
+            background-color: #337ab7;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .return-home-link:hover {
+            background-color: #286090;
+        }
+
+        .background-image {
+            background-image: url('./images/bubu.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 98%; /* Adjust the width as needed */
+            height: 98%;
+            z-index: -2;
+            border: 10px solid rgb(219, 29, 29); /* Add the frame border */
+            box-sizing: border-box; /* Include the border in the element's width and height */
+        }
+    </style>
+</head>
+<body>
+    <div class="background-image"></div>
+    <div class="success-message">
+        <h1>Thank you for your payment!</h1>
+        <p>Your order has been processed successfully.</p>
+    </div>
+    <a href="/" class="return-home-link">Return to Home</a>
+
+    <script>
+        // Redirect to home page after 5 seconds
+        setTimeout(function() {
+            window.location.href = "/";
+        }, 5000);
+    </script>
+</body>
+</html>
+
