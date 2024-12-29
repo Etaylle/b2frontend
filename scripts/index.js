@@ -294,7 +294,7 @@ const uiManager = {
 };
 
 const authManager = {
-   const authManager = {
+   
   async fetchCurrentUser() {
     try {
       const response = await fetch(`${BASE_URL}/api/users/current`, {
