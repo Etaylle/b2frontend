@@ -4,8 +4,22 @@ const fetchConfig = {
   credentials: 'include',
   headers: {
     'Content-Type': 'application/json'
-  }
+  },
+  mode: 'cors'
 };
+// Add withCredentials to all fetch calls
+async function fetchWithCredentials(url, options = {}) {
+  const response = await fetch(url, {
+    ...options,
+    credentials: 'include',
+    mode: 'cors',
+    headers: {
+      ...options.headers,
+      'Content-Type': 'application/json'
+    }
+  });
+  return response;
+}
 let currentUser;
 let cart = {};
 let products = [];
