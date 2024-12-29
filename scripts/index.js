@@ -294,27 +294,26 @@ const uiManager = {
 };
 
 const authManager = {
-   async fetchCurrentUser() {
+   const authManager = {
+  async fetchCurrentUser() {
     try {
       const response = await fetch(`${BASE_URL}/api/users/current`, {
         method: "GET",
         credentials: "include",
         headers: {
           "Accept": "application/json",
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         }
       });
 
+      console.log('Current user response:', response.status);
+      
       if (response.ok) {
-        const user = await response.json();
-        return user;
-      } else if (response.status === 401) {
-        // Handle unauthorized error gracefully
-        console.log("User not authenticated");
-        return null;
-      } else {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const userData = await response.json();
+        console.log('User data:', userData);
+        return userData;
       }
+      return null;
     } catch (error) {
       console.error("Error fetching current user:", error);
       return null;
@@ -332,13 +331,13 @@ const authManager = {
         method: "POST",
         credentials: "include",
         headers: {
-          "Accept": "application/json",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
+      console.log('Login response:', data);
 
       if (response.ok) {
         showNotification("Login successful!", "success");
@@ -348,7 +347,8 @@ const authManager = {
         showNotification(data.message || "Login failed", "error");
       }
     } catch (error) {
-      showNotification("Error during login: " + error.message, "error");
+      console.error("Login error:", error);
+      showNotification("Error during login", "error");
     }
   },
   async register(event) {
