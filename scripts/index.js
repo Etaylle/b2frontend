@@ -336,9 +336,8 @@ const authManager = {
     try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/auth/login', {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        credentials: 'include',
+        headers: fetchConfig.headers,
         body: JSON.stringify({ email, password }),
       });
 
