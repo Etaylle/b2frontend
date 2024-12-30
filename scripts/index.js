@@ -1,5 +1,5 @@
 // Global state
-const BACKEND_URL = 'https://b2b-d80a.onrender.com';
+const BACKEND_URL = `https://b2b-d80a.onrender.com`;
 let currentUser;
 let cart = {};
 let products = [];
@@ -7,6 +7,8 @@ let products = [];
 let productStocks = {};
 let logo2;
 const fetchWithCors = (url, options = {}) => {
+  
+
   const defaultOptions = {
     credentials: 'include',
     headers: {
@@ -22,6 +24,7 @@ const cartManager = {
   async fetchCart() {
     try {
       const response = await fetchWithCors(`${BACKEND_URL}/api/cart`, { credentials: 'include' });
+      console.log('Response:', await response.text());
       if (!response.ok) {
         return { user_id, items: [], total: 0 };
       }
@@ -535,7 +538,7 @@ const categoryManager = {
     try {
       const baseUrl = `${BACKEND_URL}/api/products`;
       const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
-      const response = await fetchWithCors(url);
+      const response = await fetch(url);
       
       if (!response.ok) throw new Error("Failed to fetch products");
 
@@ -763,7 +766,7 @@ window.uiManager = uiManager;
 window.categoryManager = categoryManager;
 async function fetchProducts() {
   try {
-    const response = await fetchWithCors(`${BACKEND_URL}/api/products`);
+    const response = await fetch(`${BACKEND_URL}/api/products`);
     const products = await response.json();
     displayProducts(products);
   } catch (error) {
