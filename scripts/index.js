@@ -297,17 +297,21 @@ const uiManager = {
 const authManager = {
   async fetchCurrentUser() {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/users/current`, {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/users/current', {
         method: "GET",
         credentials: "include",
+         headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        }
       });
 
-      if (response.ok) {
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const user = await response.json();
         return user;
       }
-      return null;
-    } catch (error) {
+
+     catch (error) {
       console.error("Error fetching current user:", error);
       return null;
     }
@@ -315,7 +319,6 @@ const authManager = {
 
   async login(event) {
     event.preventDefault();
-
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
 
@@ -325,21 +328,26 @@ const authManager = {
         headers: {
           "Content-Type": "application/json",
         },
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({ email, password }),
       });
 
+      
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       
       if (response.ok) {
         showNotification('Login successful!', 'success');
         uiManager.closeLogin();
         window.location.reload();
-      } else {
-        showNotification(data.message, 'error');
       }
     } catch (error) {
-      showNotification(error.message, 'error');
+      showNotification('Login failed: ' + error.message, 'error');
     }
+  }
   },
 
   async register(event) {
