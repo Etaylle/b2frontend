@@ -376,6 +376,36 @@ const authManager = {
     }
   }
 ,
+async register(event) {
+    event.preventDefault();
+
+    const username = document.getElementById("username").value;
+    const firstname = document.getElementById("firstname").value;
+    const lastname = document.getElementById("lastname").value;
+    const email = document.getElementById("reg-email").value;
+    const password = document.getElementById("reg-password").value;
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, firstname, lastname, email, password }),
+      });
+
+      if (response.ok) {
+        showNotification('Registration successful!', 'success');
+        uiManager.closeRegister();
+        window.location.href = "index.html";
+      } else {
+        const data = await response.json();
+        showNotification(data.message, 'error');
+      }
+    } catch (error) {
+      showNotification(error.message, 'error');
+    }
+  },
   async displayUserInfo() {
     const userInfoDisplay = document.getElementById("user-info-display");
     const currentUser = await this.fetchCurrentUser();
