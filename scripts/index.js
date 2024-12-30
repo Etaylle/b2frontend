@@ -1,5 +1,5 @@
 // Global state
-BACKEND_URL = 'https://b2b-shop-ten.vercel.app';
+BACKEND_URL = `https://backend-3mvr.onrender.com`;
 let currentUser;
 let cart = {};
 let products = [];
