@@ -1,25 +1,5 @@
 // Global state
-BACKEND_URL = `https://backend-3mvr.onrender.com`;
-const fetchConfig = {
-  credentials: 'include',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  mode: 'cors'
-};
-// Add withCredentials to all fetch calls
-async function fetchWithCredentials(url, options = {}) {
-  const response = await fetch(url, {
-    ...options,
-    credentials: 'include',
-    mode: 'cors',
-    headers: {
-      ...options.headers,
-      'Content-Type': 'application/json'
-    }
-  });
-  return response;
-}
+BACKEND_URL = 'https://b2b-shop-ten.vercel.app';
 let currentUser;
 let cart = {};
 let products = [];
@@ -28,11 +8,11 @@ let productStocks = {};
 let logo2;
 // Cart state management
 const cartManager = {
- async fetchCart() {
+  async fetchCart() {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/cart`, fetchConfig);
+      const response = await fetch(`${BACKEND_URL}/api/cart`, { credentials: 'include' });
       if (!response.ok) {
-        return { items: [], total: 0 };
+        return { user_id, items: [], total: 0 };
       }
       const data = await response.json();
       return data.cart;
@@ -42,12 +22,14 @@ const cartManager = {
     }
   },
 
- async addItem(productId) {
+  
+  async addItem(productId) {
     try {
       const response = await fetch(`${BACKEND_URL}/api/cart/add`, {
-        ...fetchConfig,
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId, quantity: 1 }),
+        credentials: 'include',
       });
 
       if (!response.ok) throw new Error('Failed to add to cart');
@@ -55,9 +37,10 @@ const cartManager = {
       showNotification('Added to cart!', 'success');
     } catch (error) {
       console.error('Error:', error);
-      showNotification('Failed to add item to cart', 'error');
+      showNotification('Out of stock!', 'error');
     }
   },
+
   async removeItem(productId) {
     if (!productId) {
       console.error('Invalid product ID');
@@ -95,95 +78,94 @@ const cartManager = {
       showNotification('Failed to update quantity', 'error');
     }
   },
-  async clearCart(afterPurchase = false) {
-    try {
-      const response = await fetch(`https://backend-3mvr.onrender.com/api/cart/clear`, {
-        method: "DELETE",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ afterPurchase }),
-      });
+    async clearCart(afterPurchase = false) {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/cart/clear`, {
+          method: 'DELETE',
+          credentials: 'include',
+          headers: { 
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ afterPurchase })
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message);
+        }
+
+        const result = await response.json();
+
+        // Update the UI
+        const cartContainer = document.getElementById('cart-items');
+        const cartTotal = document.getElementById('cart-total');
+
+        if (cartContainer) {
+          cartContainer.innerHTML = '<li>Your cart is empty</li>';
+          cartContainer.classList.add('hidden');
+        }
+
+        if (cartTotal) {
+          cartTotal.textContent = 'Total: 0';
+        }
+
+        showNotification(afterPurchase ? 'Purchase completed successfully!' : 'Cart cleared successfully!', 'success');
+      } catch (error) {
+        console.error('Error clearing cart:', error);
+        showNotification(error.message || 'Failed to clear cart', 'error');
       }
+    },
+    async completePurchase() {
+      console.log('OVO JE NASTAVAK');
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/cart/complete-purchase`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
 
-      const result = await response.json();
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message);
+        }
 
-      // Update the UI
-      const cartContainer = document.getElementById("cart-items");
-      const cartTotal = document.getElementById("cart-total");
-
-      if (cartContainer) {
-        cartContainer.innerHTML = "<li>Your cart is empty</li>";
-        cartContainer.classList.add("hidden");
+        await this.clearCart(true);
+        return true;
+      } catch (error) {
+        console.error('Error completing purchase:', error);
+        showNotification(error.message || 'Failed to complete purchase', 'error');
+        return false;
       }
-
-      if (cartTotal) {
-        cartTotal.textContent = "Total: 0";
-      }
-
-      showNotification(
-        afterPurchase
-          ? "Purchase completed successfully!"
-          : "Cart cleared successfully!",
-        "success"
-      );
-    } catch (error) {
-      console.error("Error clearing cart:", error);
-      showNotification(error.message || "Failed to clear cart", "error");
     }
-  },
-  async completePurchase() {
-    
-    try {
-      const response = await fetch(`https://backend-3mvr.onrender.com/api/cart/complete-purchase`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+  ,
+  
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message);
-      }
 
-      await this.clearCart(true);
-      return true;
-    } catch (error) {
-      console.error("Error completing purchase:", error);
-      showNotification(error.message || "Failed to complete purchase", "error");
-      return false;
-    }
-  },
   async updateDisplay() {
     const cart = await this.fetchCart();
-    const cartContainer = document.getElementById("cart-items");
-    const cartTotal = document.getElementById("cart-total");
-
-    cartContainer.innerHTML = "";
+    const cartContainer = document.getElementById('cart-items');
+    const cartTotal = document.getElementById('cart-total');
+    
+    cartContainer.innerHTML = '';
 
     if (!cart.items || cart.items.length === 0) {
-      cartContainer.innerHTML = "<li>Your cart is empty</li>";
-      cartTotal.textContent = "Total: 0";
-      cartContainer.classList.add("hidden");
+      cartContainer.innerHTML = '<li>Your cart is empty</li>';
+      cartTotal.textContent = 'Total: 0';
+      cartContainer.classList.add('hidden');
       return;
     }
 
-    cartContainer.classList.remove("hidden");
+    cartContainer.classList.remove('hidden');
     let total = 0;
 
-    cart.items.forEach((item) => {
-      const listItem = document.createElement("li");
-      listItem.className = "cart-item";
+    cart.items.forEach(item => {
+      const listItem = document.createElement('li');
+      listItem.className = 'cart-item';
 
-      const imageUrl = item.images?.[0] || item.image_url || "/images/1.jpg";
-      const productName = item.name || "Unknown Product";
+      const imageUrl = item.images?.[0] || item.image_url || '/images/1.jpg';
+      const productName = item.name || 'Unknown Product';
       const productPrice = item.price || 0;
       const productId = item.product_id;
 
@@ -191,9 +173,7 @@ const cartManager = {
         <img src="${imageUrl}" alt="${productName}" class="cart-item-image">
         <div class="cart-item-details">
           <span class="item-name">${productName}</span>
-          <span class="item-price">Dinars: ${parseFloat(productPrice).toFixed(
-            2
-          )}</span>
+          <span class="item-price">Dinars: ${parseFloat(productPrice).toFixed(2)}</span>
           <span class="item-quantity">Quantity: ${item.quantity}</span>
         </div>
         <div class="cart-item-controls">
@@ -212,32 +192,30 @@ const cartManager = {
   },
 
   attachEventListeners() {
-    document.querySelectorAll(".quantity-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        const productId = e.target.getAttribute("data-id");
-        const listItem = e.target.closest(".cart-item");
-        const quantityElement = listItem.querySelector(".item-quantity");
-        let currentQuantity = parseInt(
-          quantityElement.textContent.replace("Quantity: ", "")
-        );
-
-        if (e.target.classList.contains("plus")) {
+    document.querySelectorAll('.quantity-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const productId = e.target.getAttribute('data-id');
+        const listItem = e.target.closest('.cart-item');
+        const quantityElement = listItem.querySelector('.item-quantity');
+        let currentQuantity = parseInt(quantityElement.textContent.replace('Quantity: ', ''));
+        
+        if (e.target.classList.contains('plus')) {
           currentQuantity += 1;
         } else {
           currentQuantity = Math.max(1, currentQuantity - 1);
         }
-
+        
         this.updateQuantity(productId, currentQuantity);
       });
     });
 
-    document.querySelectorAll(".remove-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        const productId = e.target.getAttribute("data-id");
+    document.querySelectorAll('.remove-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const productId = e.target.getAttribute('data-id');
         this.removeItem(productId);
       });
     });
-  },
+  }
 };
 
 // UI Management
@@ -269,53 +247,57 @@ const uiManager = {
     const logoutBtn = document.getElementById("logout-button");
     const logo2 = document.querySelector(".credit-info");
     const userAvatar = document.querySelector(".user-avatar-display");
-    const navLinks = document.querySelector(".navbar");
+    const navLinks = document.querySelector('.navbar');
     const adminLink = document.getElementById("admin-link");
     if (currentUser) {
       // Hide login and register buttons
       if (loginBtn) loginBtn.style.display = "none";
       if (registerBtn) registerBtn.style.display = "none";
-
+  
       // Show elements like logout and avatars
       if (logoutBtn) logoutBtn.style.display = "block";
       if (logo2) logo2.style.display = "flex";
       if (userAvatar) userAvatar.style.display = "flex";
+    
 
+  
       // Handle admin link visibility
-      if (currentUser.role === "admin") {
+      if (currentUser.role === 'admin') {
         if (adminLink) {
-          adminLink.style.display = "block";
+            adminLink.style.display = "block";
         } else if (navLinks) {
-          const newAdminLink = document.createElement("a");
-          newAdminLink.href = "/admin";
-          newAdminLink.textContent = "Admin Panel";
-          newAdminLink.id = "admin-link";
-          navLinks.appendChild(newAdminLink);
+            const newAdminLink = document.createElement('a');
+            newAdminLink.href = '/admin';
+            newAdminLink.textContent = 'Admin Panel';
+            newAdminLink.id = 'admin-link';
+            navLinks.appendChild(newAdminLink);
         }
-      } else if (adminLink) {
-        adminLink.style.display = "none";
-      }
-    } else {
-      // Show login and register buttons
-      if (loginBtn) loginBtn.style.display = "block";
-      if (registerBtn) registerBtn.style.display = "block";
-
-      // Hide logout button and credit info
-      if (logoutBtn) logoutBtn.style.display = "none";
-      if (logo2) logo2.style.display = "none";
-      if (userAvatar) userAvatar.style.display = "none";
-      // Hide admin link if it exists
-      if (adminLink) adminLink.style.display = "none";
+    } else if (adminLink) {
+        adminLink.style.display = 'none';
     }
-  },
+} else {
+    // Show login and register buttons
+    if (loginBtn) loginBtn.style.display = "block";
+    if (registerBtn) registerBtn.style.display = "block";
+
+    // Hide logout button and credit info
+    if (logoutBtn) logoutBtn.style.display = "none";
+    if (logo2) logo2.style.display = "none";
+    if (userAvatar) userAvatar.style.display = "none";
+    // Hide admin link if it exists
+    if (adminLink) adminLink.style.display = 'none';
+}
+    
+  }
 };
 
+// Auth Management
 const authManager = {
- async fetchCurrentUser() {
+  async fetchCurrentUser() {
     try {
       const response = await fetch(`${BACKEND_URL}/api/users/current`, {
-        ...fetchConfig,
-        method: "GET"
+        method: "GET",
+        credentials: "include",
       });
 
       if (response.ok) {
@@ -329,16 +311,18 @@ const authManager = {
     }
   },
 
-async login(event) {
+  async login(event) {
     event.preventDefault();
 
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
-    
+
     try {
       const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
-        ...fetchConfig,
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ email, password }),
       });
 
@@ -346,15 +330,8 @@ async login(event) {
       
       if (response.ok) {
         showNotification('Login successful!', 'success');
-        // Fetch user data immediately after login
-        const user = await this.fetchCurrentUser();
-        if (user) {
-          currentUser = user;
-          uiManager.updateButtonVisibility(user);
-          await this.displayUserInfo();
-          await this.displayUserAvatar();
-        }
         uiManager.closeLogin();
+        window.location.reload();
       } else {
         showNotification(data.message, 'error');
       }
@@ -363,35 +340,28 @@ async login(event) {
     }
   },
 
-async register(event) {
+  async register(event) {
     event.preventDefault();
 
-    const userData = {
-      username: document.getElementById("username").value,
-      firstname: document.getElementById("firstname").value,
-      lastname: document.getElementById("lastname").value,
-      email: document.getElementById("reg-email").value,
-      password: document.getElementById("reg-password").value,
-    };
+    const username = document.getElementById("username").value;
+    const firstname = document.getElementById("firstname").value;
+    const lastname = document.getElementById("lastname").value;
+    const email = document.getElementById("reg-email").value;
+    const password = document.getElementById("reg-password").value;
 
     try {
       const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
-        ...fetchConfig,
         method: "POST",
-        body: JSON.stringify(userData),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, firstname, lastname, email, password }),
       });
 
       if (response.ok) {
         showNotification('Registration successful!', 'success');
         uiManager.closeRegister();
-        // Auto-login after successful registration
-        await this.login({
-          preventDefault: () => {},
-          target: {
-            email: { value: userData.email },
-            password: { value: userData.password }
-          }
-        });
+        window.location.href = "index.html";
       } else {
         const data = await response.json();
         showNotification(data.message, 'error');
@@ -400,16 +370,14 @@ async register(event) {
       showNotification(error.message, 'error');
     }
   },
+
   async logout() {
     try {
       const response = await fetch(`${BACKEND_URL}/api/auth/logout`, {
-        ...fetchConfig,
-        method: "POST"
+        method: "POST",
       });
 
       if (response.ok) {
-        currentUser = null;
-        uiManager.updateButtonVisibility(null);
         window.location.reload();
       } else {
         showNotification('Failed to log out', 'error');
@@ -451,7 +419,6 @@ async register(event) {
   }
 };
 
-
 // Payment Management
 const paymentManager = {
   stripe: null,
@@ -463,35 +430,34 @@ const paymentManager = {
   async initiateCheckout() {
     try {
       const response = await fetch(`${BACKEND_URL}/api/create-checkout-session`, {
-        method: "POST",
-        credentials: "include",
+        method: 'POST',
+        credentials: 'include'
       });
       //await cartManager.clearCart();
-      showNotification("Order placed successfully!", "success");
+      showNotification('Order placed successfully!', 'success');
       const data = await response.json();
-      const result = await this.stripe.redirectToCheckout({
-        sessionId: data.id,
-      });
-
+      const result = await this.stripe.redirectToCheckout({ sessionId: data.id });
+      
+    
       if (result.error) {
-        showNotification(result.error.message, "error");
+        showNotification(result.error.message, 'error');
       }
     } catch (error) {
-      console.error("Error:", error);
-      showNotification("Failed to start checkout process", "error");
+      console.error('Error:', error);
+      showNotification('Failed to start checkout process', 'error');
     }
-  },
+  }
 };
 const categoryManager = {
   state: {
     categories: [],
     selectedCategory: null,
     products: [],
-    searchTerm: "",
+    searchTerm: ''
   },
   async searchProducts(searchTerm) {
     this.state.searchTerm = searchTerm.toLowerCase();
-
+    
     try {
       // If search is cleared (empty), fetch all products or category products
       if (!searchTerm.trim()) {
@@ -504,11 +470,10 @@ const categoryManager = {
       }
 
       let filteredProducts;
-
+      
       if (this.state.selectedCategory) {
         // If a category is selected, search within that category
-        const response = await fetch(`${BACKEND_URL}/api/products/category/${this.state.selectedCategory}`
-        );
+        const response = await fetch(`${BACKEND_URL}/api/products/category/${this.state.selectedCategory}`);
         if (!response.ok) throw new Error("Failed to fetch category products");
         filteredProducts = await response.json();
       } else {
@@ -519,20 +484,19 @@ const categoryManager = {
       }
 
       // Filter products based on search term
-      filteredProducts = filteredProducts.filter(
-        (product) =>
-          product.name.toLowerCase().includes(this.state.searchTerm) ||
-          //product.description?.toLowerCase().includes(this.state.searchTerm) ||
-          product.price.toString().includes(this.state.searchTerm)
+      filteredProducts = filteredProducts.filter(product => 
+        product.name.toLowerCase().includes(this.state.searchTerm) ||
+        //product.description?.toLowerCase().includes(this.state.searchTerm) ||
+        product.price.toString().includes(this.state.searchTerm)
       );
 
       // Update the products display with filtered results
       this.state.products = filteredProducts;
       await this.renderProducts();
-
+      
       // Show a message if no results found
       if (filteredProducts.length === 0) {
-        showNotification("No products found matching your search", "info");
+        showNotification('No products found matching your search', 'info');
       }
     } catch (error) {
       console.error("Error searching products:", error);
@@ -541,13 +505,11 @@ const categoryManager = {
   },
   async fetchCategories() {
     try {
-      const response = await fetch(`https://backend-3mvr.onrender.com/api/categories`);
-      if (!response.ok)
-        throw new Error(`Failed to fetch categories: ${response.statusText}`);
+      const response = await fetch(`${BACKEND_URL}/api/categories`);
+      if (!response.ok) throw new Error(`Failed to fetch categories: ${response.statusText}`);
 
       const categories = await response.json();
-      if (!Array.isArray(categories))
-        throw new Error("Categories data is not an array");
+      if (!Array.isArray(categories)) throw new Error("Categories data is not an array");
 
       this.state.categories = categories;
       await this.renderCategories();
@@ -560,10 +522,10 @@ const categoryManager = {
 
   async fetchProducts(categoryId = null) {
     try {
-      const baseUrl = `https://backend-3mvr.onrender.com/api/products`;
+      const baseUrl = `${BACKEND_URL}/api/products`;
       const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
       const response = await fetch(url);
-
+      
       if (!response.ok) throw new Error("Failed to fetch products");
 
       const products = await response.json();
@@ -586,19 +548,15 @@ const categoryManager = {
 
     // Create "All" button
     const allButton = document.createElement("button");
-    allButton.className = `category-btn ${
-      this.state.selectedCategory === null ? "active" : ""
-    }`;
+    allButton.className = `category-btn ${this.state.selectedCategory === null ? "active" : ""}`;
     allButton.textContent = "All";
     allButton.onclick = () => this.selectCategory(null);
     container.appendChild(allButton);
 
     // Create category buttons
-    this.state.categories.forEach((category) => {
+    this.state.categories.forEach(category => {
       const button = document.createElement("button");
-      button.className = `category-btn ${
-        this.state.selectedCategory === category.id ? "active" : ""
-      }`;
+      button.className = `category-btn ${this.state.selectedCategory === category.id ? "active" : ""}`;
       button.textContent = category.name;
       button.onclick = () => this.selectCategory(category.id);
       container.appendChild(button);
@@ -620,26 +578,19 @@ const categoryManager = {
 
     container.innerHTML = "";
 
-    this.state.products.forEach((product) => {
+    this.state.products.forEach(product => {
       // Create image slider
       let imageSlider = '<div class="image-slider">';
-      if (
-        product.images &&
-        Array.isArray(product.images) &&
-        product.images.length > 0
-      ) {
+      if (product.images && Array.isArray(product.images) && product.images.length > 0) {
         product.images.forEach((img, index) => {
-          imageSlider += `<img src="${img}" alt="${product.name} - Image ${
-            index + 1
-          }" ${index === 0 ? 'class="active"' : ""}>`;
+          imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
         });
       } else if (product.image_url) {
         imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
       } else {
-        imageSlider +=
-          '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
+        imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
       }
-      imageSlider += "</div>";
+      imageSlider += '</div>';
 
       const gridItem = document.createElement("div");
       gridItem.className = "grid-item grid-item-xl";
@@ -662,23 +613,23 @@ const categoryManager = {
   },
 
   initializeImageSliders() {
-    document.querySelectorAll(".image-slider").forEach((slider) => {
-      const images = slider.querySelectorAll("img");
+    document.querySelectorAll('.image-slider').forEach(slider => {
+      const images = slider.querySelectorAll('img');
       if (images.length <= 1) return;
 
       let currentIndex = 0;
       setInterval(() => {
-        images[currentIndex].classList.remove("active");
+        images[currentIndex].classList.remove('active');
         currentIndex = (currentIndex + 1) % images.length;
-        images[currentIndex].classList.add("active");
+        images[currentIndex].classList.add('active');
       }, 3000);
     });
   },
 
   attachCartEventListeners() {
-    document.querySelectorAll(".add-to-cart-btn").forEach((button) => {
+    document.querySelectorAll(".add-to-cart-btn").forEach(button => {
       button.addEventListener("click", (e) => {
-        const gridItem = e.target.closest(".grid-item");
+        const gridItem = e.target.closest('.grid-item');
         if (gridItem) {
           const productId = gridItem.getAttribute("data-product-id");
           if (productId) {
@@ -690,14 +641,12 @@ const categoryManager = {
   },
 
   highlightSelectedCategory() {
-    document.querySelectorAll(".category-btn").forEach((btn) => {
+    document.querySelectorAll(".category-btn").forEach(btn => {
       btn.classList.remove("active");
     });
 
     if (this.state.selectedCategory === null) {
-      document
-        .querySelector(".category-btn:first-child")
-        .classList.add("active");
+      document.querySelector('.category-btn:first-child').classList.add("active");
     } else {
       const activeButton = document.querySelector(
         `.category-btn:not(:first-child)[data-id="${this.state.selectedCategory}"]`
@@ -705,43 +654,41 @@ const categoryManager = {
       if (activeButton) activeButton.classList.add("active");
     }
   },
-
-  async initialize() {
+  
+    async initialize() {
     await this.fetchCategories();
     await this.setupSearch();
   },
-  setupSearch() {
-    const searchInput = document.getElementById("product-search");
-    let debounceTimeout;
-
-    if (searchInput) {
-      searchInput.addEventListener("input", (e) => {
-        clearTimeout(debounceTimeout);
-        debounceTimeout = setTimeout(() => {
-          this.searchProducts(e.target.value);
-        }, 300);
-      });
-
-      // Add clear search functionality
-      const clearSearch = document.createElement("button");
-      clearSearch.innerHTML = "×";
-      clearSearch.className = "clear-search";
-      clearSearch.onclick = () => {
-        searchInput.value = "";
-        this.searchProducts("");
-      };
-      searchInput.parentNode.appendChild(clearSearch);
+    setupSearch() {
+      const searchInput = document.getElementById('product-search');
+      let debounceTimeout;
+  
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          clearTimeout(debounceTimeout);
+          debounceTimeout = setTimeout(() => {
+            this.searchProducts(e.target.value);
+          }, 300);
+        });
+  
+        // Add clear search functionality
+        const clearSearch = document.createElement('button');
+        clearSearch.innerHTML = '×';
+        clearSearch.className = 'clear-search';
+        clearSearch.onclick = () => {
+          searchInput.value = '';
+          this.searchProducts(''); 
+        };
+        searchInput.parentNode.appendChild(clearSearch);
+      }
     }
-  },
 };
 
 // Initialize everything when the page loads
 document.addEventListener("DOMContentLoaded", async () => {
   // Initialize Stripe
-  paymentManager.initialize(
-    "pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl"
-  );
-  // Initialize category filter
+  paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl');
+  // Initialize category filter  
   await categoryManager.initialize();
   // Fetch initial data
   currentUser = await authManager.fetchCurrentUser();
@@ -781,9 +728,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     logoutBtn.addEventListener("click", () => authManager.logout());
   }
   if (checkoutButton) {
-    checkoutButton.addEventListener("click", () =>
-      paymentManager.initiateCheckout()
-    );
+    checkoutButton.addEventListener("click", () => paymentManager.initiateCheckout());
   }
   if (emptyCartButton) {
     emptyCartButton.addEventListener("click", () => cartManager.clearCart());
@@ -807,7 +752,7 @@ window.uiManager = uiManager;
 window.categoryManager = categoryManager;
 async function fetchProducts() {
   try {
-    const response = await fetch(`https://backend-3mvr.onrender.com/api/products`); 
+    const response = await fetch(`${BACKEND_URL}/api/products`);
     const products = await response.json();
     displayProducts(products);
   } catch (error) {
@@ -826,23 +771,16 @@ function displayProducts(products) {
 
     // Create image slider
     let imageSlider = '<div class="image-slider">';
-    if (
-      product.images &&
-      Array.isArray(product.images) &&
-      product.images.length > 0
-    ) {
+    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
       product.images.forEach((img, index) => {
-        imageSlider += `<img src="${img}" alt="${product.name} - Image ${
-          index + 1
-        }" ${index === 0 ? 'class="active"' : ""}>`;
+        imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
       });
     } else if (product.image_url) {
       imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
     } else {
-      imageSlider +=
-        '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
+      imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
     }
-    imageSlider += "</div>";
+    imageSlider += '</div>';
 
     gridItem.innerHTML = `
       ${imageSlider}
@@ -857,14 +795,14 @@ function displayProducts(products) {
   });
 
   // Add event listeners for image slider
-  document.querySelectorAll(".image-slider").forEach((slider) => {
-    const images = slider.querySelectorAll("img");
+  document.querySelectorAll('.image-slider').forEach(slider => {
+    const images = slider.querySelectorAll('img');
     let currentIndex = 0;
 
     setInterval(() => {
-      images[currentIndex].classList.remove("active");
+      images[currentIndex].classList.remove('active');
       currentIndex = (currentIndex + 1) % images.length;
-      images[currentIndex].classList.add("active");
+      images[currentIndex].classList.add('active');
     }, 3000);
   });
 
@@ -876,16 +814,16 @@ function displayProducts(products) {
     });
   });
 }
-function showNotification(message, type = "success") {
-  const notification = document.createElement("div");
+function showNotification(message, type = 'success',) {
+  const notification = document.createElement('div');
   notification.textContent = message;
   notification.className = `notification ${type}-message`;
   document.body.appendChild(notification);
 
-  notification.style.animation = "slideIn 0.3s ease-out";
+  notification.style.animation = 'slideIn 0.3s ease-out';
 
   setTimeout(() => {
-    notification.style.animation = "slideOut 0.3s ease-out";
+    notification.style.animation = 'slideOut 0.3s ease-out';
     setTimeout(() => notification.remove(), 300);
   }, 2000);
 }
