@@ -16,7 +16,7 @@ const fetchWithCors = (url, options = {}) => {
     },
     ...options
   };
-  return fetch(url, defaultOptions);
+  return fetch(defaultOptions);
 };
 // Cart state management
 const cartManager = {
@@ -765,7 +765,7 @@ window.uiManager = uiManager;
 window.categoryManager = categoryManager;
 async function fetchProducts() {
   try {
-    const response = await fetch(`${BACKEND_URL}/api/products`);
+    const response = await fetch('https://backend-3mvr.onrender.com/api/products');
     const products = await response.json();
     displayProducts(products);
   } catch (error) {
