@@ -12,7 +12,8 @@ const fetchConfig = {
   headers: {
     'Accept': 'application/json',
     'Content-Type': 'application/json'
-  }
+  },
+  mode: 'cors' // Add this
 };
 // Updated post config
 const createPostConfig = (data) => ({
@@ -25,8 +26,9 @@ const createPostConfig = (data) => ({
 const cartManager = {
 async fetchCart() {
     try {
-      const response = await fetch('https://backend-3mvr.onrender.com/api/cart', {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/cart',  {
         ...fetchConfig,
+        
         credentials: 'include'
       });
       
@@ -335,6 +337,7 @@ const authManager = {
 
     try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/auth/login', {
+        ...fetchConfig,
         method: "POST",
         credentials: 'include',
         headers: fetchConfig.headers,
