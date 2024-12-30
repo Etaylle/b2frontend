@@ -18,7 +18,7 @@ const fetchConfig = {
 const cartManager = {
   async fetchCart() {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/cart`, { credentials: 'include' });
+      const response = await fetch('https://backend-3mvr.onrender.com/api/cart', { credentials: 'include' });
       console.log('Response:', await response.text());
       if (!response.ok) {
         return { user_id, items: [], total: 0 };
@@ -34,7 +34,7 @@ const cartManager = {
   
   async addItem(productId) {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/cart/add`, {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId, quantity: 1 }),
@@ -367,7 +367,7 @@ const authManager = {
     const password = document.getElementById("reg-password").value;
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/auth/register', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -522,7 +522,7 @@ const categoryManager = {
   },
   async fetchCategories() {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/categories`);
+      const response = await fetch('https://backend-3mvr.onrender.com/api/categories');
       if (!response.ok) throw new Error(`Failed to fetch categories: ${response.statusText}`);
 
       const categories = await response.json();
