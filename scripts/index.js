@@ -13,11 +13,7 @@ const fetchConfig = {
     'Content-Type': 'application/json'
   }
 };
-const postConfig = {
-  ...fetchConfig,
-  method: 'POST',
-  body: JSON.stringify(data)
-};
+
 // Cart state management
 const cartManager = {
   async fetchCart() {
@@ -353,7 +349,7 @@ const authManager = {
       if (response.ok) {
         showNotification('Login successful!', 'success');
         uiManager.closeLogin();
-        window.location.reload();
+        //window.location.reload();
       }
     } catch (error) {
       showNotification('Login failed: ' + error.message, 'error');
