@@ -1,6 +1,6 @@
 // Global state
 const BACKEND_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://your-backend-url.onrender.com'  // Replace with your actual backend URL
+  ? 'https://backend-3mvr.onrender.com'  // Replace with your actual backend URL
   : 'http://localhost:8080';
 let currentUser;
 let cart = {};
