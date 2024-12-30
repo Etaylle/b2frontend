@@ -347,7 +347,7 @@ const authManager = {
     } catch (error) {
       showNotification('Login failed: ' + error.message, 'error');
     }
-  }
+  
   },
 
   async register(event) {
