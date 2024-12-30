@@ -6,6 +6,7 @@ let products = [];
 //let categories = [];
 let productStocks = {};
 let logo2;
+let data = {};
 const fetchConfig = {
   credentials: 'include',
   headers: {
