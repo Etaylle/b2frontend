@@ -1,23 +1,36 @@
 // Global state
-BACKEND_URL = 'https://b2b-d80a.onrender.com';
+const BACKEND_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://your-backend-url.onrender.com'  // Replace with your actual backend URL
+  : 'http://localhost:8080';
 let currentUser;
 let cart = {};
 let products = [];
 //let categories = [];
 let productStocks = {};
 let logo2;
+const fetcWithCorsWithCors = (url, options = {}) => {
+  const defaultOptions = {
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      // Add any auth headers if needed
+    },
+    ...options
+  };
+  return fetcWithCors(url, defaultOptions);
+};
 // Cart state management
 const cartManager = {
-  async fetchCart() {
+  async fetcWithCorsCart() {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/cart`, { credentials: 'include' });
+      const response = await fetcWithCors(`${BACKEND_URL}/api/cart`, { credentials: 'include' });
       if (!response.ok) {
         return { user_id, items: [], total: 0 };
       }
       const data = await response.json();
       return data.cart;
     } catch (error) {
-      console.error('Error fetching cart:', error);
+      console.error('Error fetcWithCorsing cart:', error);
       return { items: [], total: 0 };
     }
   },
@@ -25,7 +38,7 @@ const cartManager = {
   
   async addItem(productId) {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/cart/add`, {
+      const response = await fetcWithCors(`${BACKEND_URL}/api/cart/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId, quantity: 1 }),
@@ -46,7 +59,7 @@ const cartManager = {
       console.error('Invalid product ID');
       return;}
     try {
-      const response = await fetch(`${BACKEND_URL}/api/cart/remove`, {
+      const response = await fetcWithCors(`${BACKEND_URL}/api/cart/remove`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId }),
@@ -64,7 +77,7 @@ const cartManager = {
 
   async updateQuantity(productId, quantity) {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/cart/update`, {
+      const response = await fetcWithCors(`${BACKEND_URL}/api/cart/update`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId, quantity }),
@@ -80,7 +93,7 @@ const cartManager = {
   },
     async clearCart(afterPurchase = false) {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/cart/clear`, {
+        const response = await fetcWithCors(`${BACKEND_URL}/api/cart/clear`, {
           method: 'DELETE',
           credentials: 'include',
           headers: { 
@@ -118,7 +131,7 @@ const cartManager = {
     async completePurchase() {
       console.log('OVO JE NASTAVAK');
       try {
-        const response = await fetch(`${BACKEND_URL}/api/cart/complete-purchase`, {
+        const response = await fetcWithCors(`${BACKEND_URL}/api/cart/complete-purchase`, {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -144,7 +157,7 @@ const cartManager = {
 
 
   async updateDisplay() {
-    const cart = await this.fetchCart();
+    const cart = await this.fetcWithCorsCart();
     const cartContainer = document.getElementById('cart-items');
     const cartTotal = document.getElementById('cart-total');
     
@@ -293,9 +306,9 @@ const uiManager = {
 
 // Auth Management
 const authManager = {
-  async fetchCurrentUser() {
+  async fetcWithCorsCurrentUser() {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/users/current`, {
+      const response = await fetcWithCors(`${BACKEND_URL}/api/users/current`, {
         method: "GET",
         credentials: "include",
       });
@@ -306,7 +319,7 @@ const authManager = {
       }
       return null;
     } catch (error) {
-      console.error("Error fetching current user:", error);
+      console.error("Error fetcWithCorsing current user:", error);
       return null;
     }
   },
@@ -318,7 +331,7 @@ const authManager = {
     const password = document.getElementById("password").value;
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
+      const response = await fetcWithCors(`${BACKEND_URL}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -350,7 +363,7 @@ const authManager = {
     const password = document.getElementById("reg-password").value;
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
+      const response = await fetcWithCors(`${BACKEND_URL}/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -373,7 +386,7 @@ const authManager = {
 
   async logout() {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/auth/logout`, {
+      const response = await fetcWithCors(`${BACKEND_URL}/api/auth/logout`, {
         method: "POST",
       });
 
@@ -389,7 +402,7 @@ const authManager = {
 
   async displayUserInfo() {
     const userInfoDisplay = document.getElementById("user-info-display");
-    const currentUser = await this.fetchCurrentUser();
+    const currentUser = await this.fetcWithCorsCurrentUser();
 
     if (currentUser) {
       userInfoDisplay.textContent = `Logged in as: ${currentUser.firstname} ${currentUser.lastname}`;
@@ -399,12 +412,12 @@ const authManager = {
   },
   
   async checkAdminAccess() {
-    const user = await authManager.fetchCurrentUser();
+    const user = await authManager.fetcWithCorsCurrentUser();
     return user && user.role === 'admin';
   },
 
   async displayUserAvatar() {
-    const currentUser = await this.fetchCurrentUser();
+    const currentUser = await this.fetcWithCorsCurrentUser();
     if (!currentUser || !currentUser.firstname) {
       console.error('User data is missing or invalid');
       return;
@@ -429,7 +442,7 @@ const paymentManager = {
 
   async initiateCheckout() {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/create-checkout-session`, {
+      const response = await fetcWithCors(`${BACKEND_URL}/api/create-checkout-session`, {
         method: 'POST',
         credentials: 'include'
       });
@@ -459,12 +472,12 @@ const categoryManager = {
     this.state.searchTerm = searchTerm.toLowerCase();
     
     try {
-      // If search is cleared (empty), fetch all products or category products
+      // If search is cleared (empty), fetcWithCors all products or category products
       if (!searchTerm.trim()) {
         if (this.state.selectedCategory) {
-          await this.fetchProducts(this.state.selectedCategory);
+          await this.fetcWithCorsProducts(this.state.selectedCategory);
         } else {
-          await this.fetchProducts();
+          await this.fetcWithCorsProducts();
         }
         return;
       }
@@ -473,13 +486,13 @@ const categoryManager = {
       
       if (this.state.selectedCategory) {
         // If a category is selected, search within that category
-        const response = await fetch(`${BACKEND_URL}/api/products/category/${this.state.selectedCategory}`);
-        if (!response.ok) throw new Error("Failed to fetch category products");
+        const response = await fetcWithCors(`${BACKEND_URL}/api/products/category/${this.state.selectedCategory}`);
+        if (!response.ok) throw new Error("Failed to fetcWithCors category products");
         filteredProducts = await response.json();
       } else {
         // If no category is selected, search all products
-        const response = await fetch(`${BACKEND_URL}/api/products`);
-        if (!response.ok) throw new Error("Failed to fetch products");
+        const response = await fetcWithCors(`${BACKEND_URL}/api/products`);
+        if (!response.ok) throw new Error("Failed to fetcWithCors products");
         filteredProducts = await response.json();
       }
 
@@ -503,36 +516,36 @@ const categoryManager = {
       showNotification(error.message, "error");
     }
   },
-  async fetchCategories() {
+  async fetcWithCorsCategories() {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/categories`);
-      if (!response.ok) throw new Error(`Failed to fetch categories: ${response.statusText}`);
+      const response = await fetcWithCors(`${BACKEND_URL}/api/categories`);
+      if (!response.ok) throw new Error(`Failed to fetcWithCors categories: ${response.statusText}`);
 
       const categories = await response.json();
       if (!Array.isArray(categories)) throw new Error("Categories data is not an array");
 
       this.state.categories = categories;
       await this.renderCategories();
-      await this.fetchProducts(); // Fetch initial products
+      await this.fetcWithCorsProducts(); // fetcWithCors initial products
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      console.error("Error fetcWithCorsing categories:", error);
       showNotification(error.message, "error");
     }
   },
 
-  async fetchProducts(categoryId = null) {
+  async fetcWithCorsProducts(categoryId = null) {
     try {
       const baseUrl = `${BACKEND_URL}/api/products`;
       const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
-      const response = await fetch(url);
+      const response = await fetcWithCors(url);
       
-      if (!response.ok) throw new Error("Failed to fetch products");
+      if (!response.ok) throw new Error("Failed to fetcWithCors products");
 
       const products = await response.json();
       this.state.products = products;
       await this.renderProducts();
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error("Error fetcWithCorsing products:", error);
       showNotification(error.message, "error");
     }
   },
@@ -565,7 +578,7 @@ const categoryManager = {
 
   async selectCategory(categoryId) {
     this.state.selectedCategory = categoryId;
-    await this.fetchProducts(categoryId);
+    await this.fetcWithCorsProducts(categoryId);
     this.highlightSelectedCategory();
   },
 
@@ -656,7 +669,7 @@ const categoryManager = {
   },
   
     async initialize() {
-    await this.fetchCategories();
+    await this.fetcWithCorsCategories();
     await this.setupSearch();
   },
     setupSearch() {
@@ -690,12 +703,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl');
   // Initialize category filter  
   await categoryManager.initialize();
-  // Fetch initial data
-  currentUser = await authManager.fetchCurrentUser();
+  // fetcWithCors initial data
+  currentUser = await authManager.fetcWithCorsCurrentUser();
   logo2 = document.querySelector(".credit-info");
 
   // Initialize displays
-  fetchProducts();
+  fetcWithCorsProducts();
   authManager.displayUserInfo();
   authManager.displayUserAvatar();
   cartManager.updateDisplay();
@@ -750,13 +763,13 @@ window.cartManager = cartManager;
 window.paymentManager = paymentManager;
 window.uiManager = uiManager;
 window.categoryManager = categoryManager;
-async function fetchProducts() {
+async function fetcWithCorsProducts() {
   try {
-    const response = await fetch(`${BACKEND_URL}/api/products`);
+    const response = await fetcWithCors(`${BACKEND_URL}/api/products`);
     const products = await response.json();
     displayProducts(products);
   } catch (error) {
-    console.error("Error fetching products:", error);
+    console.error("Error fetcWithCorsing products:", error);
   }
 }
 
