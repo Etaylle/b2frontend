@@ -6,7 +6,18 @@ let products = [];
 //let categories = [];
 let productStocks = {};
 let logo2;
-
+const fetchConfig = {
+  credentials: 'include',
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
+  }
+};
+const postConfig = {
+  ...fetchConfig,
+  method: 'POST',
+  body: JSON.stringify(data)
+};
 // Cart state management
 const cartManager = {
   async fetchCart() {
