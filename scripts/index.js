@@ -6,23 +6,12 @@ let products = [];
 //let categories = [];
 let productStocks = {};
 let logo2;
-const fetchWithCors = (url, options = {}) => {
-  const sid = localStorage.getItem("sid");
-  const defaultOptions = {
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(sid ? { 'Authorization': `Bearer ${sid}` } : {}), // Optional header for session token
-    },
-    ...options
-  };
-  return fetch(defaultOptions);
-};
+
 // Cart state management
 const cartManager = {
   async fetchCart() {
     try {
-      const response = await fetchWithCors(`${BACKEND_URL}/api/cart`, { credentials: 'include' });
+      const response = await fetch(`${BACKEND_URL}/api/cart`, { credentials: 'include' });
       console.log('Response:', await response.text());
       if (!response.ok) {
         return { user_id, items: [], total: 0 };
@@ -38,7 +27,7 @@ const cartManager = {
   
   async addItem(productId) {
     try {
-      const response = await fetchWithCors(`${BACKEND_URL}/api/cart/add`, {
+      const response = await fetch(`${BACKEND_URL}/api/cart/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId, quantity: 1 }),
@@ -59,7 +48,7 @@ const cartManager = {
       console.error('Invalid product ID');
       return;}
     try {
-      const response = await fetchWithCors(`${BACKEND_URL}/api/cart/remove`, {
+      const response = await fetch(`${BACKEND_URL}/api/cart/remove`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId }),
@@ -77,7 +66,7 @@ const cartManager = {
 
   async updateQuantity(productId, quantity) {
     try {
-      const response = await fetchWithCors(`${BACKEND_URL}/api/cart/update`, {
+      const response = await fetch(`${BACKEND_URL}/api/cart/update`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId, quantity }),
@@ -93,7 +82,7 @@ const cartManager = {
   },
     async clearCart(afterPurchase = false) {
       try {
-        const response = await fetchWithCors(`${BACKEND_URL}/api/cart/clear`, {
+        const response = await fetch(`${BACKEND_URL}/api/cart/clear`, {
           method: 'DELETE',
           credentials: 'include',
           headers: { 
@@ -131,7 +120,7 @@ const cartManager = {
     async completePurchase() {
       console.log('OVO JE NASTAVAK');
       try {
-        const response = await fetchWithCors(`${BACKEND_URL}/api/cart/complete-purchase`, {
+        const response = await fetch(`${BACKEND_URL}/api/cart/complete-purchase`, {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -308,7 +297,7 @@ const uiManager = {
 const authManager = {
   async fetchCurrentUser() {
     try {
-      const response = await fetchWithCors(`${BACKEND_URL}/api/users/current`, {
+      const response = await fetch(`${BACKEND_URL}/api/users/current`, {
         method: "GET",
         credentials: "include",
       });
@@ -331,7 +320,7 @@ const authManager = {
     const password = document.getElementById("password").value;
 
     try {
-      const response = await fetchWithCors(`${BACKEND_URL}/api/auth/login`, {
+      const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -363,7 +352,7 @@ const authManager = {
     const password = document.getElementById("reg-password").value;
 
     try {
-      const response = await fetchWithCors(`${BACKEND_URL}/api/auth/register`, {
+      const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -386,7 +375,7 @@ const authManager = {
 
   async logout() {
     try {
-      const response = await fetchWithCors(`${BACKEND_URL}/api/auth/logout`, {
+      const response = await fetch(`${BACKEND_URL}/api/auth/logout`, {
         method: "POST",
       });
 
@@ -442,7 +431,7 @@ const paymentManager = {
 
   async initiateCheckout() {
     try {
-      const response = await fetchWithCors(`${BACKEND_URL}/api/create-checkout-session`, {
+      const response = await fetch(`${BACKEND_URL}/api/create-checkout-session`, {
         method: 'POST',
         credentials: 'include'
       });
@@ -518,7 +507,7 @@ const categoryManager = {
   },
   async fetchCategories() {
     try {
-      const response = await fetchWithCors(`${BACKEND_URL}/api/categories`);
+      const response = await fetch(`${BACKEND_URL}/api/categories`);
       if (!response.ok) throw new Error(`Failed to fetch categories: ${response.statusText}`);
 
       const categories = await response.json();
