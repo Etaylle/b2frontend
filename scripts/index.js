@@ -7,13 +7,12 @@ let products = [];
 let productStocks = {};
 let logo2;
 const fetchWithCors = (url, options = {}) => {
-  
-
+  const sid = localStorage.getItem("sid");
   const defaultOptions = {
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      // Add any auth headers if needed
+      ...(sid ? { 'Authorization': `Bearer ${sid}` } : {}), // Optional header for session token
     },
     ...options
   };
@@ -487,12 +486,12 @@ const categoryManager = {
       
       if (this.state.selectedCategory) {
         // If a category is selected, search within that category
-        const response = await fetchWithCors(`${BACKEND_URL}/api/products/category/${this.state.selectedCategory}`);
+        const response = await fetch(`${BACKEND_URL}/api/products/category/${this.state.selectedCategory}`);
         if (!response.ok) throw new Error("Failed to fetch category products");
         filteredProducts = await response.json();
       } else {
         // If no category is selected, search all products
-        const response = await fetchWithCors(`${BACKEND_URL}/api/products`);
+        const response = await fetch(`${BACKEND_URL}/api/products`);
         if (!response.ok) throw new Error("Failed to fetch products");
         filteredProducts = await response.json();
       }
@@ -536,7 +535,7 @@ const categoryManager = {
 
   async fetchProducts(categoryId = null) {
     try {
-      const baseUrl = `${BACKEND_URL}/api/products`;
+      const baseUrl = `https://b2b-d80a.onrender.com/api/products`;
       const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
       const response = await fetch(url);
       
