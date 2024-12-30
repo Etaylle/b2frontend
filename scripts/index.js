@@ -25,7 +25,7 @@ const createPostConfig = (data) => ({
 const cartManager = {
 async fetchCart() {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/cart`, {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/cart', {
         ...fetchConfig,
         credentials: 'include'
       });
@@ -43,7 +43,7 @@ async fetchCart() {
 
   async addItem(productId) {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/cart/add`, {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
         method: 'POST',
         credentials: 'include',
         headers: fetchConfig.headers,
@@ -314,7 +314,7 @@ const uiManager = {
 const authManager = {
   async fetchCurrentUser() {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/users/current`, {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/users/current', {
         ...fetchConfig,
         credentials: 'include'
       });
@@ -332,7 +332,7 @@ const authManager = {
     const password = document.getElementById("password").value;
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/auth/login', {
         method: "POST",
         credentials: 'include',
         headers: {
