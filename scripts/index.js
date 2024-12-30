@@ -320,7 +320,7 @@ const authManager = {
     const password = document.getElementById("password").value;
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/auth/login', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
