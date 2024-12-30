@@ -302,28 +302,23 @@ const uiManager = {
 
 // Auth Management
 const authManager = {
-  async fetchCurrentUser() {
-    try {
-      const response = await fetch('https://backend-3mvr.onrender.com/api/users/current', {
-        method: "GET",
-        credentials: "include",
-         headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json"
-        }
-      });
+async fetchCurrentUser() {
+  try {
+    const response = await fetch('https://backend-3mvr.onrender.com/api/users/current', fetchConfig);
+    if (!response.ok) throw new Error('Auth failed');
+    return await response.json();
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
 
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const user = await response.json();
-        return user;
-      }
-
-     catch (error) {
-      console.error("Error fetching current user:", error);
-      return null;
-    }
-  },
-
+// For POST requests, merge with fetchConfig
+const postConfig = {
+  ...fetchConfig,
+  method: 'POST',
+  body: JSON.stringify(data)
+};
   async login(event) {
     event.preventDefault();
     const email = document.getElementById("email").value;
