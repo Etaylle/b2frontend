@@ -349,7 +349,7 @@ const authManager = {
       if (response.ok) {
         showNotification('Login successful!', 'success');
         uiManager.closeLogin();
-        window.location.reload();
+        //window.location.reload();
       } else {
         showNotification(data.message, 'error');
       }
