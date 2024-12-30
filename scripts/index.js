@@ -13,7 +13,11 @@ const fetchConfig = {
     'Content-Type': 'application/json'
   }
 };
-
+const postConfig = {
+  ...fetchConfig,
+  method: 'POST',
+  body: JSON.stringify(data)
+};
 // Cart state management
 const cartManager = {
   async fetchCart() {
@@ -311,14 +315,8 @@ async fetchCurrentUser() {
     console.error(error);
     return null;
   }
-}
+},
 
-// For POST requests, merge with fetchConfig
-const postConfig = {
-  ...fetchConfig,
-  method: 'POST',
-  body: JSON.stringify(data)
-};
   async login(event) {
     event.preventDefault();
     const email = document.getElementById("email").value;
