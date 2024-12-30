@@ -13,19 +13,24 @@ const fetchConfig = {
     'Content-Type': 'application/json'
   }
 };
-const postConfig = {
+// Updated post config
+const createPostConfig = (data) => ({
   ...fetchConfig,
   method: 'POST',
   body: JSON.stringify(data)
-};
+});
+
 // Cart state management
 const cartManager = {
-  async fetchCart() {
+async fetchCart() {
     try {
-      const response = await fetch('https://backend-3mvr.onrender.com/api/cart', { credentials: 'include' });
-      console.log('Response:', await response.text());
+      const response = await fetch(`${BACKEND_URL}/api/cart`, {
+        ...fetchConfig,
+        credentials: 'include'
+      });
+      
       if (!response.ok) {
-        return { user_id, items: [], total: 0 };
+        return { items: [], total: 0 };
       }
       const data = await response.json();
       return data.cart;
@@ -35,14 +40,13 @@ const cartManager = {
     }
   },
 
-  
   async addItem(productId) {
     try {
-      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
+      const response = await fetch(`${BACKEND_URL}/api/cart/add`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, quantity: 1 }),
         credentials: 'include',
+        headers: fetchConfig.headers,
+        body: JSON.stringify({ productId, quantity: 1 })
       });
 
       if (!response.ok) throw new Error('Failed to add to cart');
@@ -50,7 +54,7 @@ const cartManager = {
       showNotification('Added to cart!', 'success');
     } catch (error) {
       console.error('Error:', error);
-      showNotification('Out of stock!', 'error');
+      showNotification('Failed to add item', 'error');
     }
   },
 
@@ -305,17 +309,21 @@ const uiManager = {
 };
 
 // Auth Management
+// Auth Management
 const authManager = {
-async fetchCurrentUser() {
-  try {
-    const response = await fetch('https://backend-3mvr.onrender.com/api/users/current', fetchConfig);
-    if (!response.ok) throw new Error('Auth failed');
-    return await response.json();
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-},
+  async fetchCurrentUser() {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/users/current`, {
+        ...fetchConfig,
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Auth failed');
+      return await response.json();
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  },
 
   async login(event) {
     event.preventDefault();
@@ -323,11 +331,9 @@ async fetchCurrentUser() {
     const password = document.getElementById("password").value;
 
     try {
-      const response = await fetch('https://backend-3mvr.onrender.com/api/auth/login', {
+      const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        credentials: 'include',
         headers: {
           "Accept": "application/json",
           "Content-Type": "application/json"
@@ -335,49 +341,17 @@ async fetchCurrentUser() {
         body: JSON.stringify({ email, password }),
       });
 
-      
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-      
-      if (response.ok) {
-        showNotification('Login successful!', 'success');
-        uiManager.closeLogin();
-        //window.location.reload();
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Login failed');
       }
+      
+      const data = await response.json();
+      showNotification('Login successful!', 'success');
+      uiManager.closeLogin();
+      window.location.reload();
     } catch (error) {
       showNotification('Login failed: ' + error.message, 'error');
-    }
-  
-  },
-
-  async register(event) {
-    event.preventDefault();
-
-    const username = document.getElementById("username").value;
-    const firstname = document.getElementById("firstname").value;
-    const lastname = document.getElementById("lastname").value;
-    const email = document.getElementById("reg-email").value;
-    const password = document.getElementById("reg-password").value;
-
-    try {
-      const response = await fetch('https://backend-3mvr.onrender.com/api/auth/register', {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, firstname, lastname, email, password }),
-      });
-
-      if (response.ok) {
-        showNotification('Registration successful!', 'success');
-        uiManager.closeRegister();
-        window.location.href = "index.html";
-      } else {
-        const data = await response.json();
-        showNotification(data.message, 'error');
-      }
-    } catch (error) {
-      showNotification(error.message, 'error');
     }
   },
 
@@ -385,9 +359,13 @@ async fetchCurrentUser() {
     try {
       const response = await fetch(`${BACKEND_URL}/api/auth/logout`, {
         method: "POST",
+        credentials: 'include',
+        headers: fetchConfig.headers
       });
 
       if (response.ok) {
+        // Clear any local storage if you're using it
+        localStorage.clear();
         window.location.reload();
       } else {
         showNotification('Failed to log out', 'error');
@@ -395,8 +373,8 @@ async fetchCurrentUser() {
     } catch (error) {
       showNotification('Error logging out', 'error');
     }
-  },
-
+  }
+,
   async displayUserInfo() {
     const userInfoDisplay = document.getElementById("user-info-display");
     const currentUser = await this.fetchCurrentUser();
