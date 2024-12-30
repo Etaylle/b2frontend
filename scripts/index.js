@@ -337,10 +337,10 @@ const authManager = {
 
     try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/auth/login', {
-        ...fetchConfig,
-        method: "POST",
-        credentials: 'include',
-        headers: fetchConfig.headers,
+     method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ email, password }),
       });
 
@@ -349,7 +349,7 @@ const authManager = {
       if (response.ok) {
         showNotification('Login successful!', 'success');
         uiManager.closeLogin();
-        //window.location.reload();
+        window.location.reload();
       } else {
         showNotification(data.message, 'error');
       }
