@@ -1,5 +1,5 @@
 // Global state
-const BACKEND_URL = `https://b2b-d80a.onrender.com`;
+const BACKEND_URL = `backend-3mvr.onrender.com`;
 let currentUser;
 let cart = {};
 let products = [];
