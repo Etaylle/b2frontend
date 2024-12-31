@@ -330,33 +330,34 @@ const authManager = {
 
  
   async login(event) {
-    event.preventDefault();
+  event.preventDefault();
 
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-    try {
-      const response = await fetch('https://backend-3mvr.onrender.com/api/auth/login', {
-        ...fetchConfig,
-        method: "POST",
-        credentials: 'include',
-        headers: fetchConfig.headers,
-        body: JSON.stringify({ email, password }),
-      });
+  try {
+    const response = await fetch('https://backend-3mvr.onrender.com/api/auth/login', {
+      method: "POST",
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password }),
+    });
 
-      const data = await response.json();
-      
-      if (response.ok) {
-        showNotification('Login successful!', 'success');
-        uiManager.closeLogin();
-        //window.location.reload();
-      } else {
-        showNotification(data.message, 'error');
-      }
-    } catch (error) {
-      showNotification(error.message, 'error');
+    const data = await response.json();
+    
+    if (response.ok) {
+      showNotification('Login successful!', 'success');
+      uiManager.closeLogin();
+      //window.location.reload();
+    } else {
+      showNotification(data.message, 'error');
     }
-  },
+  } catch (error) {
+    showNotification(error.message, 'error');
+  }
+},
 
   async logout() {
     try {
