@@ -26,7 +26,7 @@ const createPostConfig = (data) => ({
 const cartManager = {
 async fetchCart() {
     try {
-      const response = await fetch('https://backend-3mvr.onrender.com/api/cart',  {
+      const response = await fetch('https://backend.b2b-shop.tech/api/cart',  {
         ...fetchConfig,
         
         credentials: 'include'
@@ -316,7 +316,7 @@ const uiManager = {
 const authManager = {
   async fetchCurrentUser() {
     try {
-      const response = await fetch('https://backend-3mvr.onrender.com/api/users/current', {
+      const response = await fetch('backend.b2b-shop.tech/api/users/current', {
         ...fetchConfig,
         credentials: 'include'
       });
@@ -336,7 +336,7 @@ const authManager = {
   const password = document.getElementById("password").value;
 
   try {
-    const response = await fetch('https://backend-3mvr.onrender.com/api/auth/login', {
+    const response = await fetch('backend.b2b-shop.tech/api/auth/login', {
       method: "POST",
       credentials: 'include',
       headers: {
@@ -544,7 +544,7 @@ const categoryManager = {
 
   async fetchProducts(categoryId = null) {
     try {
-      const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+      const baseUrl = 'backend.b2b-shop.tech/api/products';
       const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
       const response = await fetch(url);
       
