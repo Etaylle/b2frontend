@@ -330,34 +330,43 @@ const authManager = {
 
  
   async login(event) {
-  event.preventDefault();
-
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  try {
-    const response = await fetch('https://backend.b2b-shop.tech/api/auth/login', {
-      method: "POST",
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await response.json();
-    
-    if (response.ok) {
-      showNotification('Login successful!', 'success');
-      uiManager.closeLogin();
-      //window.location.reload();
-    } else {
-      showNotification(data.message, 'error');
+    event.preventDefault();
+  
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+  
+    try {
+      const response = await fetch('https://backend.b2b-shop.tech/api/auth/login', {
+        method: "POST",
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      // Add these debug lines
+      console.log('Response headers:', response.headers);
+      console.log('Response status:', response.status);
+      const data = await response.json();
+      console.log('Response data:', data);
+      
+      if (response.ok) {
+        // Add this debug line
+        document.cookie.split(';').forEach(cookie => {
+          console.log('Cookie:', cookie.trim());
+        });
+        
+        showNotification('Login successful!', 'success');
+        uiManager.closeLogin();
+      } else {
+        showNotification(data.message, 'error');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      showNotification(error.message, 'error');
     }
-  } catch (error) {
-    showNotification(error.message, 'error');
-  }
-},
+  },
 
   async logout() {
     try {
