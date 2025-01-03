@@ -1,5 +1,5 @@
 // Global state
-const BACKEND_URL = 'http://backend.b2b-shop.tech';
+const BACKEND_URL = 'https://backend.b2b-shop.tech';
 let currentUser;
 let cart = {};
 let products = [];
