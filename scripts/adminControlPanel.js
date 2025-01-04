@@ -53,7 +53,7 @@ const AdminPanel = () => {
   );
   // CRUD Operations
   const handleCreate = (type, data) => {
-      const url = type === 'user' ? '/api/admin/users' : '/api/admin/products';
+      const url = type === 'user' ? 'https://backend-3mvr.onrender.com/api/admin/users' : '/api/admin/products';
       fetch(url, {
           method: 'POST',
           credentials: 'include',
@@ -143,7 +143,7 @@ const AdminPanel = () => {
 
 
   const handleDelete = (type, id) => {
-      const url = `${type === 'user' ? '/api/admin/users' : '/api/admin/products'}/${id}`;
+      const url = `${type === 'user' ? 'https://backend-3mvr.onrender.com/api/admin/users' : '/api/admin/products'}/${id}`;
       fetch(url, {
           method: 'DELETE',
           credentials: 'include'
