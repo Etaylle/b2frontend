@@ -6,3 +6,7 @@ services:
       - type: rewrite
         source: /api/*
         destination: https://backend-3mvr.onrender.com/api/*
+      - type: redirect
+        source: /*
+        destination: /index.html
+        status: 200
