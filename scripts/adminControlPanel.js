@@ -14,8 +14,8 @@ const AdminPanel = () => {
     setError(null);
     try {
       const [usersRes, productsRes] = await Promise.all([
-        fetch('/api/admin/users', { credentials: 'include' }),
-        fetch('/api/admin/products', { credentials: 'include' })
+        fetch('https://backend-3mvr.onrender.com/api/admin/users', { credentials: 'include' }),
+        fetch('https://backend-3mvr.onrender.com/api/admin/products', { credentials: 'include' })
       ]);
 
       if (!usersRes.ok) throw new Error('Failed to fetch users');
@@ -53,7 +53,7 @@ const AdminPanel = () => {
   );
   // CRUD Operations
   const handleCreate = (type, data) => {
-      const url = type === 'user' ? 'https://backend-3mvr.onrender.com/api/admin/users' : '/api/admin/products';
+      const url = type === 'user' ? 'https://backend-3mvr.onrender.com/api/admin/users' : 'https://backend-3mvr.onrender.com/api/admin/products';
       fetch(url, {
           method: 'POST',
           credentials: 'include',
@@ -88,7 +88,7 @@ const AdminPanel = () => {
       return setError(`${type === 'user' ? 'User' : 'Product'} ID is missing`);
     }
 
-    const url = `${type === 'user' ? '/api/admin/users' : '/api/admin/products'}/${itemId}`;
+    const url = `${type === 'user' ? 'https://backend-3mvr.onrender.com/api/admin/users' : 'https://backend-3mvr.onrender.com/api/admin/products'}/${itemId}`;
 
     // Validate required fields before sending the request
     if (type === 'user') {
