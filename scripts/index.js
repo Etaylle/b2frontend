@@ -26,7 +26,7 @@ const createPostConfig = (data) => ({
 const cartManager = {
 async fetchCart() {
     try {
-      const response = await fetch('/api/cart',  {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/cart',  {
         ...fetchConfig,
         
         credentials: 'include'
