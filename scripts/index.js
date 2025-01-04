@@ -45,7 +45,7 @@ async fetchCart() {
 
   async addItem(productId) {
     try {
-      const response = await fetch('/api/cart/add', {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
         method: 'POST',
         credentials: 'include',
         headers: fetchConfig.headers,
@@ -316,7 +316,7 @@ const uiManager = {
 const authManager = {
   async fetchCurrentUser() {
     try {
-      const response = await fetch('/api/users/current', {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/users/current', {
         ...fetchConfig,
         credentials: 'include'
       });
@@ -495,12 +495,12 @@ const categoryManager = {
       
       if (this.state.selectedCategory) {
         // If a category is selected, search within that category
-        const response = await fetch(`/api/products/category/${this.state.selectedCategory}`);
+        const response = await fetch(`https://backend-3mvr.onrender.com/api/products/category/${this.state.selectedCategory}`);
         if (!response.ok) throw new Error("Failed to fetch category products");
         filteredProducts = await response.json();
       } else {
         // If no category is selected, search all products
-        const response = await fetch('/api/products');
+        const response = await fetch('https://backend-3mvr.onrender.com/api/products');
         if (!response.ok) throw new Error("Failed to fetch products");
         filteredProducts = await response.json();
       }
@@ -527,7 +527,7 @@ const categoryManager = {
   },
   async fetchCategories() {
     try {
-      const response = await fetch('/api/categories');
+      const response = await fetch('https://backend-3mvr.onrender.com/api/categories');
       if (!response.ok) throw new Error(`Failed to fetch categories: ${response.statusText}`);
 
       const categories = await response.json();
@@ -544,7 +544,7 @@ const categoryManager = {
 
   async fetchProducts(categoryId = null) {
     try {
-      const baseUrl = '/api/products';
+      const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
       const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
       const response = await fetch(url);
       
@@ -774,7 +774,7 @@ window.uiManager = uiManager;
 window.categoryManager = categoryManager;
 async function fetchProducts() {
   try {
-    const response = await fetch('/api/products');
+    const response = await fetch('https://backend-3mvr.onrender.com/api/products');
     const products = await response.json();
     displayProducts(products);
   } catch (error) {
