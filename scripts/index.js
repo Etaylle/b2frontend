@@ -66,7 +66,7 @@ async fetchCart() {
       console.error('Invalid product ID');
       return;}
     try {
-      const response = await fetch('/api/cart/remove', {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/remove', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId }),
@@ -84,7 +84,7 @@ async fetchCart() {
 
   async updateQuantity(productId, quantity) {
     try {
-      const response = await fetch('/api/cart/update', {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/update', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId, quantity }),
@@ -100,7 +100,7 @@ async fetchCart() {
   },
     async clearCart(afterPurchase = false) {
       try {
-        const response = await fetch('/api/cart/clear', {
+        const response = await fetch('https://backend-3mvr.onrender.com/api/cart/clear', {
           method: 'DELETE',
           credentials: 'include',
           headers: { 
@@ -138,7 +138,7 @@ async fetchCart() {
     async completePurchase() {
       console.log('OVO JE NASTAVAK');
       try {
-        const response = await fetch('/api/cart/complete-purchase', {
+        const response = await fetch('https://backend-3mvr.onrender.com/api/cart/complete-purchase', {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -359,7 +359,7 @@ const authManager = {
 
   async logout() {
     try {
-      const response = await fetch('/api/auth/logout', {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/auth/logout', {
         method: "POST",
         credentials: 'include',
         headers: fetchConfig.headers
@@ -387,7 +387,7 @@ async register(event) {
     const password = document.getElementById("reg-password").value;
 
     try {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/auth/register', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -449,7 +449,7 @@ const paymentManager = {
 
   async initiateCheckout() {
     try {
-      const response = await fetch('/api/create-checkout-session', {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/create-checkout-session', {
         method: 'POST',
         credentials: 'include'
       });
