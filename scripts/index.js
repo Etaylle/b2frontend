@@ -553,7 +553,7 @@ const categoryManager = {
 
   async fetchProducts(categoryId = null) {
     try {
-      const baseUrl = 'backend.b2b-shop.tech/api/products';
+      const baseUrl = 'b2b-shop.tech/api/products';
       const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
       const response = await fetch(url);
       
