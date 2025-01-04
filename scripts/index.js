@@ -337,7 +337,7 @@ const authManager = {
     const password = document.getElementById("password").value;
 
     try {
-      const response = await fetch("https://backend-3mvr.onrender.com/api/auth/login", {
+      const response = await fetch("https://www.b2b-shop.tech/api/auth/login", {
         ...fetchConfig,  // Use the base config
       method: "POST",
       body: JSON.stringify({ email, password })
