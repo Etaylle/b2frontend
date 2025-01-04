@@ -26,7 +26,7 @@ const createPostConfig = (data) => ({
 const cartManager = {
 async fetchCart() {
     try {
-      const response = await fetch('b2b-shop.tech/api/cart',  {
+      const response = await fetch('/api/cart',  {
         ...fetchConfig,
         
         credentials: 'include'
@@ -45,7 +45,7 @@ async fetchCart() {
 
   async addItem(productId) {
     try {
-      const response = await fetch('b2b-shop.tech/api/cart/add', {
+      const response = await fetch('/api/cart/add', {
         method: 'POST',
         credentials: 'include',
         headers: fetchConfig.headers,
@@ -66,7 +66,7 @@ async fetchCart() {
       console.error('Invalid product ID');
       return;}
     try {
-      const response = await fetch('b2b-shop.tech/api/cart/remove', {
+      const response = await fetch('/api/cart/remove', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId }),
@@ -84,7 +84,7 @@ async fetchCart() {
 
   async updateQuantity(productId, quantity) {
     try {
-      const response = await fetch('b2b-shop.tech/api/cart/update', {
+      const response = await fetch('/api/cart/update', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId, quantity }),
@@ -100,7 +100,7 @@ async fetchCart() {
   },
     async clearCart(afterPurchase = false) {
       try {
-        const response = await fetch('b2b-shop.tech/api/cart/clear', {
+        const response = await fetch('/api/cart/clear', {
           method: 'DELETE',
           credentials: 'include',
           headers: { 
@@ -138,7 +138,7 @@ async fetchCart() {
     async completePurchase() {
       console.log('OVO JE NASTAVAK');
       try {
-        const response = await fetch('b2b-shop.tech/api/cart/complete-purchase', {
+        const response = await fetch('/api/cart/complete-purchase', {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -316,7 +316,7 @@ const uiManager = {
 const authManager = {
   async fetchCurrentUser() {
     try {
-      const response = await fetch('b2b-shop.tech/api/users/current', {
+      const response = await fetch('/api/users/current', {
         ...fetchConfig,
         credentials: 'include'
       });
@@ -337,7 +337,7 @@ const authManager = {
     const password = document.getElementById("password").value;
 
     try {
-      const response = await fetch("b2b-shop.tech/api/auth/login", {
+      const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -361,7 +361,7 @@ const authManager = {
 
   async logout() {
     try {
-      const response = await fetch('b2b-shop.tech/api/auth/logout', {
+      const response = await fetch('/api/auth/logout', {
         method: "POST",
         credentials: 'include',
         headers: fetchConfig.headers
@@ -389,7 +389,7 @@ async register(event) {
     const password = document.getElementById("reg-password").value;
 
     try {
-      const response = await fetch('b2b-shop.tech/api/auth/register', {
+      const response = await fetch('/api/auth/register', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -451,7 +451,7 @@ const paymentManager = {
 
   async initiateCheckout() {
     try {
-      const response = await fetch('b2b-shop.tech/api/create-checkout-session', {
+      const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         credentials: 'include'
       });
@@ -495,12 +495,12 @@ const categoryManager = {
       
       if (this.state.selectedCategory) {
         // If a category is selected, search within that category
-        const response = await fetch(`b2b-shop.tech/api/products/category/${this.state.selectedCategory}`);
+        const response = await fetch(`/api/products/category/${this.state.selectedCategory}`);
         if (!response.ok) throw new Error("Failed to fetch category products");
         filteredProducts = await response.json();
       } else {
         // If no category is selected, search all products
-        const response = await fetch('b2b-shop.tech/api/products');
+        const response = await fetch('/api/products');
         if (!response.ok) throw new Error("Failed to fetch products");
         filteredProducts = await response.json();
       }
@@ -527,7 +527,7 @@ const categoryManager = {
   },
   async fetchCategories() {
     try {
-      const response = await fetch('b2b-shop.tech/api/categories');
+      const response = await fetch('/api/categories');
       if (!response.ok) throw new Error(`Failed to fetch categories: ${response.statusText}`);
 
       const categories = await response.json();
@@ -544,7 +544,7 @@ const categoryManager = {
 
   async fetchProducts(categoryId = null) {
     try {
-      const baseUrl = 'b2b-shop.tech/api/products';
+      const baseUrl = '/api/products';
       const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
       const response = await fetch(url);
       
@@ -774,7 +774,7 @@ window.uiManager = uiManager;
 window.categoryManager = categoryManager;
 async function fetchProducts() {
   try {
-    const response = await fetch('b2b-shop.tech/api/products');
+    const response = await fetch('/api/products');
     const products = await response.json();
     displayProducts(products);
   } catch (error) {
