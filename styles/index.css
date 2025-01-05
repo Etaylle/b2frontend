@@ -25,8 +25,8 @@ html {
            bottom: 0;
            width: 100%;
            padding: 1rem;
-           background: rgba(62, 141, 219, 0.925);
-           backdrop-filter: blur(8px);
+           background: rgba(108, 110, 238, 0.5);
+           backdrop-filter: progid:DXImageTransform.Microsoft.gradient(enabled)
            display: flex;
            justify-content: space-between;
            align-items: center;
