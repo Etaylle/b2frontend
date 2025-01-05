@@ -690,12 +690,12 @@ html {
   }
   
   .category-btn:hover {
-    background: #74a9df;
+    background: #54a5f7;
   }
   
-  .category-btn.active {
-    background: #74a4f1;
-    color: rgba(108, 235, 224, 0.87);
+  .category-btn.selected {
+    background: #0d6efd;
+    color: white;
     border-color: #0d6efd;
   }.search-container {
     display: flex;
