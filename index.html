@@ -6,7 +6,317 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FromBelgradeToBeijing</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="stylesheet" href="styles/index.css" />
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --text-light: #ecf0f1;
+            --error-color: #e74c3c;
+            --success-color: #2ecc71;
+        }
     
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+    
+        .navbar {
+            position: relative;
+            height: 280px;
+            overflow: hidden;
+            background: var(--primary-color);
+        }
+    
+        .navbar-content {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            padding: 1rem;
+            background: rgba(44, 62, 80, 0.9);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 2;
+        }
+    
+        .panorama-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+    
+        .panorama-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            object-fit: cover;
+        }
+    
+        .panorama-slide.active {
+            opacity: 1;
+        }
+    
+        .logo {
+            height: 50px;
+            width: auto;
+            margin-right: 1rem;
+        }
+    
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+    
+        .user-avatar-display {
+            position: relative;
+            cursor: pointer;
+        }
+    
+        .user-avatar-display img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-color);
+            transition: transform 0.3s ease;
+        }
+    
+        .user-avatar-display:hover img {
+            transform: scale(1.1);
+        }
+    
+        .admin-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem;
+            display: none;
+        }
+    
+        .user-avatar-display:hover .admin-dropdown {
+            display: block;
+        }
+    
+        .navbar ul {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+    
+        .navbar ul li {
+            color: var(--text-light);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+    
+        .navbar ul li:hover {
+            color: var(--accent-color);
+        }
+    
+        .navbar a {
+            color: var(--text-light);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+    
+        .navbar a:hover {
+            color: var(--accent-color);
+        }
+    
+        /* Enhanced styling for other sections */
+        .search-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+    
+        #product-search {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+    
+        #product-search:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+    
+        /* Enhanced Modal Styles */
+        .login-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+    
+        .login-container>div {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+            animation: slideIn 0.3s ease-out;
+        }
+    
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+    
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    
+        .login-container form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+    
+        .login-container input {
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+    
+        .login-container input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+    
+        .login-container button[type="submit"] {
+            background: var(--accent-color);
+            color: white;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+    
+        .login-container button[type="submit"]:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+    
+        .close-login,
+        .close-register {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--secondary-color);
+            transition: color 0.3s ease;
+        }
+    
+        .close-login:hover,
+        .close-register:hover {
+            color: var(--error-color);
+        }
+    
+        /* Cart Styles */
+        .cart-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+    
+        .cart-icon {
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+    
+        .cart-icon:hover {
+            transform: scale(1.1);
+        }
+    
+        .checkout-btn,
+        .empty-cart-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+        }
+    
+        .empty-cart-btn {
+            background: var(--error-color);
+            margin-left: 0.5rem;
+        }
+    
+        .checkout-btn:hover,
+        .empty-cart-btn:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.1);
+        }
+    
+        /* Categories Section */
+        .categories-section {
+            padding: 2rem;
+        }
+    
+        .categories {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+    
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+            padding: 1rem;
+        }
+    </style>
     <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
