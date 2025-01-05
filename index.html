@@ -185,7 +185,121 @@
         </div>
     </nav>
 
-    <!-- Rest of your existing content -->
+    <main>
+        <!-- Login Section -->
+        <section id="login" class="login-container" style="display: none;">
+            <div>
+                <button class="close-login" aria-label="Close login form">x</button>
+                <h2>Login</h2>
+                <form id="login-form" onsubmit="login(event)">
+                    <input type="email" id="email" placeholder="Email" required />
+                    <input type="password" id="password" placeholder="Password" required />
+                    <button type="submit">Login</button>
+                </form>
+                <p id="login-status"></p>
+            </div>
+        </section>
+        <!-- Register Section -->
+        <section id="register" class="login-container" style="display: none;">
+            <div id="register" class="modal">
+                <button class="close-register" aria-label="Close login form">x</button>
+                <h2>Register</h2>
+                <form id="register-form">
+                    <input type="text" id="username" placeholder="Username" required />
+                    <input type="text" id="firstname" placeholder="First Name" required />
+                    <input type="text" id="lastname" placeholder="Last Name" required />
+                    <input type="email" id="reg-email" placeholder="Email" required />
+                    <input type="password" id="reg-password" placeholder="Password" required />
+                    <button type="submit">Register</button>
+                </form>
+                <p id="register-status"></p>
+            </div>
+        </section>
+        <!-- Search  -->
+        <section id="search">
+            <div class="search-container">
+                <input type="text" id="product-search" placeholder="Search products by name, description, or price..."
+                    aria-label="Search products">
+            </div>
+        </section>
+        <section id="categories" class="categories-section">
+            <div class="categories
+            <div class=" categories">
+                <!-- Category buttons will be rendered here -->
+            </div>
+            <div class="grid-container">
+                <!-- Products will be rendered here -->
+            </div>
+        </section>
+        <!-- Grid Section -->
+        <section id="grid" class="grid-section">
+            <div class="grid-container"></div>
+        </section>
+    
+        <!-- Cart Section -->
+        <section id="cart" class="cart-section">
+            <div id="cart-container" class="cart-container">
+                <img src="/images/cart.png" alt="Shopping Cart" class="cart-icon" />
+    
+                <ul id="cart-items"></ul>
+                <p id="cart-total">Total: 0</p>
+                <button onclick="checkout()" class="checkout-btn" aria-label="Proceed to checkout">Checkout</button>
+                <button id="empty-cart-button" class="empty-cart-btn" aria-label="Empty the cart">Empty Cart</button>
+            </div>
+        </section>
+    
+        <!-- User Info Display -->
+        <div id="user-info-display" style="display: none;"></div>
+    
+    
+    
+    </main>
+    
+    <!-- Scripts -->
+    <script defer src="scripts/index.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const currentUser = localStorage.getItem("currentUser");
+            document.getElementById("login-btn").style.display = currentUser ? "none" : "block";
+            document.getElementById("register-btn").style.display = currentUser ? "none" : "block";
+            document.getElementById("logout-button").style.display = currentUser ? "block" : "none";
+
+            // Show/hide user info
+            const userAvatarDisplay = document.getElementById("user-avatar-display");
+            if (currentUser) {
+                userAvatarDisplay.innerHTML = `<img src="path/to/avatar.jpg" alt="User Avatar">`;
+            }
+        });
+        const stripe = Stripe('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl');
+        async function initiateCheckout() {
+            try {
+                const response = await fetch('/api/create-checkout-session', {
+                    method: 'POST',
+                    // Add your request headers and body if needed
+                });
+                const data = await response.json();
+
+                // Redirect to Stripe Checkout
+                const result = await stripe.redirectToCheckout({ sessionId: data.id });
+
+                if (result.error) {
+                    console.error('Error:', result.error.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function login(event) {
+            event.preventDefault();
+            // Perform login logic here
+        }
+
+        function checkout() {
+            // Perform checkout logic here
+        }
+    </script>
 
     <script>
         // Panorama slideshow
@@ -225,3 +339,4 @@
 </body>
 
 </html>
+
