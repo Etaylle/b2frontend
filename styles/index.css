@@ -341,18 +341,7 @@ html {
   backdrop-filter: blur(10px);
 }
 
-.login-container div {
-  border: 2px solid var(--primary-color);
-  padding: 1rem;
-  border-radius: 10px;
-  position: relative;
-  background-color: #fff;
-  width: 25%;
-  min-width: 250px;
-  display: flex; /* Use Flexbox */
-  flex-direction: column;
-  align-items: center;
-}
+
 
 
 
