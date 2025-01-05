@@ -128,6 +128,7 @@ html {
          .navbar a:hover {
            color: var(--accent-color);
          }
+
   
   main {
     position: relative;
@@ -691,12 +692,12 @@ html {
   }
   
   .category-btn:hover {
-    background: #85c1fc;
+    background: #e9ecef;
   }
   
   .category-btn.active {
     background: #0d6efd;
-    color: rgb(32, 45, 226);
+    color: white;
     border-color: #0d6efd;
   }.search-container {
     display: flex;
