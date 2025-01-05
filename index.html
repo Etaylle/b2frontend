@@ -146,105 +146,74 @@
     
     <!-- Scripts -->
     <script defer src="scripts/index.js"></script>
-
+    
     <script>
-        // Combine your scripts into one
         document.addEventListener("DOMContentLoaded", () => {
             startPanoramaSlideshow();
             setupUserInterface();
-            const currentUser = localStorage.getItem("currentUser");
-            const isAdmin = JSON.parse(currentUser)?.isAdmin || false
-            document.getElementById("login-btn").style.display = currentUser ? "none" : "block";
-            document.getElementById("register-btn").style.display = currentUser ? "none" : "block";
-            document.getElementById("logout-button").style.display = currentUser ? "block" : "none";
-            // Update UI elements visibility
-            updateUIVisibility(currentUser);
-
-            // Setup modal handlers
             setupModalHandlers();
 
-            // Show/hide user info
-            const userAvatarDisplay = document.getElementById("user-avatar-display");
-            if (currentUser) {
-                userAvatarDisplay.innerHTML = `<img src="path/to/avatar.jpg" alt="User Avatar">`;
-            }
-        });
-    const stripe = Stripe('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl');
-    async function initiateCheckout() {
-        try {
-            const response = await fetch('/api/create-checkout-session', {
-                method: 'POST',
-                // Add your request headers and body if needed
-            });
-            const data = await response.json();
-
-            // Redirect to Stripe Checkout
-            const result = await stripe.redirectToCheckout({ sessionId: data.id });
-
-            if (result.error) {
-                console.error('Error:', result.error.message);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    }
-        function setupUserInterface() {
             const currentUser = localStorage.getItem("currentUser");
             const isAdmin = JSON.parse(currentUser)?.isAdmin || false;
 
-            // Update UI elements visibility
+            // Update UI elements visibility and user info
             updateUIVisibility(currentUser);
 
-            // Setup modal handlers
-            setupModalHandlers();
+            // Stripe Checkout setup
+            const stripe = Stripe('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl');
+            const initiateCheckout = async () => {
+                try {
+                    const response = await fetch('/api/create-checkout-session', { method: 'POST' });
+                    const data = await response.json();
+                    const result = await stripe.redirectToCheckout({ sessionId: data.id });
+
+                    if (result.error) {
+                        console.error('Error:', result.error.message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            };
+        });
+
+        function setupUserInterface() {
+            const currentUser = localStorage.getItem("currentUser");
+            updateUIVisibility(currentUser);
         }
 
-          function updateUIVisibility(currentUser) {
-                const elements = {
-                    loginBtn: document.getElementById("login-btn"),
-                    registerBtn: document.getElementById("register-btn"),
-                    logoutButton: document.getElementById("logout-button"),
-                    userAvatarDisplay: document.getElementById("user-avatar-display")
-                };
+        function updateUIVisibility(currentUser) {
+            const elements = {
+                loginBtn: document.getElementById("login-btn"),
+                registerBtn: document.getElementById("register-btn"),
+                logoutButton: document.getElementById("logout-button"),
+                userAvatarDisplay: document.getElementById("user-avatar-display")
+            };
 
-                elements.loginBtn.style.display = currentUser ? "none" : "block";
-                elements.registerBtn.style.display = currentUser ? "none" : "block";
-                elements.logoutButton.style.display = currentUser ? "block" : "none";
+            elements.loginBtn.style.display = currentUser ? "none" : "block";
+            elements.registerBtn.style.display = currentUser ? "none" : "block";
+            elements.logoutButton.style.display = currentUser ? "block" : "none";
 
-                if (currentUser) {
-                    const isAdmin = JSON.parse(currentUser)?.isAdmin || false;
-                    elements.userAvatarDisplay.innerHTML = `
+            if (currentUser) {
+                const isAdmin = JSON.parse(currentUser)?.isAdmin || false;
+                elements.userAvatarDisplay.innerHTML = `
                     <img src="/images/avatar.jpg" alt="User Avatar">
                     ${isAdmin ? '<div class="admin-dropdown"><a href="/admin">Admin Panel</a></div>' : ''}
                 `;
-                }
             }
+        }
 
-            function setupModalHandlers() {
-                // Add modal open/close handlers
-                const loginBtn = document.getElementById("login-btn");
-                const registerBtn = document.getElementById("register-btn");
-                const closeLogin = document.querySelector(".close-login");
-                const closeRegister = document.querySelector(".close-register");
+        function setupModalHandlers() {
+            const loginBtn = document.getElementById("login-btn");
+            const registerBtn = document.getElementById("register-btn");
+            const closeLogin = document.querySelector(".close-login");
+            const closeRegister = document.querySelector(".close-register");
 
-                loginBtn?.addEventListener("click", () => {
-                    document.getElementById("login").style.display = "flex";
-                });
+            loginBtn?.addEventListener("click", () => document.getElementById("login").style.display = "flex");
+            registerBtn?.addEventListener("click", () => document.getElementById("register").style.display = "flex");
+            closeLogin?.addEventListener("click", () => document.getElementById("login").style.display = "none");
+            closeRegister?.addEventListener("click", () => document.getElementById("register").style.display = "none");
+        }
 
-                registerBtn?.addEventListener("click", () => {
-                    document.getElementById("register").style.display = "flex";
-                });
-
-                closeLogin?.addEventListener("click", () => {
-                    document.getElementById("login").style.display = "none";
-                });
-
-                closeRegister?.addEventListener("click", () => {
-                    document.getElementById("register").style.display = "none";
-                });
-            }
-
-       // Panorama slideshow
         function startPanoramaSlideshow() {
             const slides = document.querySelectorAll('.panorama-slide');
             let currentSlide = 0;
@@ -255,133 +224,115 @@
                 slides[currentSlide].classList.add('active');
             }, 5000);
         }
+
         // Enhanced form handling
-            async function handleLogin(event) {
-                event.preventDefault();
-                const form = event.target;
-                const messageDiv = document.getElementById('login-message');
+        async function handleLogin(event) {
+            event.preventDefault();
+            const form = event.target;
+            const messageDiv = document.getElementById('login-message');
 
-                try {
-                    setLoading(form, true);
+            try {
+                setLoading(form, true);
+                await new Promise(resolve => setTimeout(resolve, 1500));
 
-                    // Simulate API call
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-
-                    // Your actual login logic here
-                    const success = await login();
-
-                    if (success) {
-                        showMessage(messageDiv, 'Login successful!', 'success');
-                        setTimeout(() => {
-                            document.getElementById('login').style.display = 'none';
-                        }, 1000);
-                    } else {
-                        showMessage(messageDiv, 'Invalid credentials', 'error');
-                    }
-                } catch (error) {
-                    showMessage(messageDiv, 'An error occurred', 'error');
-                } finally {
-                    setLoading(form, false);
+                const success = await login();
+                if (success) {
+                    showMessage(messageDiv, 'Login successful!', 'success');
+                    setTimeout(() => document.getElementById('login').style.display = 'none', 1000);
+                } else {
+                    showMessage(messageDiv, 'Invalid credentials', 'error');
                 }
+            } catch (error) {
+                showMessage(messageDiv, 'An error occurred', 'error');
+            } finally {
+                setLoading(form, false);
             }
+        }
 
-            async function handleRegister(event) {
-                event.preventDefault();
-                const form = event.target;
-                const messageDiv = document.getElementById('register-message');
+        async function handleRegister(event) {
+            event.preventDefault();
+            const form = event.target;
+            const messageDiv = document.getElementById('register-message');
 
-                try {
-                    setLoading(form, true);
+            try {
+                setLoading(form, true);
+                await new Promise(resolve => setTimeout(resolve, 1500));
 
-                    // Simulate API call
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-
-                    // Your actual register logic here
-                    const success = await register();
-
-                    if (success) {
-                        showMessage(messageDiv, 'Registration successful!', 'success');
-                        setTimeout(() => {
-                            document.getElementById('register').style.display = 'none';
-                        }, 1000);
-                    } else {
-                        showMessage(messageDiv, 'Registration failed', 'error');
-                    }
-                } catch (error) {
-                    showMessage(messageDiv, 'An error occurred', 'error');
-                } finally {
-                    setLoading(form, false);
+                const success = await register();
+                if (success) {
+                    showMessage(messageDiv, 'Registration successful!', 'success');
+                    setTimeout(() => document.getElementById('register').style.display = 'none', 1000);
+                } else {
+                    showMessage(messageDiv, 'Registration failed', 'error');
                 }
+            } catch (error) {
+                showMessage(messageDiv, 'An error occurred', 'error');
+            } finally {
+                setLoading(form, false);
             }
+        }
 
-            function setLoading(form, isLoading) {
-                form.classList.toggle('loading', isLoading);
-            }
+        function setLoading(form, isLoading) {
+            form.classList.toggle('loading', isLoading);
+        }
 
-            function showMessage(element, message, type) {
-                element.className = `message ${type}`;
-                element.textContent = message;
-            }
+        function showMessage(element, message, type) {
+            element.className = `message ${type}`;
+            element.textContent = message;
+        }
 
-            // Cart animations
-            function updateCart(item) {
-                const cartItems = document.getElementById('cart-items');
-                const li = document.createElement('li');
-                li.className = 'cart-item';
-                li.textContent = item.name;
-                cartItems.appendChild(li);
+        // Cart animations
+        function updateCart(item) {
+            const cartItems = document.getElementById('cart-items');
+            const li = document.createElement('li');
+            li.className = 'cart-item';
+            li.textContent = item.name;
+            cartItems.appendChild(li);
+            updateCartBadge();
+        }
 
+        function removeFromCart(item) {
+            const cartItem = item.parentElement;
+            cartItem.classList.add('removing');
+            setTimeout(() => {
+                cartItem.remove();
                 updateCartBadge();
-            }
+            }, 300);
+        }
 
-            function removeFromCart(item) {
-                const cartItem = item.parentElement;
-                cartItem.classList.add('removing');
-                setTimeout(() => {
-                    cartItem.remove();
-                    updateCartBadge();
-                }, 300);
-            }
+        function updateCartBadge() {
+            const cartItems = document.getElementById('cart-items').children.length;
+            const badge = document.querySelector('.cart-badge');
 
-            function updateCartBadge() {
-                const cartItems = document.getElementById('cart-items').children.length;
-                const badge = document.querySelector('.cart-badge');
-
-                if (cartItems > 0) {
-                    if (!badge) {
-                        const newBadge = document.createElement('div');
-                        newBadge.className = 'cart-badge';
-                        newBadge.textContent = cartItems;
-                        document.querySelector('.cart-icon-wrapper').appendChild(newBadge);
-                    } else {
-                        badge.textContent = cartItems;
-                    }
-                } else if (badge) {
-                    badge.remove();
+            if (cartItems > 0) {
+                if (!badge) {
+                    const newBadge = document.createElement('div');
+                    newBadge.className = 'cart-badge';
+                    newBadge.textContent = cartItems;
+                    document.querySelector('.cart-icon-wrapper').appendChild(newBadge);
+                } else {
+                    badge.textContent = cartItems;
                 }
+            } else if (badge) {
+                badge.remove();
             }
+        }
+    document.addEventListener("DOMContentLoaded", () => {
+        // Get all category buttons
+        const categoryButtons = document.querySelectorAll('.category-btn');
 
-        document.addEventListener("DOMContentLoaded", () => {
-            startPanoramaSlideshow();
+        // Add click event listener to each button
+        categoryButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove 'selected' class from all buttons
+                categoryButtons.forEach(btn => btn.classList.remove('selected'));
 
-            const currentUser = localStorage.getItem("currentUser");
-            const isAdmin = JSON.parse(currentUser)?.isAdmin || false;
-
-            document.getElementById("login-btn").style.display = currentUser ? "none" : "block";
-            document.getElementById("register-btn").style.display = currentUser ? "none" : "block";
-            document.getElementById("logout-button").style.display = currentUser ? "block" : "none";
-
-            // Show/hide user info and admin link
-            const userAvatarDisplay = document.getElementById("user-avatar-display");
-            const adminLink = document.getElementById("admin-link");
-
-            if (currentUser) {
-                userAvatarDisplay.innerHTML = `
-                    <img src="/images/avatar.jpg" alt="User Avatar">
-                    ${isAdmin ? '<div class="admin-dropdown"><a href="/admin">Admin Panel</a></div>' : ''}
-                `;
-            }
+                // Add 'selected' class to the clicked button
+                button.classList.add('selected');
+            });
         });
+    });
+        
     </script>
 </body>
 
