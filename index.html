@@ -7,47 +7,193 @@
     <title>FromBelgradeToBeijing</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <style>
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #34495e;
-            --accent-color: #3498db;
-            --text-light: #ecf0f1;
-            --error-color: #e74c3c;
-            --success-color: #2ecc71;
+        /* Keep existing root variables and base styles */
+
+        /* Loading Spinner */
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--text-light);
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: none;
+            animation: rotation 1s linear infinite;
+            margin: 0 auto;
         }
 
-        /* Your existing styles */
-        /* ... (keep all the navbar and existing styles) ... */
+        .loading .spinner {
+            display: inline-block;
+        }
 
-        /* Enhanced Modal Styles */
-        .login-container {
-            position: fixed;
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Button Loading State */
+        .btn-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .loading .btn-content span {
+            display: none;
+        }
+
+        .loading .btn-content .spinner {
+            display: inline-block;
+        }
+
+        /* Form Loading Overlay */
+        .form-overlay {
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(255, 255, 255, 0.8);
             display: none;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
-            backdrop-filter: blur(5px);
-        }
-
-        .login-container>div {
-            background: white;
-            padding: 2rem;
             border-radius: 12px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            position: relative;
-            animation: slideIn 0.3s ease-out;
         }
 
-        @keyframes slideIn {
+        .loading .form-overlay {
+            display: flex;
+        }
+
+        /* Cart Animations */
+        .cart-item {
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        .cart-item.removing {
+            animation: slideOutRight 0.3s ease-out forwards;
+        }
+
+        @keyframes slideInRight {
             from {
-                transform: translateY(-20px);
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        /* Cart Badge */
+        .cart-icon-wrapper {
+            position: relative;
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            animation: popIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+            }
+
+            80% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Enhanced Form Styles */
+        .login-container form,
+        #register-form {
+            position: relative;
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            color: #666;
+        }
+
+        .form-group input:focus+label,
+        .form-group input:not(:placeholder-shown)+label {
+            top: 0;
+            font-size: 0.8rem;
+            background: white;
+            padding: 0 4px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem 0.8rem;
+        }
+
+        /* Success/Error Messages */
+        .message {
+            padding: 0.8rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-10px);
                 opacity: 0;
             }
 
@@ -56,210 +202,291 @@
                 opacity: 1;
             }
         }
-
-        .login-container form {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .login-container input {
-            padding: 0.8rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-        }
-
-        .login-container input:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-        }
-
-        .login-container button[type="submit"] {
-            background: var(--accent-color);
-            color: white;
-            padding: 0.8rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .login-container button[type="submit"]:hover {
-            background: #2980b9;
-            transform: translateY(-1px);
-        }
-
-        .close-login,
-        .close-register {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--secondary-color);
-            transition: color 0.3s ease;
-        }
-
-        .close-login:hover,
-        .close-register:hover {
-            color: var(--error-color);
-        }
-
-        /* Cart Styles */
-        .cart-container {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            background: white;
-            padding: 1rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            z-index: 100;
-        }
-
-        .cart-icon {
-            width: 30px;
-            height: 30px;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        .cart-icon:hover {
-            transform: scale(1.1);
-        }
-
-        .checkout-btn,
-        .empty-cart-btn {
-            background: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 0.5rem;
-        }
-
-        .empty-cart-btn {
-            background: var(--error-color);
-            margin-left: 0.5rem;
-        }
-
-        .checkout-btn:hover,
-        .empty-cart-btn:hover {
-            transform: translateY(-1px);
-            filter: brightness(1.1);
-        }
-
-        /* Categories Section */
-        .categories-section {
-            padding: 2rem;
-        }
-
-        .categories {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-            margin-bottom: 2rem;
-        }
-
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 2rem;
-            padding: 1rem;
-        }
     </style>
 </head>
 
 <body>
-    <!-- Keep your existing body content -->
+    <body>
+        <nav class="navbar">
+            <div class="panorama-container">
+                <img src="/images/belgrade-panorama-1.jpg" class="panorama-slide active" alt="Belgrade Panorama 1" />
+                <img src="/images/belgrade-panorama-2.webp" class="panorama-slide" alt="Belgrade Panorama 2" />
+                <img src="/images/belgrade-panorama-3.jpg" class="panorama-slide" alt="Belgrade Panorama 3" />
+            </div>
+            <div class="navbar-content">
+                <img src='/images/pobednik.jpg' class="logo animate__animated animate__fadeIn" alt="Logo" />
+                <div class="user-section">
+                    <ul>
+                        <li><a href="#grid">Home</a></li>
+                        <li id="login-btn">Login</li>
+                        <li id="register-btn">Register</li>
+                        <li id="logout-button" style="display: none;">Logout</li>
+                    </ul>
+                    <div id="user-avatar-display" class="user-avatar-display">
+                        <div class="admin-dropdown">
+                            <a href="/admin" id="admin-link">Admin Panel</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    
+        <main>
 
+    <!-- Updated Login Form -->
+    <section id="login" class="login-container">
+        <div>
+            <button class="close-login" aria-label="Close login form">×</button>
+            <h2>Login</h2>
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-overlay">
+                    <div class="spinner"></div>
+                </div>
+                <div class="form-group">
+                    <input type="email" id="email" placeholder=" " required />
+                    <label for="email">Email</label>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="password" placeholder=" " required />
+                    <label for="password">Password</label>
+                </div>
+                <button type="submit">
+                    <div class="btn-content">
+                        <span>Login</span>
+                        <div class="spinner"></div>
+                    </div>
+                </button>
+                <div id="login-message"></div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Updated Register Form -->
+    <section id="register" class="login-container">
+        <div>
+            <button class="close-register" aria-label="Close register form">×</button>
+            <h2>Register</h2>
+            <form id="register-form" onsubmit="handleRegister(event)">
+                <div class="form-overlay">
+                    <div class="spinner"></div>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="username" placeholder=" " required />
+                    <label for="username">Username</label>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="firstname" placeholder=" " required />
+                    <label for="firstname">First Name</label>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="lastname" placeholder=" " required />
+                    <label for="lastname">Last Name</label>
+                </div>
+                <div class="form-group">
+                    <input type="email" id="reg-email" placeholder=" " required />
+                    <label for="reg-email">Email</label>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="reg-password" placeholder=" " required />
+                    <label for="reg-password">Password</label>
+                </div>
+                <button type="submit">
+                    <div class="btn-content">
+                        <span>Register</span>
+                        <div class="spinner"></div>
+                    </div>
+                </button>
+                <div id="register-message"></div>
+            </form>
+        </div>
+    </section>
+</main>
+<script defer src="scripts/index.js"></script>
     <script>
-        // Combine your scripts into one
+         document.addEventListener("DOMContentLoaded", () => {
+                const currentUser = localStorage.getItem("currentUser");
+                document.getElementById("login-btn").style.display = currentUser ? "none" : "block";
+                document.getElementById("register-btn").style.display = currentUser ? "none" : "block";
+                document.getElementById("logout-button").style.display = currentUser ? "block" : "none";
+
+                // Show/hide user info
+                const userAvatarDisplay = document.getElementById("user-avatar-display");
+                if (currentUser) {
+                    userAvatarDisplay.innerHTML = `<img src="path/to/avatar.jpg" alt="User Avatar">`;
+                }
+            });
+            const stripe = Stripe('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl');
+            async function initiateCheckout() {
+                try {
+                    const response = await fetch('/api/create-checkout-session', {
+                        method: 'POST',
+                        // Add your request headers and body if needed
+                    });
+                    const data = await response.json();
+
+                    // Redirect to Stripe Checkout
+                    const result = await stripe.redirectToCheckout({ sessionId: data.id });
+
+                    if (result.error) {
+                        console.error('Error:', result.error.message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+
+            function login(event) {
+                event.preventDefault();
+                // Perform login logic here
+            }
+
+            function checkout() {
+                // Perform checkout logic here
+            }
+        </script>
+    
+    <script>
+        // Panorama slideshow
+        function startPanoramaSlideshow() {
+            const slides = document.querySelectorAll('.panorama-slide');
+            let currentSlide = 0;
+
+            setInterval(() => {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+            }, 5000);
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             startPanoramaSlideshow();
-            setupUserInterface();
-        });
 
-        function setupUserInterface() {
             const currentUser = localStorage.getItem("currentUser");
             const isAdmin = JSON.parse(currentUser)?.isAdmin || false;
 
-            // Update UI elements visibility
-            updateUIVisibility(currentUser);
+            document.getElementById("login-btn").style.display = currentUser ? "none" : "block";
+            document.getElementById("register-btn").style.display = currentUser ? "none" : "block";
+            document.getElementById("logout-button").style.display = currentUser ? "block" : "none";
 
-            // Setup modal handlers
-            setupModalHandlers();
-        }
-
-        function updateUIVisibility(currentUser) {
-            const elements = {
-                loginBtn: document.getElementById("login-btn"),
-                registerBtn: document.getElementById("register-btn"),
-                logoutButton: document.getElementById("logout-button"),
-                userAvatarDisplay: document.getElementById("user-avatar-display")
-            };
-
-            elements.loginBtn.style.display = currentUser ? "none" : "block";
-            elements.registerBtn.style.display = currentUser ? "none" : "block";
-            elements.logoutButton.style.display = currentUser ? "block" : "none";
+            // Show/hide user info and admin link
+            const userAvatarDisplay = document.getElementById("user-avatar-display");
+            const adminLink = document.getElementById("admin-link");
 
             if (currentUser) {
-                const isAdmin = JSON.parse(currentUser)?.isAdmin || false;
-                elements.userAvatarDisplay.innerHTML = `
-                    <img src="/images/avatar.jpg" alt="User Avatar">
-                    ${isAdmin ? '<div class="admin-dropdown"><a href="/admin">Admin Panel</a></div>' : ''}
-                `;
+                userAvatarDisplay.innerHTML = `
+                        <img src="/images/avatar.jpg" alt="User Avatar">
+                        ${isAdmin ? '<div class="admin-dropdown"><a href="/admin">Admin Panel</a></div>' : ''}
+                    `;
+            }
+        });
+    
+        // Enhanced form handling
+        async function handleLogin(event) {
+            event.preventDefault();
+            const form = event.target;
+            const messageDiv = document.getElementById('login-message');
+
+            try {
+                setLoading(form, true);
+
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 1500));
+
+                // Your actual login logic here
+                const success = await login();
+
+                if (success) {
+                    showMessage(messageDiv, 'Login successful!', 'success');
+                    setTimeout(() => {
+                        document.getElementById('login').style.display = 'none';
+                    }, 1000);
+                } else {
+                    showMessage(messageDiv, 'Invalid credentials', 'error');
+                }
+            } catch (error) {
+                showMessage(messageDiv, 'An error occurred', 'error');
+            } finally {
+                setLoading(form, false);
             }
         }
 
-        function setupModalHandlers() {
-            // Add modal open/close handlers
-            const loginBtn = document.getElementById("login-btn");
-            const registerBtn = document.getElementById("register-btn");
-            const closeLogin = document.querySelector(".close-login");
-            const closeRegister = document.querySelector(".close-register");
+        async function handleRegister(event) {
+            event.preventDefault();
+            const form = event.target;
+            const messageDiv = document.getElementById('register-message');
 
-            loginBtn?.addEventListener("click", () => {
-                document.getElementById("login").style.display = "flex";
-            });
+            try {
+                setLoading(form, true);
 
-            registerBtn?.addEventListener("click", () => {
-                document.getElementById("register").style.display = "flex";
-            });
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 1500));
 
-            closeLogin?.addEventListener("click", () => {
-                document.getElementById("login").style.display = "none";
-            });
+                // Your actual register logic here
+                const success = await register();
 
-            closeRegister?.addEventListener("click", () => {
-                document.getElementById("register").style.display = "none";
-            });
+                if (success) {
+                    showMessage(messageDiv, 'Registration successful!', 'success');
+                    setTimeout(() => {
+                        document.getElementById('register').style.display = 'none';
+                    }, 1000);
+                } else {
+                    showMessage(messageDiv, 'Registration failed', 'error');
+                }
+            } catch (error) {
+                showMessage(messageDiv, 'An error occurred', 'error');
+            } finally {
+                setLoading(form, false);
+            }
         }
 
-        // Keep your existing functions
-        function startPanoramaSlideshow() {
-            // Your existing slideshow code
+        function setLoading(form, isLoading) {
+            form.classList.toggle('loading', isLoading);
         }
 
-        async function initiateCheckout() {
-            // Your existing checkout code
+        function showMessage(element, message, type) {
+            element.className = `message ${type}`;
+            element.textContent = message;
         }
 
-        function login(event) {
-            // Your existing login code
+        // Cart animations
+        function updateCart(item) {
+            const cartItems = document.getElementById('cart-items');
+            const li = document.createElement('li');
+            li.className = 'cart-item';
+            li.textContent = item.name;
+            cartItems.appendChild(li);
+
+            updateCartBadge();
         }
 
-        function checkout() {
-            // Your existing checkout code
+        function removeFromCart(item) {
+            const cartItem = item.parentElement;
+            cartItem.classList.add('removing');
+            setTimeout(() => {
+                cartItem.remove();
+                updateCartBadge();
+            }, 300);
         }
+
+        function updateCartBadge() {
+            const cartItems = document.getElementById('cart-items').children.length;
+            const badge = document.querySelector('.cart-badge');
+
+            if (cartItems > 0) {
+                if (!badge) {
+                    const newBadge = document.createElement('div');
+                    newBadge.className = 'cart-badge';
+                    newBadge.textContent = cartItems;
+                    document.querySelector('.cart-icon-wrapper').appendChild(newBadge);
+                } else {
+                    badge.textContent = cartItems;
+                }
+            } else if (badge) {
+                badge.remove();
+            }
+        }
+ 
+        // Keep your existing event listeners and initialization code
     </script>
 </body>
 
