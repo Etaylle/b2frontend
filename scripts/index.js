@@ -13,7 +13,7 @@ const fetchConfig = {
     'Accept': 'application/json',
     'Content-Type': 'application/json'
   },
-  mode: 'cors' // Add this
+  mode: 'cors' 
 };
 // Updated post config
 const createPostConfig = (data) => ({
@@ -57,7 +57,8 @@ async fetchCart() {
       showNotification('Added to cart!', 'success');
     } catch (error) {
       console.error('Error:', error);
-      showNotification('Failed to add item', 'error');
+      
+      showNotification('Out of stock!', 'error');
     }
   },
 
