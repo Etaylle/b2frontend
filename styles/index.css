@@ -25,7 +25,7 @@ html {
            bottom: 0;
            width: 100%;
            padding: 1rem;
-           background: rgba(44, 62, 80, 0.9);
+           background: rgba(62, 141, 219, 0.9);
            backdrop-filter: blur(8px);
            display: flex;
            justify-content: space-between;
