@@ -577,6 +577,7 @@ const categoryManager = {
     this.state.categories.forEach(category => {
       const button = document.createElement("button");
       button.className = `category-btn ${this.state.selectedCategory === category.id ? "active" : ""}`;
+      button.setAttribute("data-id", category.id);
       button.textContent = category.name;
       button.onclick = () => this.selectCategory(category.id);
       container.appendChild(button);
@@ -661,19 +662,19 @@ const categoryManager = {
   },
 
   highlightSelectedCategory() {
-    document.querySelectorAll(".category-btn").forEach(btn => {
-      btn.classList.remove("active");
-    });
+  // Remove 'active' class from all buttons
+    document.querySelectorAll(".category-btn").forEach(btn => btn.classList.remove("active"));
 
     if (this.state.selectedCategory === null) {
-      document.querySelector('.category-btn:first-child').classList.add("active");
+        // Highlight the "All" button
+        const allButton = document.querySelector('.category-btn:first-child');
+        if (allButton) allButton.classList.add("active");
     } else {
-      const activeButton = document.querySelector(
-        `.category-btn:not(:first-child)[data-id="${this.state.selectedCategory}"]`
-      );
-      if (activeButton) activeButton.classList.add("active");
+        // Highlight the button matching the selected category
+        const activeButton = document.querySelector(`.category-btn[data-id="${this.state.selectedCategory}"]`);
+        if (activeButton) activeButton.classList.add("active");
     }
-  },
+},
   
     async initialize() {
     await this.fetchCategories();
