@@ -8,8 +8,8 @@ html {
            --text-light: #ecf0f1;
          }
     
-         body, html {
-          overflow: auto;
+         body {
+          
            margin: 0;
            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
          }
@@ -26,6 +26,10 @@ html {
            bottom: 0;
            width: 100%;
            padding: 1rem;
+            flex-wrap: wrap;
+              /* Ensure items wrap instead of overflowing */
+              box-sizing: border-box;
+              /* Include padding in width calculation */
            background: rgba(108, 110, 238, 0.5);
            backdrop-filter: blur(4px);
            display: flex;
