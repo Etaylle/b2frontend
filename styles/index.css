@@ -163,7 +163,7 @@ html {
   
   .grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, min(1fr, 400px)));
+    grid-template-columns: repeat(auto-fit, minmax(400px, min(1fr, 400px)));
     gap: 1rem;
   }
   
@@ -365,7 +365,7 @@ html {
 
 .grid-container {
   display: grid; /* Use Grid */
-  grid-template-columns: repeat(auto-fit, minmax(200px, min(25vw, 400px)));
+  grid-template-columns: repeat(auto-fit, minmax(400px, min(25vw, 400px)));
   gap: 1rem;
   justify-content: center;
     /* Center items horizontally */
