@@ -193,8 +193,8 @@ async fetchCart() {
       listItem.innerHTML = `
         <img src="${imageUrl}" alt="${productName}" class="cart-item-image">
         <div class="cart-item-details">
-          <span class="item-name">${productName}</span>
-          <span class="item-price">Dinars: ${parseFloat(productPrice).toFixed(2)}</span>
+          <span class="item-name">${productName} | </span>
+          <span class="item-price">Price: ${parseFloat(productPrice).toFixed(2)} $ |</span>
           <span class="item-quantity">Quantity: ${item.quantity}</span>
         </div>
         <div class="cart-item-controls">
