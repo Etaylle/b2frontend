@@ -622,7 +622,7 @@ const categoryManager = {
       gridItem.innerHTML = `
         ${imageSlider}
         <div class="overlay">
-          ${product.name} | <span class="price-span">Price:${product.price} $ | Q: ${product.stock}</span>
+          ${product.name} | <span class="price-span">Price: ${product.price} $ | Q: ${product.stock}</span>
         </div>
         <button class="add-to-cart-btn">+</button>
       `;
