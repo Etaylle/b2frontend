@@ -680,6 +680,7 @@ html {
     margin-right: 8px;
   }.categories {
     display: flex;
+    justify-content: center;
     flex-wrap: wrap;
     gap: 1rem;
     padding: 1rem;
