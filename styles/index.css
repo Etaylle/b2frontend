@@ -358,11 +358,7 @@ html {
 
 /* Grid Section Styles */
 
-.grid-container {
-  display: grid; /* Use Grid */
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-}
+
 
 .grid-item {
   display: flex;
