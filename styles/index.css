@@ -367,6 +367,9 @@ html {
   display: grid; /* Use Grid */
   grid-template-columns: repeat(auto-fit, minmax(200px, min(25vw, 400px)));
   gap: 1rem;
+  justify-content: center;
+    /* Center items horizontally */
+    padding: 2rem;
 }
 
 .grid-item {
