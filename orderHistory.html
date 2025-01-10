@@ -6,248 +6,316 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order History</title>
     <style>
-        .order-history {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+        :root {
+            --primary-color: #232f3e;
+            --secondary-color: #febd69;
+            --border-color: #ddd;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
             font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f3f3f3;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .order-history-header {
+            margin-bottom: 2rem;
+        }
+
+        .order-history-header h1 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .order-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .order-filters select {
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
         }
 
         .order-card {
-            background: #fff;
-            border: 1px solid #e1e1e1;
+            background: white;
             border-radius: 8px;
-            margin-bottom: 20px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
         }
 
         .order-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .order-header-item {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
+            flex-direction: column;
         }
 
-        .order-status {
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 0.875rem;
-        }
-
-        .status-delivered {
-            background: #e6f4ea;
-            color: #1e7e34;
-        }
-
-        .status-shipped {
-            background: #e8f0fe;
-            color: #1a73e8;
-        }
-
-        .status-pending {
-            background: #fff3e0;
-            color: #f57c00;
-        }
-
-        .status-cancelled {
-            background: #fce8e6;
-            color: #d93025;
+        .order-header-item span:first-child {
+            font-size: 0.9rem;
+            opacity: 0.9;
         }
 
         .order-items {
-            margin: 15px 0;
+            padding: 1rem;
         }
 
         .order-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #f5f5f5;
+            display: grid;
+            grid-template-columns: 100px 1fr auto;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .item-details h3 {
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        .item-price {
+            font-weight: bold;
+            color: var(--primary-color);
         }
 
         .order-footer {
+            padding: 1rem;
+            background: #f9f9f9;
             display: flex;
             justify-content: space-between;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #eee;
+            align-items: center;
         }
 
-        .total-amount {
+        .order-actions button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            background: var(--secondary-color);
+            color: var(--primary-color);
+            cursor: pointer;
             font-weight: bold;
-            font-size: 1.125rem;
         }
 
-        .message {
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            text-align: center;
+        .order-actions button:hover {
+            opacity: 0.9;
         }
 
-        .error {
-            background: #fce8e6;
-            color: #d93025;
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
         }
 
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #666;
+        .pagination button {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            background: white;
+            cursor: pointer;
         }
 
-        .no-orders {
-            text-align: center;
-            padding: 40px;
-            background: #f9f9f9;
-            border-radius: 8px;
-            color: #666;
+        .pagination button.active {
+            background: var(--secondary-color);
+            border-color: var(--secondary-color);
         }
 
-        .auth-required {
-            text-align: center;
-            padding: 40px;
-            background: #f9f9f9;
-            border-radius: 8px;
-        }
+        @media (max-width: 768px) {
+            .order-header {
+                grid-template-columns: 1fr;
+            }
 
-        .auth-required a {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 10px 20px;
-            background: #007bff;
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-        }
+            .order-item {
+                grid-template-columns: 80px 1fr;
+            }
 
-        .auth-required a:hover {
-            background: #0056b3;
+            .item-price {
+                grid-column: 1 / -1;
+                text-align: right;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="order-history">
-        <h1>Order History</h1>
-        <div id="messageContainer"></div>
-        <div id="orderHistory"></div>
+    <div class="container">
+        <div class="order-history-header">
+            <h1>Your Orders</h1>
+            <p>View and manage your order history</p>
+        </div>
+
+        <div class="order-filters">
+            <select id="timeFilter">
+                <option value="last30days">Last 30 days</option>
+                <option value="last3months">Last 3 months</option>
+                <option value="2024">2024</option>
+                <option value="2023">2023</option>
+            </select>
+            <select id="orderStatus">
+                <option value="all">All orders</option>
+                <option value="pending">Pending</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Delivered</option>
+            </select>
+        </div>
+
+        <div id="ordersList">
+            <!-- Orders will be dynamically inserted here -->
+        </div>
+
+        <div class="pagination" id="pagination">
+            <!-- Pagination will be dynamically inserted here -->
+        </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', checkAuthAndFetchOrders);
+        class OrderHistory {
+            constructor() {
+                this.currentPage = 1;
+                this.ordersPerPage = 5;
+                this.timeFilter = document.getElementById('timeFilter');
+                this.statusFilter = document.getElementById('orderStatus');
+                this.ordersList = document.getElementById('ordersList');
+                this.paginationContainer = document.getElementById('pagination');
 
-        async function checkAuthAndFetchOrders() {
-            try {
-                const response = await fetch('/api/auth/me', {
-                    credentials: 'include'
+                this.initializeEventListeners();
+                this.fetchOrders();
+            }
+
+            initializeEventListeners() {
+                this.timeFilter.addEventListener('change', () => {
+                    this.currentPage = 1;
+                    this.fetchOrders();
                 });
 
-                if (response.status === 401) {
-                    showAuthRequired();
-                    return;
-                }
-
-                if (!response.ok) {
-                    throw new Error('Failed to check authentication');
-                }
-
-                fetchOrderHistory();
-            } catch (error) {
-                console.error('Auth check failed:', error);
-                showMessage('Failed to verify authentication', 'error');
-            }
-        }
-
-        async function fetchOrderHistory() {
-            const orderHistoryDiv = document.getElementById('orderHistory');
-            orderHistoryDiv.innerHTML = '<div class="loading">Loading your orders...</div>';
-
-            try {
-                const response = await fetch('/api/orders', {
-                    credentials: 'include'
+                this.statusFilter.addEventListener('change', () => {
+                    this.currentPage = 1;
+                    this.fetchOrders();
                 });
-
-                if (response.status === 401) {
-                    showAuthRequired();
-                    return;
-                }
-
-                if (!response.ok) {
-                    throw new Error('Failed to fetch orders');
-                }
-
-                const orders = await response.json();
-                displayOrders(orders);
-            } catch (error) {
-                console.error('Error:', error);
-                showMessage('Failed to load order history. Please try again later.', 'error');
-            }
-        }
-
-        function displayOrders(orders) {
-            const orderHistoryDiv = document.getElementById('orderHistory');
-
-            if (!orders || orders.length === 0) {
-                orderHistoryDiv.innerHTML = `
-                    <div class="no-orders">
-                        <h3>No Orders Found</h3>
-                        <p>You haven't placed any orders yet.</p>
-                    </div>
-                `;
-                return;
             }
 
-            orderHistoryDiv.innerHTML = orders.map(order => `
-                <div class="order-card">
-                    <div class="order-header">
-                        <div>
-                            <h3>Order #${order.order_id}</h3>
-                            <p>${new Date(order.createdAt).toLocaleDateString()}</p>
-                        </div>
-                        <span class="order-status status-${order.status.toLowerCase()}">${order.status}</span>
-                    </div>
-                    <div class="order-items">
-                        ${order.items.map(item => `
-                            <div class="order-item">
-                                <div>
-                                    <strong>${item.product?.name || 'Unknown Product'}</strong>
-                                    <p>Quantity: ${item.quantity}</p>
-                                </div>
-                                <div>$${(item.price * item.quantity).toFixed(2)}</div>
+            async fetchOrders() {
+                try {
+                    const response = await fetch(`/api/orders/history?page=${this.currentPage}&limit=${this.ordersPerPage}&timeFilter=${this.timeFilter.value}&status=${this.statusFilter.value}`);
+                    const data = await response.json();
+                    this.renderOrders(data.orders);
+                    this.renderPagination(data.pagination);
+                } catch (error) {
+                    console.error('Error fetching orders:', error);
+                    this.ordersList.innerHTML = '<p>Failed to load orders. Please try again later.</p>';
+                }
+            }
+
+            renderOrders(orders) {
+                this.ordersList.innerHTML = orders.map(order => `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <div class="order-header-item">
+                                <span>ORDER PLACED</span>
+                                <span>${new Date(order.created_at).toLocaleDateString()}</span>
                             </div>
-                        `).join('')}
+                            <div class="order-header-item">
+                                <span>TOTAL</span>
+                                <span>$${order.total_amount}</span>
+                            </div>
+                            <div class="order-header-item">
+                                <span>STATUS</span>
+                                <span>${order.status}</span>
+                            </div>
+                            <div class="order-header-item">
+                                <span>ORDER #</span>
+                                <span>${order.order_id}</span>
+                            </div>
+                        </div>
+                        <div class="order-items">
+                            ${order.items.map(item => `
+                                <div class="order-item">
+                                    <img src="${item.product_image || '/placeholder-image.jpg'}" alt="${item.product_name}" class="item-image">
+                                    <div class="item-details">
+                                        <h3>${item.product_name}</h3>
+                                        <p>Quantity: ${item.quantity}</p>
+                                    </div>
+                                    <div class="item-price">
+                                        $${item.price}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="order-footer">
+                            <div class="order-total">
+                                Order Total: $${order.total_amount}
+                            </div>
+                            <div class="order-actions">
+                                <button onclick="window.location.href='/order-details/${order.order_id}'">View Order Details</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="order-footer">
-                        <div>Total Items: ${order.items.reduce((sum, item) => sum + item.quantity, 0)}</div>
-                        <div class="total-amount">Total: $${order.total_amount}</div>
-                    </div>
-                </div>
-            `).join('');
+                `).join('');
+            }
+
+            renderPagination(pagination) {
+                const { total_pages, current_page } = pagination;
+                let paginationHTML = '';
+
+                if (total_pages > 1) {
+                    if (current_page > 1) {
+                        paginationHTML += `<button onclick="orderHistory.goToPage(${current_page - 1})">Previous</button>`;
+                    }
+
+                    for (let i = 1; i <= total_pages; i++) {
+                        paginationHTML += `<button class="${i === current_page ? 'active' : ''}" 
+                                                 onclick="orderHistory.goToPage(${i})">${i}</button>`;
+                    }
+
+                    if (current_page < total_pages) {
+                        paginationHTML += `<button onclick="orderHistory.goToPage(${current_page + 1})">Next</button>`;
+                    }
+                }
+
+                this.paginationContainer.innerHTML = paginationHTML;
+            }
+
+            goToPage(page) {
+                this.currentPage = page;
+                this.fetchOrders();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
 
-        function showAuthRequired() {
-            const orderHistoryDiv = document.getElementById('orderHistory');
-            orderHistoryDiv.innerHTML = `
-                <div class="auth-required">
-                    <h3>Please Log In</h3>
-                    <p>You need to be logged in to view your order history.</p>
-                    <a href="/login.html">Log In</a>
-                </div>
-            `;
-        }
-
-        function showMessage(message, type) {
-            const messageContainer = document.getElementById('messageContainer');
-            messageContainer.innerHTML = `
-                <div class="message ${type}">
-                    ${message}
-                </div>
-            `;
-        }
+        // Initialize the order history
+        const orderHistory = new OrderHistory();
     </script>
 </body>
 
