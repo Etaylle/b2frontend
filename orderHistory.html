@@ -228,7 +228,16 @@
 
             async fetchOrders() {
                 try {
-                    const response = await fetch(`https://backend-3mvr.onrender.com/api/orders/history?page=${this.currentPage}&limit=${this.ordersPerPage}&timeFilter=${this.timeFilter.value}&status=${this.statusFilter.value}`);
+                    const response = await fetch(`https://backend-3mvr.onrender.com/api/orders/history?page=${this.currentPage}&limit=${this.ordersPerPage}&timeFilter=${this.timeFilter.value}&status=${this.statusFilter.value}`,
+                    {
+                        credentials: 'include', // Include cookies for cross-origin requests
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        mode: 'cors' // Enable CORS
+                    });
+
                     const data = await response.json();
                     this.renderOrders(data.orders);
                     this.renderPagination(data.pagination);
