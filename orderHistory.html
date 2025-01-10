@@ -1,0 +1,84 @@
+// orderHistory.js
+async function fetchOrderHistory() {
+try {
+const response = await fetch('/api/orders', {
+method: 'GET',
+headers: {
+'Content-Type': 'application/json'
+},
+credentials: 'include' // Important for session-based auth
+});
+
+if (!response.ok) {
+throw new Error('Failed to fetch orders');
+}
+
+const orders = await response.json();
+displayOrders(orders);
+} catch (error) {
+console.error('Error:', error);
+showError('Failed to load order history');
+}
+}
+
+function displayOrders(orders) {
+const orderHistoryContainer = document.getElementById('orderHistory');
+orderHistoryContainer.innerHTML = ''; // Clear existing content
+
+if (orders.length === 0) {
+orderHistoryContainer.innerHTML = `
+<div class="no-orders">
+    <h3>No orders found</h3>
+    <p>You haven't placed any orders yet.</p>
+</div>
+`;
+return;
+}
+
+orders.forEach(order => {
+const orderElement = document.createElement('div');
+orderElement.className = 'order-card';
+
+const formattedDate = new Date(order.createdAt).toLocaleDateString();
+const itemsCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
+
+orderElement.innerHTML = `
+<div class="order-header">
+    <div>
+        <h3>Order #${order.order_id}</h3>
+        <p>Placed on ${formattedDate}</p>
+    </div>
+    <span class="order-status ${order.status.toLowerCase()}">${order.status}</span>
+</div>
+<div class="order-items">
+    ${order.items.map(item => `
+    <div class="order-item">
+        <div class="item-info">
+            <span class="item-name">${item.product.name}</span>
+            <span class="item-quantity">Qty: ${item.quantity}</span>
+        </div>
+        <span class="item-price">$${item.price}</span>
+    </div>
+    `).join('')}
+</div>
+<div class="order-footer">
+    <p>Total Items: ${itemsCount}</p>
+    <p class="total-amount">Total: $${order.total_amount}</p>
+</div>
+`;
+
+orderHistoryContainer.appendChild(orderElement);
+});
+}
+
+function showError(message) {
+const errorDiv = document.getElementById('errorMessage');
+errorDiv.textContent = message;
+errorDiv.style.display = 'block';
+setTimeout(() => {
+errorDiv.style.display = 'none';
+}, 5000);
+}
+
+// Initialize order history when page loads
+document.addEventListener('DOMContentLoaded', fetchOrderHistory);
