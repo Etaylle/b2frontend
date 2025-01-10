@@ -165,7 +165,7 @@
                 grid-column: 1 / -1;
                 text-align: right;
             }
-            /* Add these styles to your existing CSS */
+            
 .modal {
     display: none;
     position: fixed;
@@ -453,7 +453,7 @@
 
                 if (total_pages > 1) {
                     if (current_page > 1) {
-                        paginationHTML += `<button onclick="orderHistory.goToPage(${current_page - 1})">Previous</button>`;
+                        paginationHTML += `<button onclick="orderHistory.fetchOrderDetails('${order.order_id}')">View Order Details</button>`;
                     }
 
                     for (let i = 1; i <= total_pages; i++) {
@@ -462,7 +462,7 @@
                     }
 
                     if (current_page < total_pages) {
-                        paginationHTML += `<button onclick="orderHistory.goToPage(${current_page + 1})">Next</button>`;
+                        paginationHTML += `<button onclick="orderHistory.fetchOrderDetails('${order.order_id}')">View Order Details</button>`;
                     }
                 }
 
