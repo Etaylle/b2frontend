@@ -473,6 +473,96 @@ const paymentManager = {
     }
   }
 };
+const cryptoManager = {
+  state: {
+    cryptoPricesEnabled: false,
+    cryptoRates: {
+      BTC: 0,
+      ETH: 0
+    }
+  },
+  
+  async fetchCryptoRates() {
+    try {
+      const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd');
+      const data = await response.json();
+      
+      // Store inverse rates (USD/crypto) for price conversion
+      this.state.cryptoRates.BTC = 1 / data.bitcoin.usd;
+      this.state.cryptoRates.ETH = 1 / data.ethereum.usd;
+      
+      // Update all displayed prices if crypto display is enabled
+      if (this.state.cryptoPricesEnabled) {
+        this.updateAllProductPrices();
+      }
+    } catch (error) {
+      console.error('Error fetching crypto rates:', error);
+      showNotification('Failed to fetch crypto rates', 'error');
+    }
+  },
+  
+  // Add crypto toggle to the UI
+  addCryptoToggle() {
+    const navbarRight = document.querySelector('.navbar-right');
+    
+    const toggleContainer = document.createElement('div');
+    toggleContainer.className = 'crypto-toggle-container';
+    toggleContainer.innerHTML = `
+      <label class="crypto-switch">
+        <input type="checkbox" id="crypto-toggle">
+        <span class="slider round"></span>
+      </label>
+      <span class="crypto-label">Show Crypto Prices</span>
+    `;
+    
+    navbarRight.insertBefore(toggleContainer, navbarRight.firstChild);
+    
+    // Add event listener to toggle
+    document.getElementById('crypto-toggle').addEventListener('change', (e) => {
+      this.state.cryptoPricesEnabled = e.target.checked;
+      this.updateAllProductPrices();
+      // Store preference
+      localStorage.setItem('cryptoPricesEnabled', this.state.cryptoPricesEnabled);
+    });
+  },
+
+  // Update price display function
+  formatCryptoPrice(usdPrice) {
+    if (!this.state.cryptoPricesEnabled) return `${usdPrice} $`;
+    
+    const btcPrice = (usdPrice * this.state.cryptoRates.BTC).toFixed(8);
+    const ethPrice = (usdPrice * this.state.cryptoRates.ETH).toFixed(6);
+    
+    return `${usdPrice} $ | ₿${btcPrice} | Ξ${ethPrice}`;
+  },
+
+  // Update all product prices
+  updateAllProductPrices() {
+    document.querySelectorAll('.price-span').forEach(priceSpan => {
+      const usdPrice = parseFloat(priceSpan.getAttribute('data-usd-price'));
+      if (!isNaN(usdPrice)) {
+        priceSpan.textContent = `Price: ${this.formatCryptoPrice(usdPrice)}`;
+      }
+    });
+  }
+};
+
+// Initialize and add crypto toggle on page load
+document.addEventListener("DOMContentLoaded", async () => {
+  // Add crypto toggle to UI
+  cryptoManager.addCryptoToggle();
+  
+  // Load user preference from localStorage
+  cryptoManager.state.cryptoPricesEnabled = localStorage.getItem('cryptoPricesEnabled') === 'true';
+  document.getElementById('crypto-toggle').checked = cryptoManager.state.cryptoPricesEnabled;
+  
+  // Fetch initial crypto rates
+  await cryptoManager.fetchCryptoRates();
+  
+  // Set up periodic updates of crypto rates (every 5 minutes)
+  setInterval(() => cryptoManager.fetchCryptoRates(), 300000);
+});
+
 const categoryManager = {
   state: {
     categories: [],
@@ -561,7 +651,7 @@ const categoryManager = {
       showNotification(error.message, "error");
     }
   },
-
+ 
   renderCategories() {
     const container = document.querySelector(".categories");
     if (!container) {
@@ -737,6 +827,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   authManager.displayUserAvatar();
   cartManager.updateDisplay();
   categoryManager.initialize();
+  cryptoManager.initialize();
   
   
   // Load user preference
@@ -806,69 +897,6 @@ async function fetchProducts() {
   } catch (error) {
     console.error("Error fetching products:", error);
   }
-}
-async function fetchCryptoRates() {
-  try {
-    const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd');
-    const data = await response.json();
-    
-    // Store inverse rates (USD/crypto) for price conversion
-    cryptoRates.BTC = 1 / data.bitcoin.usd;
-    cryptoRates.ETH = 1 / data.ethereum.usd;
-    
-    // Update all displayed prices if crypto display is enabled
-    if (cryptoPricesEnabled) {
-      updateAllProductPrices();
-    }
-  } catch (error) {
-    console.error('Error fetching crypto rates:', error);
-    showNotification('Failed to fetch crypto rates', 'error');
-  }
-}
-
-// Add crypto toggle to the UI
-function addCryptoToggle() {
-  const navbarRight = document.querySelector('.navbar-right');
-  
-  const toggleContainer = document.createElement('div');
-  toggleContainer.className = 'crypto-toggle-container';
-  toggleContainer.innerHTML = `
-    <label class="crypto-switch">
-      <input type="checkbox" id="crypto-toggle">
-      <span class="slider round"></span>
-    </label>
-    <span class="crypto-label">Show Crypto Prices</span>
-  `;
-  
-  navbarRight.insertBefore(toggleContainer, navbarRight.firstChild);
-  
-  // Add event listener to toggle
-  document.getElementById('crypto-toggle').addEventListener('change', function(e) {
-    cryptoPricesEnabled = e.target.checked;
-    updateAllProductPrices();
-    // Store preference
-    localStorage.setItem('cryptoPricesEnabled', cryptoPricesEnabled);
-  });
-}
-
-// Update price display function
-function formatCryptoPrice(usdPrice) {
-  if (!cryptoPricesEnabled) return `${usdPrice} $`;
-  
-  const btcPrice = (usdPrice * cryptoRates.BTC).toFixed(8);
-  const ethPrice = (usdPrice * cryptoRates.ETH).toFixed(6);
-  
-  return `${usdPrice} $ | ₿${btcPrice} | Ξ${ethPrice}`;
-}
-
-// Update all product prices
-function updateAllProductPrices() {
-  document.querySelectorAll('.price-span').forEach(priceSpan => {
-    const usdPrice = parseFloat(priceSpan.getAttribute('data-usd-price'));
-    if (!isNaN(usdPrice)) {
-      priceSpan.textContent = `Price: ${formatCryptoPrice(usdPrice)}`;
-    }
-  });
 }
 function displayProducts(products) {
   console.log('Displaying products:', products);

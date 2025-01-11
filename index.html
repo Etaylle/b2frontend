@@ -18,30 +18,54 @@
 </head>
 <body>
     <nav class="navbar">
+        <!-- Panorama Container for Image Slider -->
         <div class="panorama-container">
             <img src="/images/belgrade-panorama-1.jpg" class="panorama-slide active" alt="Belgrade Panorama 1" />
             <img src="/images/belgrade-panorama-2.webp" class="panorama-slide" alt="Belgrade Panorama 2" />
             <img src="/images/belgrade-panorama-3.jpg" class="panorama-slide" alt="Belgrade Panorama 3" />
         </div>
+
+        <!-- Navbar Content -->
         <div class="navbar-content">
-            <img src='/images/pobednik.jpg' class="logo animate__animated animate__fadeIn" alt="Logo" />
-            <a id="admin-link" href="/admin" style="display:none">Admin Panel</a>
-            <a href="orderHistory.html">Order History</a>
+            <!-- Logo -->
+            <img src="/images/pobednik.jpg" class="logo animate__animated animate__fadeIn" alt="Logo" />
+
+            <!-- Admin Link (Hidden by default) -->
+            <a id="admin-link" href="/admin" class="admin-link" style="display:none" aria-label="Admin Panel">Admin
+                Panel</a>
+
+            <!-- Navigation Links -->
+            <a href="orderHistory.html" aria-label="Order History">Order History</a>
+
+            <!-- User Section -->
             <div class="user-section">
-                <ul>
-                    <li><a href="#cart">Cart</a></li>
-                    <li id="login-btn">Login</li>
-                    <li id="register-btn">Register</li>
-                    <li id="logout-button" style="display: none;">Logout</li>
+                <ul class="navbar-links">
+                    <li><a href="#cart" aria-label="View Cart">Cart</a></li>
+                    <li id="login-btn"><a href="#login" aria-label="Login">Login</a></li>
+                    <li id="register-btn"><a href="#register" aria-label="Register">Register</a></li>
+                    <li id="logout-button" style="display: none;"><a href="#logout" aria-label="Logout">Logout</a></li>
                 </ul>
+
+                <!-- User Avatar and Admin Dropdown (Visible only for admin) -->
                 <div id="user-avatar-display" class="user-avatar-display">
                     <div class="admin-dropdown">
-                        <a href="/admin" id="admin-link">Admin Panel</a>
+                        <a href="/admin" id="admin-link" aria-label="Admin Panel">Admin Panel</a>
                     </div>
                 </div>
             </div>
+
+            <!-- Crypto Toggle Section (New Addition) -->
+            <div class="crypto-toggle-container">
+                <label class="crypto-switch">
+                    <input type="checkbox" id="crypto-toggle" aria-label="Toggle Crypto Prices">
+                    <span class="slider round"></span>
+                </label>
+                <span class="crypto-label">Show Crypto Prices</span>
+            </div>
         </div>
     </nav>
+</body>
+
     <main>
         <!-- Updated Login Form -->
         <section id="login" class="login-container">
