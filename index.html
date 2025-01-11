@@ -181,6 +181,7 @@
             startPanoramaSlideshow();
             setupUserInterface();
             setupModalHandlers();
+            addCryptoToggle();
 
             const currentUser = localStorage.getItem("currentUser");
             const isAdmin = JSON.parse(currentUser)?.isAdmin || false;

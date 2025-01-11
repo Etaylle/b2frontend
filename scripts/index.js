@@ -809,8 +809,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Fetch initial data
   currentUser = await authManager.fetchCurrentUser();
   logo2 = document.querySelector(".credit-info");
-// Add crypto toggle to UI
-  addCryptoToggle();
+document.addEventListener("DOMContentLoaded", async () => {
+    addCryptoToggle(); // Ensure this function is globally accessible or properly imported.
+});
   
   // Load user preference
   cryptoPricesEnabled = localStorage.getItem('cryptoPricesEnabled') === 'true';
