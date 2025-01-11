@@ -776,87 +776,92 @@ async function fetchProducts() {
   try {
     const response = await fetch('https://backend-3mvr.onrender.com/api/products');
     const products = await response.json();
-    
-    // Try React grid first
-    const reactRoot = document.getElementById('product-grid-root');
-    if (reactRoot && window.initializeProductGrid) {
-      initializeProductGrid(products);
-    }
-    
-    // Fallback to legacy grid
-    const gridContainer = document.querySelector(".grid-container");
-    if (gridContainer) {
-      renderProducts(products);
-    }
-    
+    displayProducts(products);
   } catch (error) {
     console.error("Error fetching products:", error);
   }
 }
-
-function renderProducts(products) {
-  const gridContainer = document.querySelector(".grid-container");
-  if (!gridContainer) {
-    console.warn('Grid container not found');
-    return;
-  }
-
-function displayProducts(products) {
-  console.log('Displaying products:', products);
-   initializeProductGrid(products);
-  const gridContainer = document.querySelector(".grid-container");
-  gridContainer.innerHTML = "";
-
-  products.forEach((product) => {
-    const gridItem = document.createElement("div");
-    gridItem.classList.add("grid-item", "grid-item-xl");
-    gridItem.setAttribute("data-product-id", product.product_id);
-
-    // Create image slider
-    let imageSlider = '<div class="image-slider">';
-    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-      product.images.forEach((img, index) => {
-        imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
-      });
-    } else if (product.image_url) {
-      imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
-    } else {
-      imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
-    }
-    imageSlider += '</div>';
-
-    gridItem.innerHTML = `
-      ${imageSlider}
-      <div class="overlay">
-        ${product.name} | <span class="price-span">Price: ${product.price} $ | Q: ${product.stock}</span>
+// Create a modern product card component
+const ProductCard = ({ product, onAddToCart }) => {
+  return (
+    <div className="product-card">
+      <ImageSlider images={product.images} />
+      <PriceDisplay priceUSD={product.price} />
+      <div className="product-details">
+        <h3>{product.name}</h3>
+        <p>Stock: {product.stock}</p>
+        <button onClick={() => onAddToCart(product.id)}>
+          Add to Cart
+        </button>
       </div>
-    `;
-    const addToCartButton = document.createElement("button");
-    addToCartButton.textContent = "+";
-    gridItem.appendChild(addToCartButton);
-    gridContainer.appendChild(gridItem);
-  });
+    </div>
+  );
+};
 
-  // Add event listeners for image slider
-  document.querySelectorAll('.image-slider').forEach(slider => {
-    const images = slider.querySelectorAll('img');
-    let currentIndex = 0;
-
-    setInterval(() => {
-      images[currentIndex].classList.remove('active');
-      currentIndex = (currentIndex + 1) % images.length;
-      images[currentIndex].classList.add('active');
-    }, 3000);
-  });
-
-  // Add event listeners for add to cart buttons
-  document.querySelectorAll(".grid-item button").forEach((button) => {
-    button.addEventListener("click", () => {
-      const productId = button.parentElement.getAttribute("data-product-id");
-      cartManager.addItem(productId);
-    });
-  });
+// Update your displayProducts function
+function displayProducts(products) {
+  const gridContainer = document.querySelector(".grid-container");
+  const root = ReactDOM.createRoot(gridContainer);
+  
+  root.render(
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {products.map(product => (
+        <ProductCard 
+          key={product.product_id}
+          product={product}
+          onAddToCart={cartManager.addItem}
+        />
+      ))}
+    </div>
+  );
 }
+// Add cryptocurrency selection to the UI
+const CryptoSelector = ({ value, onChange }) => {
+  const cryptos = ['BTC', 'ETH', 'USDT'];
+  return (
+    <select 
+      value={value} 
+      onChange={e => onChange(e.target.value)}
+      className="crypto-selector"
+    >
+      {cryptos.map(crypto => (
+        <option key={crypto} value={crypto}>
+          {crypto}
+        </option>
+      ))}
+    </select>
+  );
+};
+
+// Add a settings section to your navbar
+const NavbarSettings = () => {
+  const [selectedCrypto, setSelectedCrypto] = useState('BTC');
+  
+  return (
+    <div className="navbar-settings">
+      <span>Show prices in:</span>
+      <CryptoSelector 
+        value={selectedCrypto} 
+        onChange={setSelectedCrypto}
+      />
+    </div>
+  );
+};
+// Add to your existing code
+const cryptoManager = {
+  async fetchRate(crypto = 'BTC') {
+    try {
+      const response = await fetch(
+        `https://api.coingecko.com/api/v3/simple/price?ids=${crypto.toLowerCase()}&vs_currencies=usd`
+      );
+      const data = await response.json();
+      return data[crypto.toLowerCase()].usd;
+    } catch (error) {
+      console.error('Error fetching crypto rate:', error);
+      return null;
+    }
+  }
+};
 function showNotification(message, type = 'success',) {
   const notification = document.createElement('div');
   notification.textContent = message;
