@@ -776,12 +776,30 @@ async function fetchProducts() {
   try {
     const response = await fetch('https://backend-3mvr.onrender.com/api/products');
     const products = await response.json();
-    // Initialize the React grid
-    initializeProductGrid(products);
+    
+    // Try React grid first
+    const reactRoot = document.getElementById('product-grid-root');
+    if (reactRoot && window.initializeProductGrid) {
+      initializeProductGrid(products);
+    }
+    
+    // Fallback to legacy grid
+    const gridContainer = document.querySelector(".grid-container");
+    if (gridContainer) {
+      renderProducts(products);
+    }
+    
   } catch (error) {
     console.error("Error fetching products:", error);
   }
 }
+
+function renderProducts(products) {
+  const gridContainer = document.querySelector(".grid-container");
+  if (!gridContainer) {
+    console.warn('Grid container not found');
+    return;
+  }
 
 function displayProducts(products) {
   console.log('Displaying products:', products);
