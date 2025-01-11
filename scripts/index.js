@@ -496,23 +496,15 @@ const cryptoManager = {
     }
   },
 
-  // Fetch crypto rates with better error handling and rate limiting
   async fetchCryptoRates() {
-    // Prevent multiple concurrent fetches
     if (this.state.lastFetchTime && 
-        Date.now() - this.state.lastFetchTime < 60000) { // 1 minute minimum between fetches
+        Date.now() - this.state.lastFetchTime < 60000) {
       return;
     }
 
     try {
       const response = await fetch(
-        "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd",
-        {
-          headers: {
-            'Accept': 'application/json',
-            'Cache-Control': 'no-cache'
-          }
-        }
+        "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd"
       );
 
       if (!response.ok) {
@@ -521,7 +513,6 @@ const cryptoManager = {
 
       const data = await response.json();
       
-      // Validate received data
       if (!data.bitcoin?.usd || !data.ethereum?.usd) {
         throw new Error('Invalid cryptocurrency data received');
       }
@@ -530,22 +521,26 @@ const cryptoManager = {
       this.state.cryptoRates.ETH = 1 / data.ethereum.usd;
       this.state.lastFetchTime = Date.now();
 
+      // Important: Update prices whenever we get new rates
       if (this.state.cryptoPricesEnabled) {
         this.updateAllProductPrices();
       }
     } catch (error) {
       console.error("Error fetching crypto rates:", error);
       showNotification("Failed to fetch crypto rates. Retrying in 1 minute...", "error");
-      
-      // Schedule a retry in 1 minute
       setTimeout(() => this.fetchCryptoRates(), 60000);
     }
   },
 
-  // Create and manage the crypto toggle UI
   createCryptoToggle() {
     const navbarRight = document.querySelector(".navbar-right");
     if (!navbarRight) return;
+
+    // Remove existing toggle if present
+    const existingToggle = document.querySelector(".crypto-toggle-container");
+    if (existingToggle) {
+      existingToggle.remove();
+    }
 
     const toggleContainer = document.createElement("div");
     toggleContainer.className = "crypto-toggle-container";
@@ -561,9 +556,19 @@ const cryptoManager = {
 
     const toggle = document.getElementById("crypto-toggle");
     if (toggle) {
-      toggle.addEventListener("change", (e) => {
+      // Set initial state
+      toggle.checked = this.state.cryptoPricesEnabled;
+      
+      // Add event listener
+      toggle.addEventListener("change", async (e) => {
         this.state.cryptoPricesEnabled = e.target.checked;
         localStorage.setItem("cryptoPricesEnabled", this.state.cryptoPricesEnabled);
+        
+        // Fetch fresh rates if enabled
+        if (this.state.cryptoPricesEnabled) {
+          await this.fetchCryptoRates();
+        }
+        
         this.updateAllProductPrices();
       });
     }
@@ -571,8 +576,6 @@ const cryptoManager = {
 
   updateAllProductPrices() {
     const priceSpans = document.querySelectorAll(".price-span");
-    if (!priceSpans.length) return;
-
     priceSpans.forEach((priceSpan) => {
       const usdPrice = parseFloat(priceSpan.getAttribute("data-usd-price"));
       if (!isNaN(usdPrice)) {
@@ -581,7 +584,31 @@ const cryptoManager = {
     });
   },
 
-  // Start the crypto rate update interval
+  async initialize() {
+    try {
+      // Load saved preference
+      const savedPreference = localStorage.getItem("cryptoPricesEnabled");
+      this.state.cryptoPricesEnabled = savedPreference === "true";
+      
+      // Create UI elements
+      this.createCryptoToggle();
+      
+      // Fetch initial rates if enabled
+      if (this.state.cryptoPricesEnabled) {
+        await this.fetchCryptoRates();
+      }
+      
+      // Start update interval
+      this.startUpdateInterval();
+      
+      // Update initial prices
+      this.updateAllProductPrices();
+    } catch (error) {
+      console.error("Error initializing crypto manager:", error);
+      showNotification("Failed to initialize cryptocurrency features", "error");
+    }
+  },
+
   startUpdateInterval() {
     if (this.state.updateInterval) {
       clearInterval(this.state.updateInterval);
@@ -592,45 +619,20 @@ const cryptoManager = {
     );
   },
 
-  // Stop the crypto rate update interval
   stopUpdateInterval() {
     if (this.state.updateInterval) {
       clearInterval(this.state.updateInterval);
       this.state.updateInterval = null;
     }
-  },
-
-  // Initialize the crypto manager
-  async initialize() {
-    try {
-      // Load user preferences
-      this.state.cryptoPricesEnabled = localStorage.getItem("cryptoPricesEnabled") === "true";
-      
-      // Create UI elements
-      this.createCryptoToggle();
-      
-      // Set initial toggle state
-      const toggle = document.getElementById("crypto-toggle");
-      if (toggle) {
-        toggle.checked = this.state.cryptoPricesEnabled;
-      }
-
-      // Fetch initial rates
-      await this.fetchCryptoRates();
-      
-      // Start update interval
-      this.startUpdateInterval();
-
-      // Add cleanup on page unload
-      window.addEventListener('unload', () => this.stopUpdateInterval());
-      
-    } catch (error) {
-      console.error("Error initializing crypto manager:", error);
-      showNotification("Failed to initialize cryptocurrency features", "error");
-    }
   }
 };
 
+// Make sure to clean up when page unloads
+window.addEventListener('unload', () => {
+  if (cryptoManager.state.updateInterval) {
+    cryptoManager.stopUpdateInterval();
+  }
+});
 const categoryManager = {
   state: {
     categories: [],
