@@ -473,133 +473,206 @@ const paymentManager = {
     }
   }
 };
-// Rating system manager
+// Enhanced Rating Manager with additional features
 const ratingManager = {
   state: {
-    userRatings: {}, // Store user's ratings locally
+    userRatings: {},
+    hoverRating: null,
   },
 
-  // Create star rating HTML
-  createStarRating(productId, currentRating, totalRatings) {
+  createStarRating(productId, currentRating, totalRatings, userRating = null) {
     return `
       <div class="rating-container" data-product-id="${productId}">
-        <div class="stars-outer">
-          <div class="stars-inner" style="width: ${(currentRating / 5) * 100}%"></div>
+        <div class="rating-display">
+          <div class="stars-outer">
+            <div class="stars-inner" style="width: ${(currentRating / 5) * 100}%"></div>
+          </div>
+          <div class="rating-info">
+            <span class="average-rating">${currentRating.toFixed(1)}</span>
+            <span class="total-ratings">(${totalRatings} ${totalRatings === 1 ? 'rating' : 'ratings'})</span>
+          </div>
         </div>
-        <div class="rating-info">
-          <span class="average-rating">${currentRating.toFixed(1)}</span>
-          <span class="total-ratings">(${totalRatings} ${totalRatings === 1 ? 'rating' : 'ratings'})</span>
-        </div>
-        ${this.createInteractiveStars(productId)}
+        ${this.createInteractiveStars(productId, userRating)}
+        <div class="rating-breakdown"></div>
       </div>
     `;
   },
 
-  // Create interactive stars for rating submission
-  createInteractiveStars(productId) {
+  createInteractiveStars(productId, userRating = null) {
     return `
       <div class="interactive-stars" data-product-id="${productId}">
-        ${Array.from({ length: 5 }, (_, i) => `
-          <span class="star-rating" data-rating="${i + 1}">★</span>
-        `).join('')}
+        <div class="stars-container">
+          ${Array.from({ length: 5 }, (_, i) => `
+            <span class="star-rating ${userRating && userRating >= i + 1 ? 'selected' : ''}" 
+                  data-rating="${i + 1}"
+                  title="${this.getRatingLabel(i + 1)}">★</span>
+          `).join('')}
+        </div>
+        <div class="rating-label"></div>
+        ${userRating ? '<button class="remove-rating">Remove Rating</button>' : ''}
       </div>
     `;
   },
-async  fetchProductRatings(productId) {
-  try {
-    const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`);
-    if (!response.ok) throw new Error('Failed to fetch ratings');
 
-    const { averageRating, totalRatings } = await response.json();
-    const ratingContainer = document.querySelector(`.rating-container[data-product-id="${productId}"]`);
-    if (ratingContainer) {
-      ratingManager.updateRatingDisplay(productId, averageRating, totalRatings);
-    }
-  } catch (error) {
-    console.error('Error fetching ratings:', error);
-  }
-},
-  // Submit a rating
-  async submitRating(productId, rating) {
+  getRatingLabel(rating) {
+    const labels = {
+      1: 'Poor',
+      2: 'Fair',
+      3: 'Good',
+      4: 'Very Good',
+      5: 'Excellent'
+    };
+    return labels[rating] || '';
+  },
+
+  async fetchProductRatings(productId) {
     try {
-      const response = await fetch('https://backend-3mvr.onrender.com/api/ratings/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Include credentials if using session-based auth
-          credentials: 'include',
-        },
-        body: JSON.stringify({
-          productId,
-          rating
-        })
-      });
+      const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`);
+      if (!response.ok) throw new Error('Failed to fetch ratings');
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to submit rating');
+      const data = await response.json();
+      if (!data.success) throw new Error(data.message);
+
+      const { ratings } = data;
+      const ratingStats = this.calculateRatingStats(ratings);
+      
+      const ratingContainer = document.querySelector(`.rating-container[data-product-id="${productId}"]`);
+      if (ratingContainer) {
+        this.updateRatingDisplay(productId, ratingStats.averageRating, ratings.length);
+        this.updateRatingBreakdown(productId, ratingStats.distribution);
       }
-
-      const result = await response.json();
-      this.state.userRatings[productId] = rating;
-      this.updateRatingDisplay(productId, result.averageRating, result.totalRatings);
-      showNotification('Rating submitted successfully!', 'success');
     } catch (error) {
-      console.error('Error submitting rating:', error);
-      showNotification(error.message || 'Failed to submit rating', 'error');
+      console.error('Error fetching ratings:', error);
+      showNotification('Failed to load ratings', 'error');
     }
   },
 
-  // Update rating display after submission
-  updateRatingDisplay(productId, averageRating, totalRatings) {
-    const container = document.querySelector(`.rating-container[data-product-id="${productId}"]`);
+  calculateRatingStats(ratings) {
+    const distribution = Array(5).fill(0);
+    let sum = 0;
+
+    ratings.forEach(rating => {
+      sum += rating.rating;
+      distribution[rating.rating - 1]++;
+    });
+
+    return {
+      averageRating: ratings.length ? sum / ratings.length : 0,
+      distribution
+    };
+  },
+
+  updateRatingBreakdown(productId, distribution) {
+    const container = document.querySelector(`.rating-container[data-product-id="${productId}"] .rating-breakdown`);
     if (!container) return;
 
-    const starsInner = container.querySelector('.stars-inner');
-    const averageElement = container.querySelector('.average-rating');
-    const totalElement = container.querySelector('.total-ratings');
+    const total = distribution.reduce((a, b) => a + b, 0);
+    const breakdownHTML = distribution.map((count, index) => {
+      const percentage = total ? (count / total * 100).toFixed(1) : 0;
+      return `
+        <div class="breakdown-row">
+          <span>${5 - index} stars</span>
+          <div class="breakdown-bar">
+            <div class="bar-fill" style="width: ${percentage}%"></div>
+          </div>
+          <span>${count}</span>
+        </div>
+      `;
+    }).join('');
 
-    starsInner.style.width = `${(averageRating / 5) * 100}%`;
-    averageElement.textContent = averageRating.toFixed(1);
-    totalElement.textContent = `(${totalRatings} ${totalRatings === 1 ? 'rating' : 'ratings'})`;
+    container.innerHTML = breakdownHTML;
   },
 
-  // Initialize rating system
+  async removeRating(productId) {
+    try {
+      const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      if (!response.ok) throw new Error('Failed to remove rating');
+
+      const result = await response.json();
+      delete this.state.userRatings[productId];
+      this.updateRatingDisplay(productId, result.averageRating, result.totalRatings);
+      showNotification('Rating removed successfully', 'success');
+    } catch (error) {
+      console.error('Error removing rating:', error);
+      showNotification('Failed to remove rating', 'error');
+    }
+  },
+
   initialize() {
     document.addEventListener('click', (e) => {
       if (e.target.classList.contains('star-rating')) {
         const productId = e.target.closest('.interactive-stars').dataset.productId;
         const rating = parseInt(e.target.dataset.rating);
         this.submitRating(productId, rating);
+      } else if (e.target.classList.contains('remove-rating')) {
+        const productId = e.target.closest('.interactive-stars').dataset.productId;
+        this.removeRating(productId);
       }
     });
 
-    // Add rating system styles
+    document.addEventListener('mouseover', (e) => {
+      if (e.target.classList.contains('star-rating')) {
+        const rating = parseInt(e.target.dataset.rating);
+        const container = e.target.closest('.interactive-stars');
+        const label = container.querySelector('.rating-label');
+        label.textContent = this.getRatingLabel(rating);
+        
+        // Highlight stars up to the hovered one
+        container.querySelectorAll('.star-rating').forEach((star, index) => {
+          star.classList.toggle('hover', index < rating);
+        });
+      }
+    });
+
+    document.addEventListener('mouseout', (e) => {
+      if (e.target.classList.contains('star-rating')) {
+        const container = e.target.closest('.interactive-stars');
+        const label = container.querySelector('.rating-label');
+        label.textContent = '';
+        
+        // Remove hover effect
+        container.querySelectorAll('.star-rating').forEach(star => {
+          star.classList.remove('hover');
+        });
+      }
+    });
+
     const style = document.createElement('style');
     style.textContent = this.getStyles();
     document.head.appendChild(style);
   },
 
-  // Get rating system styles
   getStyles() {
     return `
       .rating-container {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 0.5rem;
-        margin: 0.5rem 0;
+        gap: 1rem;
+        padding: 1rem;
+        max-width: 400px;
+        margin: 0 auto;
+      }
+
+      .rating-display {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
       }
 
       .stars-outer {
         position: relative;
         display: inline-block;
-        font-size: 20px;
+        font-size: 24px;
       }
 
       .stars-outer::before {
         content: "★★★★★";
-        color: #ccc;
+        color: #ddd;
       }
 
       .stars-inner {
@@ -617,24 +690,78 @@ async  fetchProductRatings(productId) {
 
       .interactive-stars {
         display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .stars-container {
+        display: flex;
         gap: 0.25rem;
       }
 
       .star-rating {
         cursor: pointer;
-        font-size: 24px;
-        color: #ccc;
+        font-size: 28px;
+        color: #ddd;
         transition: color 0.2s;
       }
 
-      .star-rating:hover,
-      .star-rating:hover ~ .star-rating {
+      .star-rating.hover,
+      .star-rating.selected {
         color: #ffd700;
       }
 
-      .rating-info {
+      .rating-label {
+        min-height: 1.5em;
         font-size: 14px;
         color: #666;
+      }
+
+      .rating-info {
+        font-size: 16px;
+        color: #666;
+      }
+
+      .remove-rating {
+        padding: 0.5rem 1rem;
+        background-color: #f44336;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.2s;
+      }
+
+      .remove-rating:hover {
+        background-color: #d32f2f;
+      }
+
+      .rating-breakdown {
+        width: 100%;
+        margin-top: 1rem;
+      }
+
+      .breakdown-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .breakdown-bar {
+        flex-grow: 1;
+        height: 12px;
+        background-color: #eee;
+        border-radius: 6px;
+        overflow: hidden;
+      }
+
+      .bar-fill {
+        height: 100%;
+        background-color: #ffd700;
+        transition: width 0.3s ease;
       }
     `;
   }
@@ -1091,9 +1218,10 @@ async function fetchProducts() {
   }
 }
 
-function displayProducts(products) {
+/*function displayProducts(products) {
   console.log('Displaying products:', products);
-  
+  const ratingHtml = ratingManager.createStarRating(productId, averageRating, totalRatings, userRating);
+productContainer.innerHTML = ratingHtml;
   const gridContainer = document.querySelector(".grid-container");
   if (!gridContainer) return;
   
@@ -1140,7 +1268,70 @@ function displayProducts(products) {
   initializeImageSliders();
   attachCartEventListeners();
 }
+*/
+function displayProducts(products) {
+  console.log('Displaying products:', products);
+  const gridContainer = document.querySelector(".grid-container");
+  if (!gridContainer) return;
+  
+  gridContainer.innerHTML = "";
 
+  products.forEach((product) => {
+    const gridItem = document.createElement("div");
+    gridItem.classList.add("grid-item", "grid-item-xl");
+    gridItem.setAttribute("data-product-id", product.product_id);
+
+    // Create image slider
+    let imageSlider = '<div class="image-slider">';
+    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+      product.images.forEach((img, index) => {
+        imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
+      });
+    } else if (product.image_url) {
+      imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
+    } else {
+      imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
+    }
+    imageSlider += '</div>';
+
+    // Create rating HTML - properly integrated into the product display
+    const ratingHTML = ratingManager.createStarRating(
+      product.product_id, 
+      product.average_rating || 0, 
+      product.total_ratings || 0
+    );
+
+    gridItem.innerHTML = `
+      ${imageSlider}
+      <div class="overlay">
+        ${product.name} | <span class="price-span" data-usd-price="${product.price}">
+          Price: ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
+        </span>
+        <span class="crypto-price-usd" style="display: none;">${product.price}</span>
+          Crypto: ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
+        </span>
+        <div class="product-rating">
+          ${ratingHTML}
+        </div>
+      </div>
+    `;
+    
+    const addToCartButton = document.createElement("button");
+    addToCartButton.textContent = "+";
+    addToCartButton.className = "add-to-cart-btn";
+    gridItem.appendChild(addToCartButton);
+    gridContainer.appendChild(gridItem);
+  });
+
+  // Initialize rating manager if not already initialized
+  if (!window.ratingManagerInitialized) {
+    ratingManager.initialize();
+    window.ratingManagerInitialized = true;
+  }
+
+  initializeImageSliders();
+  attachCartEventListeners();
+}
 function initializeImageSliders() {
   document.querySelectorAll('.image-slider').forEach(slider => {
     const images = slider.querySelectorAll('img');
