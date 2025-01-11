@@ -617,8 +617,10 @@ const ratingManager = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        credentials: 'include',
+        // Fix: 'credentials' should be in the options, not headers
       },
+      // Add this as a separate option
+      credentials: 'include',
       body: JSON.stringify({
         productId,
         rating
