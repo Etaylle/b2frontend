@@ -546,50 +546,8 @@ const ratingManager = {
       showNotification('Failed to load ratings', 'error');
     }
   },
-  submitRating(productId, rating) {
-    return fetch('https://backend-3mvr.onrender.com/api/ratings/submit', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        credentials: 'include',
-      },
-      body: JSON.stringify({
-        productId,
-        rating
-      })
-    })
-    .then(response => {
-      if (!response.ok) throw new Error('Failed to submit rating');
-      return response.json();
-    })
-    .then(result => {
-      this.state.userRatings[productId] = rating;
-      this.updateRatingDisplay(productId, result.averageRating, result.totalRatings);
-      showNotification('Rating submitted successfully!', 'success');
-    })
-    .catch(error => {
-      console.error('Error submitting rating:', error);
-      showNotification(error.message || 'Failed to submit rating', 'error');
-    });
-  },
 
-  initialize() {
-    // Bind the event listener to this instance
-    document.addEventListener('click', (e) => {
-      if (e.target.classList.contains('star-rating')) {
-        const productId = e.target.closest('.interactive-stars').dataset.productId;
-        const rating = parseInt(e.target.dataset.rating);
-        this.submitRating(productId, rating);
-      }
-    });
-
-    const style = document.createElement('style');
-    style.textContent = this.getStyles();
-    document.head.appendChild(style);
-  }
-},
-
-    calculateRatingStats(ratings) {
+  calculateRatingStats(ratings) {
     const distribution = Array(5).fill(0);
     let sum = 0;
 
@@ -644,6 +602,32 @@ const ratingManager = {
     }
   },
 
+  submitRating(productId, rating) {
+    return fetch('https://backend-3mvr.onrender.com/api/ratings/submit', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        credentials: 'include',
+      },
+      body: JSON.stringify({
+        productId,
+        rating
+      })
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Failed to submit rating');
+      return response.json();
+    })
+    .then(result => {
+      this.state.userRatings[productId] = rating;
+      this.updateRatingDisplay(productId, result.averageRating, result.totalRatings);
+      showNotification('Rating submitted successfully!', 'success');
+    })
+    .catch(error => {
+      console.error('Error submitting rating:', error);
+      showNotification(error.message || 'Failed to submit rating', 'error');
+    });
+  },
   initialize() {
     document.addEventListener('click', (e) => {
       if (e.target.classList.contains('star-rating')) {
@@ -1344,6 +1328,7 @@ window.paymentManager = paymentManager;
 window.uiManager = uiManager;
 window.categoryManager = categoryManager;
 window.cryptoManager = cryptoManager;
+window.ratingManager = ratingManager;
 
 async function fetchProducts(categoryId = null) {
   try {
@@ -1561,7 +1546,6 @@ window.cartManager = cartManager;
 window.paymentManager = paymentManager;
 window.uiManager = uiManager;
 window.categoryManager = categoryManager;
-window.ratingManager = ratingManager;
 /*async function fetchProducts() {
   try {
     const response = await fetch('https://backend-3mvr.onrender.com/api/products');
