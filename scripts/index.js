@@ -318,7 +318,6 @@ const uiManager = {
 };
 
 // Auth Management
-// Auth Management
 const authManager = {
   async fetchCurrentUser() {
     try {
@@ -720,14 +719,25 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Fetch initial data
   currentUser = await authManager.fetchCurrentUser();
   logo2 = document.querySelector(".credit-info");
+  addCryptoToggle();
+  cryptoPricesEnabled = localStorage.getItem('cryptoPricesEnabled') === 'true';
+  document.getElementById('crypto-toggle').checked = cryptoPricesEnabled;
+  await fetchCryptoRates();
+  setInterval(fetchCryptoRates, 300000);
 
+  document.getElementById('crypto-toggle').addEventListener('change', function(e) {
+    cryptoPricesEnabled = e.target.checked;
+    console.log('Crypto toggle changed:', cryptoPricesEnabled); // Log to verify toggle action
+    updateAllProductPrices();  // Update prices immediately after toggle
+    // Store preference
+    localStorage.setItem('cryptoPricesEnabled', cryptoPricesEnabled);
   // Initialize displays
   fetchProducts();
   authManager.displayUserInfo();
   authManager.displayUserAvatar();
   cartManager.updateDisplay();
   categoryManager.initialize();
-  addCryptoToggle();
+  
   
   // Load user preference
   cryptoPricesEnabled = localStorage.getItem('cryptoPricesEnabled') === 'true';
