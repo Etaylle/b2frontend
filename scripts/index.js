@@ -784,7 +784,7 @@ async function fetchProducts() {
 
 function displayProducts(products) {
   console.log('Displaying products:', products);
-   initializeProductGrid(products);
+  
   const gridContainer = document.querySelector(".grid-container");
   gridContainer.innerHTML = "";
 
