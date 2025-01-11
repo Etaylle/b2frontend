@@ -1,4 +1,5 @@
 // Global state
+const CRYPTO_REFRESH_INTERVAL = 60000;
 const BACKEND_URL = '';
 let currentUser;
 let cart = {};
@@ -469,6 +470,130 @@ const paymentManager = {
     }
   }
 };
+const cryptoManager = {
+  prices: {},
+  
+  async fetchPrice(crypto = 'BTC') {
+    try {
+      const response = await fetch(
+        `https://api.coingecko.com/api/v3/simple/price?ids=${crypto.toLowerCase()}&vs_currencies=usd`
+      );
+      const data = await response.json();
+      this.prices[crypto] = data[crypto.toLowerCase()].usd;
+      return this.prices[crypto];
+    } catch (error) {
+      console.error('Error fetching crypto price:', error);
+      return null;
+    }
+  },
+
+  async convertPrice(usdPrice, crypto = 'BTC') {
+    if (!this.prices[crypto]) {
+      await this.fetchPrice(crypto);
+    }
+    return this.prices[crypto] ? usdPrice / this.prices[crypto] : null;
+  },
+
+  startPriceUpdates() {
+    this.updatePrices();
+    setInterval(() => this.updatePrices(), CRYPTO_REFRESH_INTERVAL);
+  },
+
+  async updatePrices() {
+    await this.fetchPrice('BTC');
+    await this.fetchPrice('ETH');
+    document.querySelectorAll('.crypto-price').forEach(async (element) => {
+      const usdPrice = parseFloat(element.dataset.usdPrice);
+      const crypto = element.dataset.crypto;
+      const cryptoPrice = await this.convertPrice(usdPrice, crypto);
+      if (cryptoPrice) {
+        element.textContent = `≈ ${cryptoPrice.toFixed(8)} ${crypto}`;
+      }
+    });
+  }
+};
+
+// Modify your displayProducts function
+function displayProducts(products) {
+  console.log('Displaying products:', products);
+  const gridContainer = document.querySelector(".grid-container");
+  gridContainer.innerHTML = "";
+
+  products.forEach((product) => {
+    const gridItem = document.createElement("div");
+    gridItem.classList.add("grid-item", "grid-item-xl");
+    gridItem.setAttribute("data-product-id", product.product_id);
+
+    // Create image slider
+    let imageSlider = '<div class="image-slider">';
+    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+      product.images.forEach((img, index) => {
+        imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
+      });
+    } else if (product.image_url) {
+      imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
+    } else {
+      imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
+    }
+    imageSlider += '</div>';
+
+    // Add price display with crypto
+    const priceDisplay = `
+      <div class="price-display">
+        <div class="price-display__usd">$${product.price.toFixed(2)} USD</div>
+        <div class="crypto-price" data-usd-price="${product.price}" data-crypto="BTC">
+          Loading crypto price...
+        </div>
+      </div>
+    `;
+
+    gridItem.innerHTML = `
+      ${imageSlider}
+      ${priceDisplay}
+      <div class="overlay">
+        ${product.name} | <span class="price-span">Stock: ${product.stock}</span>
+      </div>
+      <button class="add-to-cart-btn">+</button>
+    `;
+
+    gridContainer.appendChild(gridItem);
+  });
+
+  // Initialize image sliders and attach event listeners
+  initializeImageSliders();
+  attachCartEventListeners();
+  cryptoManager.updatePrices();
+}
+
+// Add to your DOMContentLoaded event listener
+document.addEventListener("DOMContentLoaded", async () => {
+  // ... your existing initialization code ...
+  
+  // Initialize crypto price updates
+  cryptoManager.startPriceUpdates();
+  
+  // Add crypto currency selector to navbar
+  const navbarContent = document.querySelector('.navbar-content');
+  const cryptoSelector = document.createElement('div');
+  cryptoSelector.className = 'navbar-settings';
+  cryptoSelector.innerHTML = `
+    <span>Show prices in:</span>
+    <select class="crypto-selector" onchange="updateCryptoDisplay(this.value)">
+      <option value="BTC">BTC</option>
+      <option value="ETH">ETH</option>
+    </select>
+  `;
+  navbarContent.appendChild(cryptoSelector);
+});
+
+// Add function to handle crypto currency changes
+function updateCryptoDisplay(selectedCrypto) {
+  document.querySelectorAll('.crypto-price').forEach(element => {
+    element.dataset.crypto = selectedCrypto;
+    element.textContent = 'Loading crypto price...';
+  });
+  cryptoManager.updatePrices();
+}
 const categoryManager = {
   state: {
     categories: [],
