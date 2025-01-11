@@ -128,6 +128,82 @@
             cursor: pointer;
             font-weight: bold;
         }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 8px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .close {
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.order-info {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 4px;
+}
+
+.order-items-detail {
+    margin: 20px 0;
+}
+
+.detail-item {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 20px;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.item-info h3 {
+    margin-bottom: 10px;
+    color: var(--primary-color);
+}
+
+.order-total-detail {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid var(--border-color);
+    text-align: right;
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        margin: 10% auto;
+        width: 95%;
+    }
+
+    .detail-item {
+        grid-template-columns: 80px 1fr;
+    }
+}
 
         .order-actions button:hover {
             opacity: 0.9;
@@ -165,7 +241,7 @@
                 grid-column: 1 / -1;
                 text-align: right;
             }
-            
+            /* Add these styles to your existing CSS */
 .modal {
     display: none;
     position: fixed;
@@ -335,6 +411,10 @@
                         mode: 'cors'
                     });
 
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch order details');
+                    }
+
                     const order = await response.json();
                     this.showOrderDetailsModal(order);
                 } catch (error) {
@@ -342,63 +422,70 @@
                     alert('Failed to load order details. Please try again later.');
                 }
             }
-
             showOrderDetailsModal(order) {
-                // Create modal HTML
+                // First remove any existing modals
+                const existingModal = document.getElementById('orderDetailsModal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
+
+                // Create and add the modal HTML
                 const modalHTML = `
-            <div id="orderDetailsModal" class="modal">
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <h2>Order Details</h2>
-                    <div class="order-info">
-                        <p><strong>Order #:</strong> ${order.order_id}</p>
-                        <p><strong>Date:</strong> ${new Date(order.created_at).toLocaleDateString()}</p>
-                        <p><strong>Status:</strong> ${order.status}</p>
-                    </div>
-                    <div class="order-items-detail">
-                        ${order.items.map(item => `
-                            <div class="detail-item">
-                                <img src="${item.product_image || '/placeholder-image.jpg'}" 
-                                     alt="${item.product_name}" 
-                                     class="item-image">
-                                <div class="item-info">
-                                    <h3>${item.product_name}</h3>
-                                    <p>${item.product_description}</p>
-                                    <p>Quantity: ${item.quantity}</p>
-                                    <p>Price: $${item.price}</p>
-                                    <p>Subtotal: $${item.subtotal}</p>
-                                </div>
+        <div id="orderDetailsModal" class="modal" style="display: block;">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Order Details</h2>
+                <div class="order-info">
+                    <p><strong>Order #:</strong> ${this.escapeHtml(order.order_id)}</p>
+                    <p><strong>Date:</strong> ${new Date(order.created_at).toLocaleDateString()}</p>
+                    <p><strong>Status:</strong> ${this.escapeHtml(order.status)}</p>
+                </div>
+                <div class="order-items-detail">
+                    ${order.items.map(item => `
+                        <div class="detail-item">
+                            <img src="${this.escapeHtml(item.product_image || '/placeholder-image.jpg')}" 
+                                 alt="${this.escapeHtml(item.product_name)}" 
+                                 class="item-image">
+                            <div class="item-info">
+                                <h3>${this.escapeHtml(item.product_name)}</h3>
+                                <p>${this.escapeHtml(item.product_description || '')}</p>
+                                <p>Quantity: ${item.quantity}</p>
+                                <p>Price: $${item.price}</p>
+                                <p>Subtotal: $${(item.price * item.quantity).toFixed(2)}</p>
                             </div>
-                        `).join('')}
-                    </div>
-                    <div class="order-total-detail">
-                        <h3>Total: $${order.total_amount}</h3>
-                    </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="order-total-detail">
+                    <h3>Total: $${order.total_amount}</h3>
                 </div>
             </div>
-        `;
+        </div>
+    `;
 
-                // Add modal to document
                 document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-                // Get modal elements
+                // Add event listeners for closing the modal
                 const modal = document.getElementById('orderDetailsModal');
                 const closeBtn = modal.querySelector('.close');
 
-                // Show modal
-                modal.style.display = 'block';
-
-                // Close modal functionality
-                closeBtn.onclick = () => {
-                    modal.remove();
-                };
-
-                // Close modal when clicking outside
+                closeBtn.onclick = () => modal.remove();
                 window.onclick = (event) => {
                     if (event.target === modal) {
                         modal.remove();
                     }
                 };
+            }
+
+            // Add a helper method for XSS prevention
+            escapeHtml(unsafe) {
+                return unsafe
+                    .toString()
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
             }
             renderOrders(orders) {
                 this.ordersList.innerHTML = orders.map(order => `
@@ -440,7 +527,7 @@
                                 Order Total: $${order.total_amount}
                             </div>
                             <div class="order-actions">
-                                <button onclick="window.location.href='/order-details/${order.order_id}'">View Order Details</button>
+                               <button onclick="orderHistory.fetchOrderDetails('${order.order_id}')">View Order Details</button>
                             </div>
                         </div>
                     </div>
@@ -453,7 +540,7 @@
 
                 if (total_pages > 1) {
                     if (current_page > 1) {
-                        paginationHTML += `<button onclick="orderHistory.fetchOrderDetails('${order.order_id}')">View Order Details</button>`;
+                        paginationHTML += `<button onclick="orderHistory.goToPage(${current_page - 1})">Previous</button>`;
                     }
 
                     for (let i = 1; i <= total_pages; i++) {
@@ -462,7 +549,7 @@
                     }
 
                     if (current_page < total_pages) {
-                        paginationHTML += `<button onclick="orderHistory.fetchOrderDetails('${order.order_id}')">View Order Details</button>`;
+                        paginationHTML += `<button onclick="orderHistory.goToPage(${current_page + 1})">Next</button>`;
                     }
                 }
 
