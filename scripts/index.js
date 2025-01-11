@@ -1085,6 +1085,10 @@ const categoryManager = {
         ${imageSlider}
         <div class="overlay">
           ${product.name} | <span class="price-span" data-usd-price="${product.price}"> ${product.price} $ | Stock: ${product.stock}</span>
+        
+         <div class="product-rating">
+          ${ratingHTML}
+        </div>
         </div>
         <button class="add-to-cart-btn">+</button>
       `;
@@ -1449,6 +1453,9 @@ function displayProducts(products) {
       ${imageSlider}
       <div class="overlay">
         ${product.name} | <span class="price-span" data-usd-price="${product.price}">Price: ${formatCryptoPrice(product.price)} | Q: ${product.stock}</span>
+       <div class="product-rating">
+          ${ratingHTML}
+        </div>
       </div>
     `;
     const addToCartButton = document.createElement("button");
