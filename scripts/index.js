@@ -596,7 +596,6 @@ const ratingManager = {
       const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`,  {
         ...fetchConfig,
         
-        credentials: 'include'
         method: 'DELETE',
         credentials: 'include',
       });
