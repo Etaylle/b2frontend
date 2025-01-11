@@ -1002,7 +1002,6 @@ const categoryManager = {
       showNotification(error.message, "error");
     }
   },
-
 async fetchProducts(categoryId = null) {
   try {
     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
