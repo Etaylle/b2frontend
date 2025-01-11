@@ -549,7 +549,8 @@ const cryptoManager = {
         <input type="checkbox" id="crypto-toggle">
         <span class="slider round"></span>
       </label>
-      <span class="crypto-label">Show Crypto Prices</span>
+      <span class="crypto-label"> <a href="#" aria-label="Show Crypto Prices">Show Crypto Prices</a></span>
+      
     `;
 
     navbarRight.insertBefore(toggleContainer, navbarRight.firstChild);
