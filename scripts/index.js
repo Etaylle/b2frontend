@@ -776,7 +776,8 @@ async function fetchProducts() {
   try {
     const response = await fetch('https://backend-3mvr.onrender.com/api/products');
     const products = await response.json();
-    displayProducts(products);
+    // Initialize the React grid
+    initializeProductGrid(products);
   } catch (error) {
     console.error("Error fetching products:", error);
   }
