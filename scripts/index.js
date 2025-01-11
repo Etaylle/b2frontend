@@ -527,7 +527,11 @@ const ratingManager = {
 
   async fetchProductRatings(productId) {
     try {
-      const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`);
+      const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`,  {
+        ...fetchConfig,
+        
+        credentials: 'include'
+      });
       if (!response.ok) throw new Error('Failed to fetch ratings');
 
       const data = await response.json();
@@ -563,7 +567,11 @@ const ratingManager = {
   },
 
   updateRatingBreakdown(productId, distribution) {
-    const container = document.querySelector(`.rating-container[data-product-id="${productId}"] .rating-breakdown`);
+    const container = document.querySelector(`.rating-container[data-product-id="${productId}"] .rating-breakdown`,  {
+        ...fetchConfig,
+        
+        credentials: 'include'
+      });
     if (!container) return;
 
     const total = distribution.reduce((a, b) => a + b, 0);
@@ -585,7 +593,10 @@ const ratingManager = {
 
   async removeRating(productId) {
     try {
-      const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`, {
+      const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`,  {
+        ...fetchConfig,
+        
+        credentials: 'include'
         method: 'DELETE',
         credentials: 'include',
       });
