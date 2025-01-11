@@ -477,29 +477,75 @@ const cryptoManager = {
   state: {
     cryptoPricesEnabled: false,
     cryptoRates: { BTC: 0, ETH: 0 },
+    updateInterval: null,
+    lastFetchTime: null,
+    rateFetchInterval: 300000, // 5 minutes in milliseconds
   },
 
+  // Format crypto prices with better precision handling
+  formatCryptoPrice(usdPrice) {
+    if (!this.state.cryptoPricesEnabled || !usdPrice) return `${usdPrice} $`;
+
+    try {
+      const btcPrice = (usdPrice * this.state.cryptoRates.BTC).toFixed(8);
+      const ethPrice = (usdPrice * this.state.cryptoRates.ETH).toFixed(6);
+      return `${usdPrice} $ | ₿${btcPrice} | Ξ${ethPrice}`;
+    } catch (error) {
+      console.error('Error formatting crypto price:', error);
+      return `${usdPrice} $`;
+    }
+  },
+
+  // Fetch crypto rates with better error handling and rate limiting
   async fetchCryptoRates() {
+    // Prevent multiple concurrent fetches
+    if (this.state.lastFetchTime && 
+        Date.now() - this.state.lastFetchTime < 60000) { // 1 minute minimum between fetches
+      return;
+    }
+
     try {
       const response = await fetch(
-        "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd"
+        "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd",
+        {
+          headers: {
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache'
+          }
+        }
       );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
+      
+      // Validate received data
+      if (!data.bitcoin?.usd || !data.ethereum?.usd) {
+        throw new Error('Invalid cryptocurrency data received');
+      }
 
       this.state.cryptoRates.BTC = 1 / data.bitcoin.usd;
       this.state.cryptoRates.ETH = 1 / data.ethereum.usd;
+      this.state.lastFetchTime = Date.now();
 
       if (this.state.cryptoPricesEnabled) {
         this.updateAllProductPrices();
       }
     } catch (error) {
       console.error("Error fetching crypto rates:", error);
-      showNotification("Failed to fetch crypto rates", "error");
+      showNotification("Failed to fetch crypto rates. Retrying in 1 minute...", "error");
+      
+      // Schedule a retry in 1 minute
+      setTimeout(() => this.fetchCryptoRates(), 60000);
     }
   },
 
-  addCryptoToggle() {
+  // Create and manage the crypto toggle UI
+  createCryptoToggle() {
     const navbarRight = document.querySelector(".navbar-right");
+    if (!navbarRight) return;
 
     const toggleContainer = document.createElement("div");
     toggleContainer.className = "crypto-toggle-container";
@@ -513,87 +559,89 @@ const cryptoManager = {
 
     navbarRight.insertBefore(toggleContainer, navbarRight.firstChild);
 
-    document.getElementById("crypto-toggle").addEventListener("change", (e) => {
-      this.state.cryptoPricesEnabled = e.target.checked;
-      this.updateAllProductPrices();
-      localStorage.setItem(
-        "cryptoPricesEnabled",
-        this.state.cryptoPricesEnabled
-      );
-    });
+    const toggle = document.getElementById("crypto-toggle");
+    if (toggle) {
+      toggle.addEventListener("change", (e) => {
+        this.state.cryptoPricesEnabled = e.target.checked;
+        localStorage.setItem("cryptoPricesEnabled", this.state.cryptoPricesEnabled);
+        this.updateAllProductPrices();
+      });
+    }
   },
 
-  formatCryptoPrice(usdPrice) {
-    if (!this.state.cryptoPricesEnabled) return `${usdPrice} $`;
-
-    const btcPrice = (usdPrice * this.state.cryptoRates.BTC).toFixed(8);
-    const ethPrice = (usdPrice * this.state.cryptoRates.ETH).toFixed(6);
-
-    return `${usdPrice} $ | ₿${btcPrice} | Ξ${ethPrice}`;
-  },
-
+  // Update all product prices with better DOM performance
   updateAllProductPrices() {
-    document.querySelectorAll(".price-span").forEach((priceSpan) => {
+    const priceSpans = document.querySelectorAll(".price-span");
+    if (!priceSpans.length) return;
+
+    // Use DocumentFragment for better performance
+    const fragment = document.createDocumentFragment();
+    priceSpans.forEach((priceSpan) => {
       const usdPrice = parseFloat(priceSpan.getAttribute("data-usd-price"));
       if (!isNaN(usdPrice)) {
-        priceSpan.textContent = `Price: ${this.formatCryptoPrice(usdPrice)}`;
+        const newSpan = priceSpan.cloneNode(true);
+        newSpan.textContent = `Price: ${this.formatCryptoPrice(usdPrice)}`;
+        fragment.appendChild(newSpan);
       }
+    });
+
+    // Batch DOM updates
+    requestAnimationFrame(() => {
+      priceSpans.forEach((oldSpan, index) => {
+        oldSpan.parentNode.replaceChild(fragment.children[0], oldSpan);
+      });
     });
   },
 
-  async initialize() {
-    this.addCryptoToggle();
-
-    this.state.cryptoPricesEnabled =
-      localStorage.getItem("cryptoPricesEnabled") === "true";
-    document.getElementById("crypto-toggle").checked =
-      this.state.cryptoPricesEnabled;
-
-    await this.fetchCryptoRates();
-    setInterval(() => this.fetchCryptoRates(), 300000); // Update every 5 minutes
+  // Start the crypto rate update interval
+  startUpdateInterval() {
+    if (this.state.updateInterval) {
+      clearInterval(this.state.updateInterval);
+    }
+    this.state.updateInterval = setInterval(
+      () => this.fetchCryptoRates(),
+      this.state.rateFetchInterval
+    );
   },
-};
 
-// Consolidated initialization logic
-document.addEventListener("DOMContentLoaded", async () => {
-  await cryptoManager.initialize();
-  await categoryManager.initialize();
-  authManager.displayUserInfo();
-  authManager.displayUserAvatar();
-  cartManager.updateDisplay();
-  await fetchProducts();
-});
+  // Stop the crypto rate update interval
+  stopUpdateInterval() {
+    if (this.state.updateInterval) {
+      clearInterval(this.state.updateInterval);
+      this.state.updateInterval = null;
+    }
+  },
 
-// Fetch and display products
-async function fetchProducts() {
-  try {
-    const response = await fetch("https://backend-3mvr.onrender.com/api/products");
-    const products = await response.json();
-    displayProducts(products);
-  } catch (error) {
-    console.error("Error fetching products:", error);
+  // Initialize the crypto manager
+  async initialize() {
+    try {
+      // Load user preferences
+      this.state.cryptoPricesEnabled = localStorage.getItem("cryptoPricesEnabled") === "true";
+      
+      // Create UI elements
+      this.createCryptoToggle();
+      
+      // Set initial toggle state
+      const toggle = document.getElementById("crypto-toggle");
+      if (toggle) {
+        toggle.checked = this.state.cryptoPricesEnabled;
+      }
+
+      // Fetch initial rates
+      await this.fetchCryptoRates();
+      
+      // Start update interval
+      this.startUpdateInterval();
+
+      // Add cleanup on page unload
+      window.addEventListener('unload', () => this.stopUpdateInterval());
+      
+    } catch (error) {
+      console.error("Error initializing crypto manager:", error);
+      showNotification("Failed to initialize cryptocurrency features", "error");
+    }
   }
-}
-
-function displayProducts(products) {
-  console.log("Displaying products:", products);
-
-  const gridContainer = document.querySelector(".grid-container");
-  gridContainer.innerHTML = ""; // Ensure old products are cleared
-
-  products.forEach((product) => {
-    const productElement = document.createElement("div");
-    productElement.className = "product-item";
-    productElement.innerHTML = `
-      <h2>${product.name}</h2>
-      <span class="price-span" data-usd-price="${product.price}">
-        Price: ${cryptoManager.formatCryptoPrice(product.price)}
-      </span>
-    `;
-    gridContainer.appendChild(productElement);
-  });
-}
-
+};
 
 const categoryManager = {
   state: {
@@ -834,75 +882,167 @@ const categoryManager = {
 
 // Initialize everything when the page loads
 document.addEventListener("DOMContentLoaded", async () => {
-  // Initialize Stripe
-  paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl');
-  // Initialize category filter  
-  await categoryManager.initialize();
-  await cryptoManager.initialize();
-  // Fetch initial data
-  currentUser = await authManager.fetchCurrentUser();
-  logo2 = document.querySelector(".credit-info");
-document.addEventListener("DOMContentLoaded", async () => {
-    addCryptoToggle(); // Ensure this function is globally accessible or properly imported.
+  try {
+    // Initialize all managers
+    await Promise.all([
+      cryptoManager.initialize(),
+      categoryManager.initialize(),
+      paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl')
+    ]);
+
+    // Fetch initial data
+    currentUser = await authManager.fetchCurrentUser();
+    
+    // Initialize displays
+    authManager.displayUserInfo();
+    authManager.displayUserAvatar();
+    cartManager.updateDisplay();
+
+    // Set up UI event listeners
+    setupEventListeners();
+    
+    // Update UI based on user state
+    uiManager.updateButtonVisibility(currentUser);
+    
+  } catch (error) {
+    console.error("Error during initialization:", error);
+    showNotification("Error initializing application", "error");
+  }
 });
-  
 
-  // Initialize displays
-  fetchProducts();
-  authManager.displayUserInfo();
-  authManager.displayUserAvatar();
-  cartManager.updateDisplay();
-  categoryManager.initialize();
-  cryptoManager.initialize();
-  
-  
-  // Load user preference
-  cryptoPricesEnabled = localStorage.getItem('cryptoPricesEnabled') === 'true';
-  document.getElementById('crypto-toggle').checked = cryptoPricesEnabled;
-  
-  // Fetch initial crypto rates
-  await fetchCryptoRates();
-  
-  // Set up periodic updates of crypto rates (every 5 minutes)
-  setInterval(fetchCryptoRates, 300000);
-  // Set up UI event listeners
-  const registerBtn = document.getElementById("register-btn");
-  const closeRegisterBtn = document.querySelector(".close-register");
-  const loginBtn = document.getElementById("login-btn");
-  const loginCloseBtn = document.querySelector(".close-login");
-  const logoutBtn = document.getElementById("logout-button");
-  const checkoutButton = document.querySelector('button[onclick="checkout()"]');
-  const emptyCartButton = document.getElementById("empty-cart-button");
-  const loginForm = document.getElementById("login-form");
-  const registerForm = document.getElementById("register-form");
+// Make managers available globally
+window.authManager = authManager;
+window.cartManager = cartManager;
+window.paymentManager = paymentManager;
+window.uiManager = uiManager;
+window.categoryManager = categoryManager;
+window.cryptoManager = cryptoManager;
 
-  // Add event listeners
-  if (closeRegisterBtn) {
-    closeRegisterBtn.addEventListener("click", uiManager.closeRegister);
+async function fetchProducts() {
+  try {
+    const response = await fetch('https://backend-3mvr.onrender.com/api/products');
+    const products = await response.json();
+    displayProducts(products);
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    showNotification("Error fetching products", "error");
   }
-  if (registerBtn) {
-    registerBtn.addEventListener("click", uiManager.openRegister);
+}
+
+function displayProducts(products) {
+  console.log('Displaying products:', products);
+  
+  const gridContainer = document.querySelector(".grid-container");
+  if (!gridContainer) return;
+  
+  gridContainer.innerHTML = "";
+
+  products.forEach((product) => {
+    const gridItem = document.createElement("div");
+    gridItem.classList.add("grid-item", "grid-item-xl");
+    gridItem.setAttribute("data-product-id", product.product_id);
+
+    // Create image slider
+    let imageSlider = '<div class="image-slider">';
+    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+      product.images.forEach((img, index) => {
+        imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
+      });
+    } else if (product.image_url) {
+      imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
+    } else {
+      imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
+    }
+    imageSlider += '</div>';
+
+    gridItem.innerHTML = `
+      ${imageSlider}
+      <div class="overlay">
+        ${product.name} | <span class="price-span" data-usd-price="${product.price}">
+          Price: ${cryptoManager.formatCryptoPrice(product.price)} | Q: ${product.stock}
+        </span>
+      </div>
+    `;
+    
+    const addToCartButton = document.createElement("button");
+    addToCartButton.textContent = "+";
+    addToCartButton.className = "add-to-cart-btn";
+    gridItem.appendChild(addToCartButton);
+    gridContainer.appendChild(gridItem);
+  });
+
+  initializeImageSliders();
+  attachCartEventListeners();
+}
+
+function initializeImageSliders() {
+  document.querySelectorAll('.image-slider').forEach(slider => {
+    const images = slider.querySelectorAll('img');
+    if (images.length <= 1) return;
+
+    let currentIndex = 0;
+    const interval = setInterval(() => {
+      images[currentIndex].classList.remove('active');
+      currentIndex = (currentIndex + 1) % images.length;
+      images[currentIndex].classList.add('active');
+    }, 3000);
+
+    // Clean up interval when slider is removed
+    slider.dataset.sliderId = interval;
+  });
+}
+
+function attachCartEventListeners() {
+  document.querySelectorAll(".add-to-cart-btn").forEach((button) => {
+    button.addEventListener("click", () => {
+      const productId = button.parentElement.getAttribute("data-product-id");
+      if (productId) {
+        cartManager.addItem(productId);
+      }
+    });
+  });
+}
+
+function setupEventListeners() {
+  const elements = {
+    registerBtn: document.getElementById("register-btn"),
+    closeRegisterBtn: document.querySelector(".close-register"),
+    loginBtn: document.getElementById("login-btn"),
+    loginCloseBtn: document.querySelector(".close-login"),
+    logoutBtn: document.getElementById("logout-button"),
+    checkoutButton: document.querySelector('button[onclick="checkout()"]'),
+    emptyCartButton: document.getElementById("empty-cart-button"),
+    loginForm: document.getElementById("login-form"),
+    registerForm: document.getElementById("register-form")
+  };
+
+  // Add event listeners only if elements exist
+  if (elements.closeRegisterBtn) {
+    elements.closeRegisterBtn.addEventListener("click", uiManager.closeRegister);
   }
-  if (loginBtn) {
-    loginBtn.addEventListener("click", uiManager.openLogin);
+  if (elements.registerBtn) {
+    elements.registerBtn.addEventListener("click", uiManager.openRegister);
   }
-  if (loginCloseBtn) {
-    loginCloseBtn.addEventListener("click", uiManager.closeLogin);
+  if (elements.loginBtn) {
+    elements.loginBtn.addEventListener("click", uiManager.openLogin);
   }
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => authManager.logout());
+  if (elements.loginCloseBtn) {
+    elements.loginCloseBtn.addEventListener("click", uiManager.closeLogin);
   }
-  if (checkoutButton) {
-    checkoutButton.addEventListener("click", () => paymentManager.initiateCheckout());
+  if (elements.logoutBtn) {
+    elements.logoutBtn.addEventListener("click", () => authManager.logout());
   }
-  if (emptyCartButton) {
-    emptyCartButton.addEventListener("click", () => cartManager.clearCart());
+  if (elements.checkoutButton) {
+    elements.checkoutButton.addEventListener("click", () => paymentManager.initiateCheckout());
   }
-  if (loginForm) {
-    loginForm.addEventListener("submit", (e) => authManager.login(e));
+  if (elements.emptyCartButton) {
+    elements.emptyCartButton.addEventListener("click", () => cartManager.clearCart());
   }
-  if (registerForm) {
-    registerForm.addEventListener("submit", (e) => authManager.register(e));
+  if (elements.loginForm) {
+    elements.loginForm.addEventListener("submit", (e) => authManager.login(e));
+  }
+  if (elements.registerForm) {
+    elements.registerForm.addEventListener("submit", (e) => authManager.register(e));
   }
 
   // Update UI based on user state
