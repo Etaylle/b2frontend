@@ -7,12 +7,12 @@
     <title>FromBelgradeToBeijing</title>
     <link rel="stylesheet" href="styles/index.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-    
+    <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
     <script src="scripts/ProductGrid.js"></script>
     <script src="scripts/productGridInit.js"></script>
     <script src="https://js.stripe.com/v3/"></script>
-    <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     
 </head>
@@ -128,7 +128,7 @@
         </section>
         <!-- Grid Section -->
         <section id="grid" class="grid-section">
-            <div class="grid-container-root"></div>
+            <div id="product-grid-root"></div>
         </section>
     
         <!-- Cart Section -->
@@ -165,7 +165,9 @@
 
             const currentUser = localStorage.getItem("currentUser");
             const isAdmin = JSON.parse(currentUser)?.isAdmin || false;
-
+            const products = [/* your products array */];
+            initializeProductGrid(products);
+        });
             // Update UI elements visibility and user info
             updateUIVisibility(currentUser);
 
