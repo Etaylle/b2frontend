@@ -513,6 +513,90 @@ const cryptoManager = {
   }
 };
 
+// Keep the vanilla JS version of displayProducts and remove the React version
+function displayProducts(products) {
+  console.log('Displaying products:', products);
+  const gridContainer = document.querySelector(".grid-container");
+  if (!gridContainer) return;
+  
+  gridContainer.innerHTML = "";
+
+  products.forEach((product) => {
+    const gridItem = document.createElement("div");
+    gridItem.classList.add("grid-item", "grid-item-xl");
+    gridItem.setAttribute("data-product-id", product.product_id);
+
+    // Create image slider
+    let imageSlider = '<div class="image-slider">';
+    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+      product.images.forEach((img, index) => {
+        imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
+      });
+    } else if (product.image_url) {
+      imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
+    } else {
+      imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
+    }
+    imageSlider += '</div>';
+
+    // Add price display with crypto
+    const priceDisplay = `
+      <div class="price-display">
+        <div class="price-display__usd">$${product.price.toFixed(2)} USD</div>
+        <div class="crypto-price" data-usd-price="${product.price}" data-crypto="BTC">
+          Loading crypto price...
+        </div>
+      </div>
+    `;
+
+    gridItem.innerHTML = `
+      ${imageSlider}
+      ${priceDisplay}
+      <div class="overlay">
+        ${product.name} | <span class="price-span">Stock: ${product.stock}</span>
+      </div>
+      <button class="add-to-cart-btn">+</button>
+    `;
+
+    gridContainer.appendChild(gridItem);
+  });
+
+  // Initialize image sliders and attach event listeners
+  initializeImageSliders();
+  attachCartEventListeners();
+  cryptoManager.updatePrices();
+}
+
+// Add the missing initializeImageSliders function
+function initializeImageSliders() {
+  document.querySelectorAll('.image-slider').forEach(slider => {
+    const images = slider.querySelectorAll('img');
+    if (images.length <= 1) return;
+
+    let currentIndex = 0;
+    setInterval(() => {
+      images[currentIndex].classList.remove('active');
+      currentIndex = (currentIndex + 1) % images.length;
+      images[currentIndex].classList.add('active');
+    }, 3000);
+  });
+}
+
+// Add the missing attachCartEventListeners function
+function attachCartEventListeners() {
+  document.querySelectorAll(".add-to-cart-btn").forEach(button => {
+    button.addEventListener("click", (e) => {
+      const gridItem = e.target.closest('.grid-item');
+      if (gridItem) {
+        const productId = gridItem.getAttribute("data-product-id");
+        if (productId) {
+          cartManager.addItem(productId);
+        }
+      }
+    });
+  });
+}
+
 // Modify your displayProducts function
 function displayProducts(products) {
   console.log('Displaying products:', products);
@@ -906,24 +990,7 @@ async function fetchProducts() {
     console.error("Error fetching products:", error);
   }
 }
-// Create a modern product card component
-const ProductCard = ({ product, onAddToCart }) => {
-  return (
-    <div className="product-card">
-      <ImageSlider images={product.images} />
-      <PriceDisplay priceUSD={product.price} />
-      <div className="product-details">
-        <h3>{product.name}</h3>
-        <p>Stock: {product.stock}</p>
-        <button onClick={() => onAddToCart(product.id)}>
-          Add to Cart
-        </button>
-      </div>
-    </div>
-  );
-};
 
-// Update your displayProducts function
 function displayProducts(products) {
   const gridContainer = document.querySelector(".grid-container");
   const root = ReactDOM.createRoot(gridContainer);
@@ -940,23 +1007,7 @@ function displayProducts(products) {
     </div>
   );
 }
-// Add cryptocurrency selection to the UI
-const CryptoSelector = ({ value, onChange }) => {
-  const cryptos = ['BTC', 'ETH', 'USDT'];
-  return (
-    <select 
-      value={value} 
-      onChange={e => onChange(e.target.value)}
-      className="crypto-selector"
-    >
-      {cryptos.map(crypto => (
-        <option key={crypto} value={crypto}>
-          {crypto}
-        </option>
-      ))}
-    </select>
-  );
-};
+
 
 // Add a settings section to your navbar
 const NavbarSettings = () => {
