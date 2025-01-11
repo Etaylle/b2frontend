@@ -1057,8 +1057,70 @@ async fetchProducts(categoryId = null) {
     await this.fetchProducts(categoryId);
     this.highlightSelectedCategory();
   },
+renderProducts() {
+  console.log('Displaying products:', this.state.products);
+  const gridContainer = document.querySelector(".grid-container");
+  if (!gridContainer) return;
+  
+  gridContainer.innerHTML = "";
 
-  renderProducts() {
+  this.state.products.forEach((product) => {
+    const gridItem = document.createElement("div");
+    gridItem.classList.add("grid-item", "grid-item-xl");
+    gridItem.setAttribute("data-product-id", product.product_id);
+
+    // Create image slider
+    let imageSlider = '<div class="image-slider">';
+    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+      product.images.forEach((img, index) => {
+        imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
+      });
+    } else if (product.image_url) {
+      imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
+    } else {
+      imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
+    }
+    imageSlider += '</div>';
+
+    // Create rating display HTML
+    const ratingHTML = ratingManager.createStarRating(
+      product.product_id, 
+      product.average_rating || 0, 
+      product.total_ratings || 0
+    );
+
+    gridItem.innerHTML = `
+      ${imageSlider}
+      <div class="overlay">
+        ${product.name} | <span class="price-span" data-usd-price="${product.price}">
+          Price: ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
+        </span>
+        <span class="crypto-price-usd" style="display: none;">${product.price}</span>
+          Crypto: ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
+        </span>
+        <div class="product-rating">
+          ${ratingHTML}
+        </div>
+      </div>
+    `;
+    
+    const addToCartButton = document.createElement("button");
+    addToCartButton.textContent = "+";
+    addToCartButton.className = "add-to-cart-btn";
+    gridItem.appendChild(addToCartButton);
+    gridContainer.appendChild(gridItem);
+  });
+
+  // Initialize rating manager if not already initialized
+  if (!window.ratingManagerInitialized) {
+    ratingManager.initialize();
+    window.ratingManagerInitialized = true;
+  }
+
+  initializeImageSliders();
+  attachCartEventListeners();
+}
+  /*renderProducts() {
     const container = document.querySelector(".grid-container");
     if (!container) {
       console.error("Grid container not found");
@@ -1103,7 +1165,7 @@ async fetchProducts(categoryId = null) {
 
     this.initializeImageSliders();
     this.attachCartEventListeners();
-  },
+  }*/,
 
   initializeImageSliders() {
     document.querySelectorAll('.image-slider').forEach(slider => {
