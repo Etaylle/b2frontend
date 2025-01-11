@@ -1047,7 +1047,7 @@ function setupEventListeners() {
 
   // Update UI based on user state
   uiManager.updateButtonVisibility(currentUser);
-});
+};
 
 // Make managers available globally
 window.authManager = authManager;
