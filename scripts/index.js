@@ -546,8 +546,50 @@ const ratingManager = {
       showNotification('Failed to load ratings', 'error');
     }
   },
+  submitRating(productId, rating) {
+    return fetch('https://backend-3mvr.onrender.com/api/ratings/submit', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        credentials: 'include',
+      },
+      body: JSON.stringify({
+        productId,
+        rating
+      })
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Failed to submit rating');
+      return response.json();
+    })
+    .then(result => {
+      this.state.userRatings[productId] = rating;
+      this.updateRatingDisplay(productId, result.averageRating, result.totalRatings);
+      showNotification('Rating submitted successfully!', 'success');
+    })
+    .catch(error => {
+      console.error('Error submitting rating:', error);
+      showNotification(error.message || 'Failed to submit rating', 'error');
+    });
+  },
 
-  calculateRatingStats(ratings) {
+  initialize() {
+    // Bind the event listener to this instance
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('star-rating')) {
+        const productId = e.target.closest('.interactive-stars').dataset.productId;
+        const rating = parseInt(e.target.dataset.rating);
+        this.submitRating(productId, rating);
+      }
+    });
+
+    const style = document.createElement('style');
+    style.textContent = this.getStyles();
+    document.head.appendChild(style);
+  }
+},
+
+    calculateRatingStats(ratings) {
     const distribution = Array(5).fill(0);
     let sum = 0;
 
@@ -1091,6 +1133,9 @@ renderProducts() {
 
     gridItem.innerHTML = `
       ${imageSlider}
+      <div class="product-rating">
+        ${ratingHTML}
+      </div>
       <div class="overlay">
         ${product.name} | <span class="price-span" data-usd-price="${product.price}">
           Price: ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
@@ -1098,9 +1143,6 @@ renderProducts() {
         <span class="crypto-price-usd" style="display: none;">${product.price}</span>
           Crypto: ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
         </span>
-        <div class="product-rating">
-          ${ratingHTML}
-        </div>
       </div>
     `;
     
@@ -1116,6 +1158,31 @@ renderProducts() {
     ratingManager.initialize();
     window.ratingManagerInitialized = true;
   }
+
+  // Add these styles to properly position the rating
+  const style = document.createElement('style');
+  style.textContent = `
+    .grid-item {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .product-rating {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 2;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 5px;
+      border-radius: 4px;
+    }
+    
+    .rating-container {
+      margin: 0;
+    }
+  `;
+  document.head.appendChild(style);
 
   initializeImageSliders();
   attachCartEventListeners();
@@ -1494,6 +1561,7 @@ window.cartManager = cartManager;
 window.paymentManager = paymentManager;
 window.uiManager = uiManager;
 window.categoryManager = categoryManager;
+window.ratingManager = ratingManager;
 /*async function fetchProducts() {
   try {
     const response = await fetch('https://backend-3mvr.onrender.com/api/products');
