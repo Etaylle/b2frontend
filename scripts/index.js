@@ -489,7 +489,7 @@ const cryptoManager = {
     try {
       const btcPrice = (usdPrice * this.state.cryptoRates.BTC).toFixed(8);
       const ethPrice = (usdPrice * this.state.cryptoRates.ETH).toFixed(6);
-      return `${usdPrice} $ | ₿${btcPrice} | Ξ${ethPrice}`;
+      return `${usdPrice} $ | ₿ ${btcPrice} | Ξ ${ethPrice}`;
     } catch (error) {
       console.error('Error formatting crypto price:', error);
       return `${usdPrice} $`;
@@ -791,7 +791,7 @@ const categoryManager = {
       gridItem.innerHTML = `
         ${imageSlider}
         <div class="overlay">
-          ${product.name} | <span class="price-span" data-usd-price="${product.price}">Price: ${product.price} $ | Q: ${product.stock}</span>
+          ${product.name} | <span class="price-span" data-usd-price="${product.price}"> ${product.price} $ | Stock: ${product.stock}</span>
         </div>
         <button class="add-to-cart-btn">+</button>
       `;
@@ -954,10 +954,10 @@ function displayProducts(products) {
       ${imageSlider}
       <div class="overlay">
         ${product.name} | <span class="price-span" data-usd-price="${product.price}">
-          Price: ${cryptoManager.formatCryptoPrice(product.price)} | Q: ${product.stock}
+          Price: ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
         </span>
         <span class="crypto-price-usd" style="display: none;">${product.price}</span>
-          Crypto: ${cryptoManager.formatCryptoPrice(product.price)} | Q: ${product.stock}
+          Crypto: ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
         </span>
          
       </div>
