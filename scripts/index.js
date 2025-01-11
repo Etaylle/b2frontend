@@ -972,21 +972,7 @@ const NavbarSettings = () => {
     </div>
   );
 };
-// Add to your existing code
-const cryptoManager = {
-  async fetchRate(crypto = 'BTC') {
-    try {
-      const response = await fetch(
-        `https://api.coingecko.com/api/v3/simple/price?ids=${crypto.toLowerCase()}&vs_currencies=usd`
-      );
-      const data = await response.json();
-      return data[crypto.toLowerCase()].usd;
-    } catch (error) {
-      console.error('Error fetching crypto rate:', error);
-      return null;
-    }
-  }
-};
+
 function showNotification(message, type = 'success',) {
   const notification = document.createElement('div');
   notification.textContent = message;
