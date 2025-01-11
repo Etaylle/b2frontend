@@ -579,9 +579,8 @@ const cryptoManager = {
     const priceSpans = document.querySelectorAll(".price-span");
     
     priceSpans.forEach((priceSpan) => {
-     console.log(priceSpan); 
-const usdPrice = parseFloat(priceSpan.getAttribute("data-usd-price"));
-
+      console.log(priceSpan); 
+      const usdPrice = parseFloat(priceSpan.getAttribute("data-usd-price"));
       if (!isNaN(usdPrice)) {
         priceSpan.textContent = `Price: ${this.formatCryptoPrice(usdPrice)}`;
       }
