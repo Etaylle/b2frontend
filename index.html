@@ -4,365 +4,319 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="From Belgrade To Beijing - Shop our unique collection of products" />
     <title>FromBelgradeToBeijing</title>
+
+    <!-- Consolidated CSS imports -->
     <link rel="stylesheet" href="styles/index.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-    
-    <script src="scripts/ProductGrid.js"></script>
-    <script src="scripts/productGridInit.js"></script>
-    <script src="https://js.stripe.com/v3/"></script>
-    <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    
+
+    <!-- Preload critical assets -->
+    <link rel="preload" href="/images/belgrade-panorama-1.jpg" as="image" />
+    <link rel="preload" href="/images/pobednik.jpg" as="image" />
+
+    <!-- Defer non-critical scripts -->
+    <script defer src="scripts/ProductGrid.js"></script>
+    <script defer src="scripts/productGridInit.js"></script>
+    <script defer src="scripts/index.js"></script>
+
+    <!-- External dependencies -->
+    <script defer src="https://js.stripe.com/v3/"></script>
+    <script defer src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
+    <script defer src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
+    <script defer src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body>
-    <nav class="navbar">
-        <!-- Panorama Container for Image Slider -->
-        <div class="panorama-container">
-            <img src="/images/belgrade-panorama-1.jpg" class="panorama-slide active" alt="Belgrade Panorama 1" />
-            <img src="/images/belgrade-panorama-2.webp" class="panorama-slide" alt="Belgrade Panorama 2" />
-            <img src="/images/belgrade-panorama-3.jpg" class="panorama-slide" alt="Belgrade Panorama 3" />
-        </div>
+    <header>
+        <nav class="navbar" aria-label="Main navigation">
+            <!-- Panorama Container -->
+            <div class="panorama-container" aria-label="Belgrade panorama slideshow">
+                <img src="/images/belgrade-panorama-1.jpg" class="panorama-slide active" alt="Belgrade cityscape view 1"
+                    loading="lazy" />
+                <img src="/images/belgrade-panorama-2.webp" class="panorama-slide" alt="Belgrade cityscape view 2"
+                    loading="lazy" />
+                <img src="/images/belgrade-panorama-3.jpg" class="panorama-slide" alt="Belgrade cityscape view 3"
+                    loading="lazy" />
+            </div>
 
-        <!-- Navbar Content -->
-        <div class="navbar-content">
-            <!-- Logo -->
-            <img src="/images/pobednik.jpg" class="logo animate__animated animate__fadeIn" alt="Logo" />
+            <div class="navbar-content">
+                <a href="/" class="logo-link">
+                    <img src="/images/pobednik.jpg" class="logo animate__animated animate__fadeIn"
+                        alt="From Belgrade To Beijing Logo" width="150" height="50" />
+                </a>
 
-            <!-- Admin Link (Hidden by default) -->
-            <a id="admin-link" href="/admin" class="admin-link" style="display:none" aria-label="Admin Panel">Admin
-                Panel</a>
+                <div class="nav-controls">
+                    <nav class="user-navigation" aria-label="User navigation">
+                        <ul class="navbar-links">
+                            <li><a href="orderHistory.html" aria-label="View order history">Order History</a></li>
+                            <li><a href="#cart" aria-label="View shopping cart">Cart <span class="cart-count"
+                                        aria-live="polite"></span></a></li>
+                            <li id="login-btn"><button type="button" aria-label="Open login form">Login</button></li>
+                            <li id="register-btn"><button type="button"
+                                    aria-label="Open registration form">Register</button></li>
+                            <li id="logout-button" hidden><button type="button" aria-label="Logout">Logout</button></li>
+                        </ul>
+                    </nav>
 
-            <!-- Navigation Links -->
-            <a href="orderHistory.html" aria-label="Order History">Order History</a>
+                    <div class="user-controls">
+                        <div id="user-avatar-display" class="user-avatar-display" hidden>
+                            <img src="/images/avatar.jpg" alt="User profile picture" width="40" height="40" />
+                            <div class="admin-dropdown" hidden>
+                                <a href="/admin" id="admin-link">Admin Panel</a>
+                            </div>
+                        </div>
 
-            <!-- User Section -->
-            <div class="user-section">
-                <ul class="navbar-links">
-                    <li><a href="#cart" aria-label="View Cart">Cart</a></li>
-                    <li id="login-btn"><a href="#login" aria-label="Login">Login</a></li>
-                    <li id="register-btn"><a href="#register" aria-label="Register">Register</a></li>
-                    <li id="logout-button" style="display: none;"><a href="#logout" aria-label="Logout">Logout</a></li>
-                </ul>
-
-                <!-- User Avatar and Admin Dropdown (Visible only for admin) -->
-                <div id="user-avatar-display" class="user-avatar-display">
-                    <div class="admin-dropdown">
-                        <a href="/admin" id="admin-link" aria-label="Admin Panel">Admin Panel</a>
+                        <div class="crypto-toggle-container">
+                            <label class="crypto-switch" for="crypto-toggle">
+                                <input type="checkbox" id="crypto-toggle" aria-label="Toggle cryptocurrency prices">
+                                <span class="slider round"></span>
+                                <span class="crypto-label">Show Crypto Prices</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Crypto Toggle Section (New Addition) -->
-            <div class="crypto-toggle-container">
-                <label class="crypto-switch">
-                    <input type="checkbox" id="crypto-toggle" aria-label="Toggle Crypto Prices">
-                    <span class="slider round"></span>
-                </label>
-                <span class="crypto-label">Show Crypto Prices</span>
-            </div>
-        </div>
-    </nav>
-</body>
+        </nav>
+    </header>
 
     <main>
-        <!-- Updated Login Form -->
-        <section id="login" class="login-container">
-            <div>
-                <button class="close-login" aria-label="Close login form">×</button>
-                <h2>Login</h2>
-                <form id="login-form" onsubmit="handleLogin(event)">
-                    <div class="form-overlay">
-                        <div class="spinner"></div>
-                    </div>
-                    <div class="form-group">
-                        <input type="email" id="email" placeholder=" " required />
-                        <label for="email">Email</label>
-                    </div>
-                    <div class="form-group">
-                        <input type="password" id="password" placeholder=" " required />
-                        <label for="password">Password</label>
-                    </div>
-                    <button type="submit">
-                        <div class="btn-content">
-                            <span>Login</span>
-                            <div class="spinner"></div>
+        <!-- Auth Forms -->
+        <div id="auth-forms">
+            <dialog id="login-dialog" class="login-container">
+                <div class="dialog-content">
+                    <button type="button" class="close-login" aria-label="Close login form">×</button>
+                    <h2>Login</h2>
+                    <form id="login-form" method="dialog">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" required autocomplete="email" />
                         </div>
-                    </button>
-                    <div id="login-message"></div>
-                </form>
-            </div>
-        </section>
-        
-        <!-- Updated Register Form -->
-        <section id="register" class="login-container">
-            <div>
-                <button class="close-register" aria-label="Close register form">×</button>
-                <h2>Register</h2>
-                <form id="register-form" onsubmit="handleRegister(event)">
-                    <div class="form-overlay">
-                        <div class="spinner"></div>
-                    </div>
-                    <div class="form-group">
-                        <input type="text" id="username" placeholder=" " required />
-                        <label for="username">Username</label>
-                    </div>
-                    <div class="form-group">
-                        <input type="text" id="firstname" placeholder=" " required />
-                        <label for="firstname">First Name</label>
-                    </div>
-                    <div class="form-group">
-                        <input type="text" id="lastname" placeholder=" " required />
-                        <label for="lastname">Last Name</label>
-                    </div>
-                    <div class="form-group">
-                        <input type="email" id="reg-email" placeholder=" " required />
-                        <label for="reg-email">Email</label>
-                    </div>
-                    <div class="form-group">
-                        <input type="password" id="reg-password" placeholder=" " required />
-                        <label for="reg-password">Password</label>
-                    </div>
-                    <button type="submit">
-                        <div class="btn-content">
-                            <span>Register</span>
-                            <div class="spinner"></div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" required autocomplete="current-password" />
                         </div>
-                    </button>
-                    <div id="register-message"></div>
-                </form>
-            </div>
-        </section>
-        <!-- Search  -->
-        <section id="search">
+                        <div class="form-actions">
+                            <button type="submit" class="submit-btn">
+                                <span>Login</span>
+                                <span class="spinner" hidden></span>
+                            </button>
+                        </div>
+                        <div id="login-message" role="alert"></div>
+                    </form>
+                </div>
+            </dialog>
+
+            <dialog id="register-dialog" class="login-container">
+                <div class="dialog-content">
+                    <button type="button" class="close-register" aria-label="Close registration form">×</button>
+                    <h2>Register</h2>
+                    <form id="register-form" method="dialog">
+                        <div class="form-group">
+                            <label for="username">Username</label>
+                            <input type="text" id="username" required autocomplete="username" />
+                        </div>
+                        <div class="form-group">
+                            <label for="firstname">First Name</label>
+                            <input type="text" id="firstname" required autocomplete="given-name" />
+                        </div>
+                        <div class="form-group">
+                            <label for="lastname">Last Name</label>
+                            <input type="text" id="lastname" required autocomplete="family-name" />
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-email">Email</label>
+                            <input type="email" id="reg-email" required autocomplete="email" />
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-password">Password</label>
+                            <input type="password" id="reg-password" required autocomplete="new-password" />
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="submit-btn">
+                                <span>Register</span>
+                                <span class="spinner" hidden></span>
+                            </button>
+                        </div>
+                        <div id="register-message" role="alert"></div>
+                    </form>
+                </div>
+            </dialog>
+        </div>
+
+        <!-- Search Section -->
+        <section aria-label="Product search">
             <div class="search-container">
-                <input type="text" id="product-search" placeholder="Search products by name, description, or price..."
+                <label for="product-search" class="visually-hidden">Search products</label>
+                <input type="search" id="product-search" placeholder="Search products by name, description, or price..."
                     aria-label="Search products">
             </div>
         </section>
-        <section id="categories" class="categories-section">
-            <div class="categories
-            <div class=" categories">
-                <!-- Category buttons will be rendered here -->
-            </div>
-        <section id="grid" class="grid-section">
+
+        <!-- Categories Section -->
+        <section id="categories" class="categories-section" aria-label="Product categories">
+            <div class="categories-container"></div>
+        </section>
+
+        <!-- Product Grid -->
+        <section id="grid" class="grid-section" aria-label="Product grid">
             <div id="product-grid-root"></div>
         </section>
-        </section>
-        <!-- Grid Section -->
-        <section id="grid" class="grid-section">
-            <div class="grid-container"></div>
-        </section>
-    
-        <!-- Cart Section -->
-        <section id="cart" class="cart-section">
+
+        <!-- Shopping Cart -->
+        <section id="cart" class="cart-section" aria-label="Shopping cart">
             <div id="cart-container" class="cart-container">
-                <img src="/images/cart.png" alt="Shopping Cart" class="cart-icon" />
-    
-                <ul id="cart-items"></ul>
-                <p id="cart-total">Total: 0</p>
-                <button onclick="checkout()" class="checkout-btn" aria-label="Proceed to checkout">Checkout</button>
-                <button id="empty-cart-button" class="empty-cart-btn" aria-label="Empty the cart">Empty Cart</button>
+                <h2>Shopping Cart</h2>
+                <img src="/images/cart.png" alt="" class="cart-icon" width="32" height="32" />
+                <ul id="cart-items" aria-label="Cart items"></ul>
+                <p id="cart-total" aria-live="polite">Total: 0</p>
+                <div class="cart-actions">
+                    <button type="button" onclick="checkout()" class="checkout-btn">Checkout</button>
+                    <button type="button" id="empty-cart-button" class="empty-cart-btn">Empty Cart</button>
+                </div>
             </div>
         </section>
-    
-        <!-- User Info Display -->
-        <div id="user-info-display" style="display: none;"></div>
-    
-    
-    
     </main>
-    
-    <!-- Scripts -->
-    <script defer src="scripts/index.js"></script>
-    
+
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            startPanoramaSlideshow();
-            setupUserInterface();
-            setupModalHandlers();
+        // Initialize Stripe
+        let stripe;
 
-            const currentUser = localStorage.getItem("currentUser");
-            const isAdmin = JSON.parse(currentUser)?.isAdmin || false;
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                stripe = Stripe('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl');
 
-            // Update UI elements visibility and user info
-            updateUIVisibility(currentUser);
+                initializeUI();
+                startPanoramaSlideshow();
+                setupEventListeners();
+                await loadUserState();
 
-            // Stripe Checkout setup
-            const stripe = Stripe('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl');
-            const initiateCheckout = async () => {
-                try {
-                    const response = await fetch('/api/create-checkout-session', { method: 'POST' });
-                    const data = await response.json();
-                    const result = await stripe.redirectToCheckout({ sessionId: data.id });
-
-                    if (result.error) {
-                        console.error('Error:', result.error.message);
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                }
-            };
+            } catch (error) {
+                console.error('Initialization error:', error);
+            }
         });
 
-        function setupUserInterface() {
-            const currentUser = localStorage.getItem("currentUser");
-            updateUIVisibility(currentUser);
+        function initializeUI() {
+            const loginDialog = document.getElementById('login-dialog');
+            const registerDialog = document.getElementById('register-dialog');
+
+            // Initialize dialogs if browser doesn't support <dialog>
+            if (!loginDialog.showModal) {
+                dialogPolyfill.registerDialog(loginDialog);
+                dialogPolyfill.registerDialog(registerDialog);
+            }
         }
 
-        function updateUIVisibility(currentUser) {
+        function setupEventListeners() {
+            // Auth related listeners
+            document.getElementById('login-btn').addEventListener('click', () => {
+                document.getElementById('login-dialog').showModal();
+            });
+
+            document.getElementById('register-btn').addEventListener('click', () => {
+                document.getElementById('register-dialog').showModal();
+            });
+
+            // Form submissions
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            document.getElementById('register-form').addEventListener('submit', handleRegister);
+
+            // Close dialog buttons
+            document.querySelectorAll('.close-login, .close-register').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.target.closest('dialog').close();
+                });
+            });
+
+            // Category buttons
+            document.querySelectorAll('.category-btn').forEach(button => {
+                button.addEventListener('click', handleCategorySelect);
+            });
+        }
+
+        async function loadUserState() {
+            try {
+                const currentUser = localStorage.getItem("currentUser");
+                if (currentUser) {
+                    const userData = JSON.parse(currentUser);
+                    updateUIForUser(userData);
+                }
+            } catch (error) {
+                console.error('Error loading user state:', error);
+            }
+        }
+
+        function updateUIForUser(userData) {
             const elements = {
                 loginBtn: document.getElementById("login-btn"),
                 registerBtn: document.getElementById("register-btn"),
                 logoutButton: document.getElementById("logout-button"),
-                userAvatarDisplay: document.getElementById("user-avatar-display")
+                userAvatarDisplay: document.getElementById("user-avatar-display"),
+                adminPanel: document.querySelector(".admin-dropdown")
             };
 
-            elements.loginBtn.style.display = currentUser ? "none" : "block";
-            elements.registerBtn.style.display = currentUser ? "none" : "block";
-            elements.logoutButton.style.display = currentUser ? "block" : "none";
+            elements.loginBtn.hidden = true;
+            elements.registerBtn.hidden = true;
+            elements.logoutButton.hidden = false;
+            elements.userAvatarDisplay.hidden = false;
 
-            if (currentUser) {
-                const isAdmin = JSON.parse(currentUser)?.isAdmin || false;
-                elements.userAvatarDisplay.innerHTML = `
-                    <img src="/images/avatar.jpg" alt="User Avatar">
-                    ${isAdmin ? '<div class="admin-dropdown"><a href="/admin">Admin Panel</a></div>' : ''}
-                `;
+            if (userData.isAdmin) {
+                elements.adminPanel.hidden = false;
             }
-        }
-
-        function setupModalHandlers() {
-            const loginBtn = document.getElementById("login-btn");
-            const registerBtn = document.getElementById("register-btn");
-            const closeLogin = document.querySelector(".close-login");
-            const closeRegister = document.querySelector(".close-register");
-
-            loginBtn?.addEventListener("click", () => document.getElementById("login").style.display = "flex");
-            registerBtn?.addEventListener("click", () => document.getElementById("register").style.display = "flex");
-            closeLogin?.addEventListener("click", () => document.getElementById("login").style.display = "none");
-            closeRegister?.addEventListener("click", () => document.getElementById("register").style.display = "none");
         }
 
         function startPanoramaSlideshow() {
             const slides = document.querySelectorAll('.panorama-slide');
             let currentSlide = 0;
+            let intervalId;
 
-            setInterval(() => {
-                slides[currentSlide].classList.remove('active');
+            function showSlide(index) {
+                slides.forEach(slide => slide.classList.remove('active'));
+                slides[index].classList.add('active');
+            }
+
+            function nextSlide() {
                 currentSlide = (currentSlide + 1) % slides.length;
-                slides[currentSlide].classList.add('active');
-            }, 5000);
-        }
-
-        // Enhanced form handling
-        async function handleLogin(event) {
-            event.preventDefault();
-            const form = event.target;
-            const messageDiv = document.getElementById('login-message');
-
-            try {
-                setLoading(form, true);
-                await new Promise(resolve => setTimeout(resolve, 1500));
-
-                const success = await login();
-                if (success) {
-                    showMessage(messageDiv, 'Login successful!', 'success');
-                    setTimeout(() => document.getElementById('login').style.display = 'none', 1000);
-                } else {
-                    showMessage(messageDiv, 'Invalid credentials', 'error');
-                }
-            } catch (error) {
-                showMessage(messageDiv, 'An error occurred', 'error');
-            } finally {
-                setLoading(form, false);
+                showSlide(currentSlide);
             }
-        }
 
-        async function handleRegister(event) {
-            event.preventDefault();
-            const form = event.target;
-            const messageDiv = document.getElementById('register-message');
+            // Start slideshow
+            intervalId = setInterval(nextSlide, 5000);
 
-            try {
-                setLoading(form, true);
-                await new Promise(resolve => setTimeout(resolve, 1500));
-
-                const success = await register();
-                if (success) {
-                    showMessage(messageDiv, 'Registration successful!', 'success');
-                    setTimeout(() => document.getElementById('register').style.display = 'none', 1000);
+            // Pause on visibility change
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    clearInterval(intervalId);
                 } else {
-                    showMessage(messageDiv, 'Registration failed', 'error');
+                    intervalId = setInterval(nextSlide, 5000);
                 }
-            } catch (error) {
-                showMessage(messageDiv, 'An error occurred', 'error');
-            } finally {
-                setLoading(form, false);
-            }
-        }
-
-        function setLoading(form, isLoading) {
-            form.classList.toggle('loading', isLoading);
-        }
-
-        function showMessage(element, message, type) {
-            element.className = `message ${type}`;
-            element.textContent = message;
-        }
-
-        // Cart animations
-        function updateCart(item) {
-            const cartItems = document.getElementById('cart-items');
-            const li = document.createElement('li');
-            li.className = 'cart-item';
-            li.textContent = item.name;
-            cartItems.appendChild(li);
-            updateCartBadge();
-        }
-
-        function removeFromCart(item) {
-            const cartItem = item.parentElement;
-            cartItem.classList.add('removing');
-            setTimeout(() => {
-                cartItem.remove();
-                updateCartBadge();
-            }, 300);
-        }
-
-        function updateCartBadge() {
-            const cartItems = document.getElementById('cart-items').children.length;
-            const badge = document.querySelector('.cart-badge');
-
-            if (cartItems > 0) {
-                if (!badge) {
-                    const newBadge = document.createElement('div');
-                    newBadge.className = 'cart-badge';
-                    newBadge.textContent = cartItems;
-                    document.querySelector('.cart-icon-wrapper').appendChild(newBadge);
-                } else {
-                    badge.textContent = cartItems;
-                }
-            } else if (badge) {
-                badge.remove();
-            }
-        }
-    document.addEventListener("DOMContentLoaded", () => {
-        // Get all category buttons
-        const categoryButtons = document.querySelectorAll('.category-btn');
-
-        // Add click event listener to each button
-        categoryButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                // Remove 'selected' class from all buttons
-                categoryButtons.forEach(btn => btn.classList.remove('selected'));
-
-                // Add 'selected' class to the clicked button
-                button.classList.add('selected');
             });
-        });
-    });
-        
+        }
+
+        async function handleCheckout() {
+            try {
+                const response = await fetch('/api/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Checkout session creation failed');
+                }
+
+                const { id: sessionId } = await response.json();
+                const { error } = await stripe.redirectToCheckout({ sessionId });
+
+                if (error) {
+                    throw error;
+                }
+            } catch (error) {
+                console.error('Checkout error:', error);
+                alert('Unable to proceed with checkout. Please try again later.');
+            }
+        }
     </script>
 </body>
 
