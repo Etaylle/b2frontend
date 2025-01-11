@@ -473,6 +473,159 @@ const paymentManager = {
     }
   }
 };
+// Rating system manager
+const ratingManager = {
+  state: {
+    userRatings: {}, // Store user's ratings locally
+  },
+
+  // Create star rating HTML
+  createStarRating(productId, currentRating, totalRatings) {
+    return `
+      <div class="rating-container" data-product-id="${productId}">
+        <div class="stars-outer">
+          <div class="stars-inner" style="width: ${(currentRating / 5) * 100}%"></div>
+        </div>
+        <div class="rating-info">
+          <span class="average-rating">${currentRating.toFixed(1)}</span>
+          <span class="total-ratings">(${totalRatings} ${totalRatings === 1 ? 'rating' : 'ratings'})</span>
+        </div>
+        ${this.createInteractiveStars(productId)}
+      </div>
+    `;
+  },
+
+  // Create interactive stars for rating submission
+  createInteractiveStars(productId) {
+    return `
+      <div class="interactive-stars" data-product-id="${productId}">
+        ${Array.from({ length: 5 }, (_, i) => `
+          <span class="star-rating" data-rating="${i + 1}">★</span>
+        `).join('')}
+      </div>
+    `;
+  },
+
+  // Submit a rating
+  async submitRating(productId, rating) {
+    try {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/ratings/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Include credentials if using session-based auth
+          credentials: 'include',
+        },
+        body: JSON.stringify({
+          productId,
+          rating
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to submit rating');
+      }
+
+      const result = await response.json();
+      this.state.userRatings[productId] = rating;
+      this.updateRatingDisplay(productId, result.averageRating, result.totalRatings);
+      showNotification('Rating submitted successfully!', 'success');
+    } catch (error) {
+      console.error('Error submitting rating:', error);
+      showNotification(error.message || 'Failed to submit rating', 'error');
+    }
+  },
+
+  // Update rating display after submission
+  updateRatingDisplay(productId, averageRating, totalRatings) {
+    const container = document.querySelector(`.rating-container[data-product-id="${productId}"]`);
+    if (!container) return;
+
+    const starsInner = container.querySelector('.stars-inner');
+    const averageElement = container.querySelector('.average-rating');
+    const totalElement = container.querySelector('.total-ratings');
+
+    starsInner.style.width = `${(averageRating / 5) * 100}%`;
+    averageElement.textContent = averageRating.toFixed(1);
+    totalElement.textContent = `(${totalRatings} ${totalRatings === 1 ? 'rating' : 'ratings'})`;
+  },
+
+  // Initialize rating system
+  initialize() {
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('star-rating')) {
+        const productId = e.target.closest('.interactive-stars').dataset.productId;
+        const rating = parseInt(e.target.dataset.rating);
+        this.submitRating(productId, rating);
+      }
+    });
+
+    // Add rating system styles
+    const style = document.createElement('style');
+    style.textContent = this.getStyles();
+    document.head.appendChild(style);
+  },
+
+  // Get rating system styles
+  getStyles() {
+    return `
+      .rating-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0.5rem 0;
+      }
+
+      .stars-outer {
+        position: relative;
+        display: inline-block;
+        font-size: 20px;
+      }
+
+      .stars-outer::before {
+        content: "★★★★★";
+        color: #ccc;
+      }
+
+      .stars-inner {
+        position: absolute;
+        top: 0;
+        left: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        color: #ffd700;
+      }
+
+      .stars-inner::before {
+        content: "★★★★★";
+      }
+
+      .interactive-stars {
+        display: flex;
+        gap: 0.25rem;
+      }
+
+      .star-rating {
+        cursor: pointer;
+        font-size: 24px;
+        color: #ccc;
+        transition: color 0.2s;
+      }
+
+      .star-rating:hover,
+      .star-rating:hover ~ .star-rating {
+        color: #ffd700;
+      }
+
+      .rating-info {
+        font-size: 14px;
+        color: #666;
+      }
+    `;
+  }
+};
 const cryptoManager = {
   state: {
     cryptoPricesEnabled: false,
@@ -632,7 +785,7 @@ const cryptoManager = {
   }
 };
 
-// Make sure to clean up when page unloads
+
 window.addEventListener('unload', () => {
   if (cryptoManager.state.updateInterval) {
     cryptoManager.stopUpdateInterval();
@@ -881,6 +1034,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Initialize all managers
     await Promise.all([
       cryptoManager.initialize(),
+      ratingManager.initialize(),
       categoryManager.initialize(),
       paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl')
     ]);
@@ -959,7 +1113,7 @@ function displayProducts(products) {
         <span class="crypto-price-usd" style="display: none;">${product.price}</span>
           Crypto: ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
         </span>
-         
+         ${ratingManager.createStarRating(product.product_id, product.average_rating || 0, product.total_ratings || 0)}
       </div>
     `;
     
