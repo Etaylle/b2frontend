@@ -479,10 +479,10 @@ const cryptoManager = {
     cryptoRates: { BTC: 0, ETH: 0 },
     updateInterval: null,
     lastFetchTime: null,
-    rateFetchInterval: 300000, // 5 minutes in milliseconds
+    rateFetchInterval: 300000, 
   },
 
-  // Format crypto prices with better precision handling
+  
   formatCryptoPrice(usdPrice) {
     if (!this.state.cryptoPricesEnabled || !usdPrice) return `${usdPrice} $`;
 
@@ -568,19 +568,22 @@ const cryptoManager = {
         if (this.state.cryptoPricesEnabled) {
           await this.fetchCryptoRates();
         }
-        
+        console.log("update ALL PRODUCT PRICES CALL");
         this.updateAllProductPrices();
       });
     }
   },
 
   updateAllProductPrices() {
+    console.log("start")
     const priceSpans = document.querySelectorAll(".price-span");
+    console.log(priceSpan);
     priceSpans.forEach((priceSpan) => {
       const usdPrice = parseFloat(priceSpan.getAttribute("data-usd-price"));
       if (!isNaN(usdPrice)) {
         priceSpan.textContent = `Price: ${this.formatCryptoPrice(usdPrice)}`;
       }
+      
     });
   },
 
