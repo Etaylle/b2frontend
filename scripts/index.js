@@ -505,7 +505,20 @@ const ratingManager = {
       </div>
     `;
   },
+async  fetchProductRatings(productId) {
+  try {
+    const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`);
+    if (!response.ok) throw new Error('Failed to fetch ratings');
 
+    const { averageRating, totalRatings } = await response.json();
+    const ratingContainer = document.querySelector(`.rating-container[data-product-id="${productId}"]`);
+    if (ratingContainer) {
+      ratingManager.updateRatingDisplay(productId, averageRating, totalRatings);
+    }
+  } catch (error) {
+    console.error('Error fetching ratings:', error);
+  }
+},
   // Submit a rating
   async submitRating(productId, rating) {
     try {
