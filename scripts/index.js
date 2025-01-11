@@ -1003,22 +1003,28 @@ const categoryManager = {
     }
   },
 
-  async fetchProducts(categoryId = null) {
-    try {
-      const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-      const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
-      const response = await fetch(url);
-      
-      if (!response.ok) throw new Error("Failed to fetch products");
-
-      const products = await response.json();
-      this.state.products = products;
-      await this.renderProducts();
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      showNotification(error.message, "error");
+async fetchProducts(categoryId = null) {
+  try {
+    const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+    const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
+    const response = await fetch(url);
+    
+    if (!response.ok) throw new Error("Failed to fetch products");
+    const data = await response.json();
+    
+    // Check if the response has the new format with success property
+    if (data.success) {
+      this.state.products = data.products; // Access products array from the response
+    } else {
+      this.state.products = data; // Fallback for old format
     }
-  },
+    
+    await this.renderProducts();
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    showNotification(error.message, "error");
+  }
+},
  
   renderCategories() {
     const container = document.querySelector(".categories");
@@ -1211,15 +1217,28 @@ window.uiManager = uiManager;
 window.categoryManager = categoryManager;
 window.cryptoManager = cryptoManager;
 
-async function fetchProducts() {
+async function fetchProducts(categoryId = null) {
   try {
-    const response = await fetch('https://backend-3mvr.onrender.com/api/products');
-    const products = await response.json();
-    displayProducts(products);
+    const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+    const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
+    const response = await fetch(url);
+    
+    if (!response.ok) throw new Error("Failed to fetch products");
+    const data = await response.json();
+    
+    // Check if the response has the new format with success property
+    if (data.success) {
+      this.state.products = data.products; // Access products array from the response
+    } else {
+      this.state.products = data; // Fallback for old format
+    }
+    
+    await this.renderProducts();
   } catch (error) {
     console.error("Error fetching products:", error);
-    showNotification("Error fetching products", "error");
+    showNotification(error.message, "error");
   }
+
 }
 
 /*function displayProducts(products) {
@@ -1416,7 +1435,7 @@ window.cartManager = cartManager;
 window.paymentManager = paymentManager;
 window.uiManager = uiManager;
 window.categoryManager = categoryManager;
-async function fetchProducts() {
+/*async function fetchProducts() {
   try {
     const response = await fetch('https://backend-3mvr.onrender.com/api/products');
     const products = await response.json();
@@ -1424,7 +1443,7 @@ async function fetchProducts() {
   } catch (error) {
     console.error("Error fetching products:", error);
   }
-}
+}*/
 function displayProducts(products) {
   console.log('Displaying products:', products);
   
