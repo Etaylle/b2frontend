@@ -569,27 +569,15 @@ const cryptoManager = {
     }
   },
 
-  // Update all product prices with better DOM performance
   updateAllProductPrices() {
     const priceSpans = document.querySelectorAll(".price-span");
     if (!priceSpans.length) return;
 
-    // Use DocumentFragment for better performance
-    const fragment = document.createDocumentFragment();
     priceSpans.forEach((priceSpan) => {
       const usdPrice = parseFloat(priceSpan.getAttribute("data-usd-price"));
       if (!isNaN(usdPrice)) {
-        const newSpan = priceSpan.cloneNode(true);
-        newSpan.textContent = `Price: ${this.formatCryptoPrice(usdPrice)}`;
-        fragment.appendChild(newSpan);
+        priceSpan.textContent = `Price: ${this.formatCryptoPrice(usdPrice)}`;
       }
-    });
-
-    // Batch DOM updates
-    requestAnimationFrame(() => {
-      priceSpans.forEach((oldSpan, index) => {
-        oldSpan.parentNode.replaceChild(fragment.children[0], oldSpan);
-      });
     });
   },
 
