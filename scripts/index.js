@@ -565,7 +565,27 @@ const ratingManager = {
       distribution
     };
   },
+updateRatingDisplay(productId, averageRating, totalRatings) {
+  // Find the rating container for the specific product
+  const container = document.querySelector(`.interactive-stars[data-product-id="${productId}"]`);
+  if (!container) return; // Exit if the container is not found
 
+  // Update the average rating and total ratings label
+  const ratingLabel = container.querySelector('.rating-label');
+  if (ratingLabel) {
+    ratingLabel.textContent = `Average: ${averageRating.toFixed(1)} (${totalRatings} ratings)`;
+  }
+
+  // Update the star visuals based on the average rating
+  const stars = container.querySelectorAll('.star-rating');
+  if (stars) {
+    stars.forEach((star, index) => {
+      // Highlight stars up to the rounded average rating
+      star.classList.toggle('selected', index < Math.round(averageRating));
+    });
+  }
+}
+,
   updateRatingBreakdown(productId, distribution) {
     const container = document.querySelector(`.rating-container[data-product-id="${productId}"] .rating-breakdown`,  {
         ...fetchConfig,
