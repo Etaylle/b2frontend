@@ -1386,6 +1386,9 @@ function displayProducts(products) {
     );
 
     gridItem.innerHTML = `
+    <div class="product-rating">
+          ${ratingHTML}
+        </div>
       ${imageSlider}
       <div class="overlay">
         ${product.name} | <span class="price-span" data-usd-price="${product.price}">
@@ -1394,9 +1397,7 @@ function displayProducts(products) {
         <span class="crypto-price-usd" style="display: none;">${product.price}</span>
           Crypto: ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
         </span>
-        <div class="product-rating">
-          ${ratingHTML}
-        </div>
+        
       </div>
     `;
     
@@ -1530,6 +1531,9 @@ function displayProducts(products) {
     imageSlider += '</div>';
 
     gridItem.innerHTML = `
+    <div class="product-rating">
+          ${ratingHTML}
+        </div>
       ${imageSlider}
       <div class="overlay">
         ${product.name} | <span class="price-span" data-usd-price="${product.price}">Price: ${formatCryptoPrice(product.price)} | Q: ${product.stock}</span>
