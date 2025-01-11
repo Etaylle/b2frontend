@@ -790,7 +790,7 @@ const categoryManager = {
       gridItem.innerHTML = `
         ${imageSlider}
         <div class="overlay">
-          ${product.name} | <span class="price-span">Price: ${product.price} $ | Q: ${product.stock}</span>
+          ${product.name} | <span class="price-span" data-usd-price="${product.price}">Price: ${product.price} $ | Q: ${product.stock}</span>
         </div>
         <button class="add-to-cart-btn">+</button>
       `;
@@ -955,6 +955,10 @@ function displayProducts(products) {
         ${product.name} | <span class="price-span" data-usd-price="${product.price}">
           Price: ${cryptoManager.formatCryptoPrice(product.price)} | Q: ${product.stock}
         </span>
+        <span class="crypto-price-usd" style="display: none;">${product.price}</span>
+          Crypto: ${cryptoManager.formatCryptoPrice(product.price)} | Q: ${product.stock}
+        </span>
+         
       </div>
     `;
     
