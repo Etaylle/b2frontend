@@ -476,37 +476,33 @@ const paymentManager = {
 const cryptoManager = {
   state: {
     cryptoPricesEnabled: false,
-    cryptoRates: {
-      BTC: 0,
-      ETH: 0
-    }
+    cryptoRates: { BTC: 0, ETH: 0 },
   },
-  
+
   async fetchCryptoRates() {
     try {
-      const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd');
+      const response = await fetch(
+        "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd"
+      );
       const data = await response.json();
-      
-      // Store inverse rates (USD/crypto) for price conversion
+
       this.state.cryptoRates.BTC = 1 / data.bitcoin.usd;
       this.state.cryptoRates.ETH = 1 / data.ethereum.usd;
-      
-      // Update all displayed prices if crypto display is enabled
+
       if (this.state.cryptoPricesEnabled) {
         this.updateAllProductPrices();
       }
     } catch (error) {
-      console.error('Error fetching crypto rates:', error);
-      showNotification('Failed to fetch crypto rates', 'error');
+      console.error("Error fetching crypto rates:", error);
+      showNotification("Failed to fetch crypto rates", "error");
     }
   },
-  
-  // Add crypto toggle to the UI
+
   addCryptoToggle() {
-    const navbarRight = document.querySelector('.navbar-right');
-    
-    const toggleContainer = document.createElement('div');
-    toggleContainer.className = 'crypto-toggle-container';
+    const navbarRight = document.querySelector(".navbar-right");
+
+    const toggleContainer = document.createElement("div");
+    toggleContainer.className = "crypto-toggle-container";
     toggleContainer.innerHTML = `
       <label class="crypto-switch">
         <input type="checkbox" id="crypto-toggle">
@@ -514,54 +510,90 @@ const cryptoManager = {
       </label>
       <span class="crypto-label">Show Crypto Prices</span>
     `;
-    
+
     navbarRight.insertBefore(toggleContainer, navbarRight.firstChild);
-    
-    // Add event listener to toggle
-    document.getElementById('crypto-toggle').addEventListener('change', (e) => {
+
+    document.getElementById("crypto-toggle").addEventListener("change", (e) => {
       this.state.cryptoPricesEnabled = e.target.checked;
       this.updateAllProductPrices();
-      // Store preference
-      localStorage.setItem('cryptoPricesEnabled', this.state.cryptoPricesEnabled);
+      localStorage.setItem(
+        "cryptoPricesEnabled",
+        this.state.cryptoPricesEnabled
+      );
     });
   },
 
-  // Update price display function
   formatCryptoPrice(usdPrice) {
     if (!this.state.cryptoPricesEnabled) return `${usdPrice} $`;
-    
+
     const btcPrice = (usdPrice * this.state.cryptoRates.BTC).toFixed(8);
     const ethPrice = (usdPrice * this.state.cryptoRates.ETH).toFixed(6);
-    
+
     return `${usdPrice} $ | ₿${btcPrice} | Ξ${ethPrice}`;
   },
 
-  // Update all product prices
   updateAllProductPrices() {
-    document.querySelectorAll('.price-span').forEach(priceSpan => {
-      const usdPrice = parseFloat(priceSpan.getAttribute('data-usd-price'));
+    document.querySelectorAll(".price-span").forEach((priceSpan) => {
+      const usdPrice = parseFloat(priceSpan.getAttribute("data-usd-price"));
       if (!isNaN(usdPrice)) {
         priceSpan.textContent = `Price: ${this.formatCryptoPrice(usdPrice)}`;
       }
     });
-  }
+  },
+
+  async initialize() {
+    this.addCryptoToggle();
+
+    this.state.cryptoPricesEnabled =
+      localStorage.getItem("cryptoPricesEnabled") === "true";
+    document.getElementById("crypto-toggle").checked =
+      this.state.cryptoPricesEnabled;
+
+    await this.fetchCryptoRates();
+    setInterval(() => this.fetchCryptoRates(), 300000); // Update every 5 minutes
+  },
 };
 
-// Initialize and add crypto toggle on page load
+// Consolidated initialization logic
 document.addEventListener("DOMContentLoaded", async () => {
-  // Add crypto toggle to UI
-  cryptoManager.addCryptoToggle();
-  
-  // Load user preference from localStorage
-  cryptoManager.state.cryptoPricesEnabled = localStorage.getItem('cryptoPricesEnabled') === 'true';
-  document.getElementById('crypto-toggle').checked = cryptoManager.state.cryptoPricesEnabled;
-  
-  // Fetch initial crypto rates
-  await cryptoManager.fetchCryptoRates();
-  
-  // Set up periodic updates of crypto rates (every 5 minutes)
-  setInterval(() => cryptoManager.fetchCryptoRates(), 300000);
+  await cryptoManager.initialize();
+  await categoryManager.initialize();
+  authManager.displayUserInfo();
+  authManager.displayUserAvatar();
+  cartManager.updateDisplay();
+  await fetchProducts();
 });
+
+// Fetch and display products
+async function fetchProducts() {
+  try {
+    const response = await fetch("https://backend-3mvr.onrender.com/api/products");
+    const products = await response.json();
+    displayProducts(products);
+  } catch (error) {
+    console.error("Error fetching products:", error);
+  }
+}
+
+function displayProducts(products) {
+  console.log("Displaying products:", products);
+
+  const gridContainer = document.querySelector(".grid-container");
+  gridContainer.innerHTML = ""; // Ensure old products are cleared
+
+  products.forEach((product) => {
+    const productElement = document.createElement("div");
+    productElement.className = "product-item";
+    productElement.innerHTML = `
+      <h2>${product.name}</h2>
+      <span class="price-span" data-usd-price="${product.price}">
+        Price: ${cryptoManager.formatCryptoPrice(product.price)}
+      </span>
+    `;
+    gridContainer.appendChild(productElement);
+  });
+}
+
 
 const categoryManager = {
   state: {
@@ -806,6 +838,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl');
   // Initialize category filter  
   await categoryManager.initialize();
+  await cryptoManager.initialize();
   // Fetch initial data
   currentUser = await authManager.fetchCurrentUser();
   logo2 = document.querySelector(".credit-info");
@@ -813,15 +846,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     addCryptoToggle(); // Ensure this function is globally accessible or properly imported.
 });
   
-  // Load user preference
-  cryptoPricesEnabled = localStorage.getItem('cryptoPricesEnabled') === 'true';
-  document.getElementById('crypto-toggle').checked = cryptoPricesEnabled;
-  
-  // Fetch initial crypto rates
-  await fetchCryptoRates();
-  
-  // Set up periodic updates of crypto rates (every 5 minutes)
-  setInterval(fetchCryptoRates, 300000);
+
   // Initialize displays
   fetchProducts();
   authManager.displayUserInfo();
