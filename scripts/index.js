@@ -7,6 +7,11 @@ let products = [];
 let productStocks = {};
 let logo2;
 let data = {};
+let cryptoPricesEnabled = false;
+let cryptoRates = {
+  BTC: 0,
+  ETH: 0
+};
 const fetchConfig = {
   credentials: 'include',
   headers: {
@@ -722,6 +727,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   authManager.displayUserAvatar();
   cartManager.updateDisplay();
   categoryManager.initialize();
+  addCryptoToggle();
+  
+  // Load user preference
+  cryptoPricesEnabled = localStorage.getItem('cryptoPricesEnabled') === 'true';
+  document.getElementById('crypto-toggle').checked = cryptoPricesEnabled;
+  
+  // Fetch initial crypto rates
+  await fetchCryptoRates();
+  
+  // Set up periodic updates of crypto rates (every 5 minutes)
+  setInterval(fetchCryptoRates, 300000);
   // Set up UI event listeners
   const registerBtn = document.getElementById("register-btn");
   const closeRegisterBtn = document.querySelector(".close-register");
@@ -781,7 +797,69 @@ async function fetchProducts() {
     console.error("Error fetching products:", error);
   }
 }
+async function fetchCryptoRates() {
+  try {
+    const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd');
+    const data = await response.json();
+    
+    // Store inverse rates (USD/crypto) for price conversion
+    cryptoRates.BTC = 1 / data.bitcoin.usd;
+    cryptoRates.ETH = 1 / data.ethereum.usd;
+    
+    // Update all displayed prices if crypto display is enabled
+    if (cryptoPricesEnabled) {
+      updateAllProductPrices();
+    }
+  } catch (error) {
+    console.error('Error fetching crypto rates:', error);
+    showNotification('Failed to fetch crypto rates', 'error');
+  }
+}
 
+// Add crypto toggle to the UI
+function addCryptoToggle() {
+  const navbarRight = document.querySelector('.navbar-right');
+  
+  const toggleContainer = document.createElement('div');
+  toggleContainer.className = 'crypto-toggle-container';
+  toggleContainer.innerHTML = `
+    <label class="crypto-switch">
+      <input type="checkbox" id="crypto-toggle">
+      <span class="slider round"></span>
+    </label>
+    <span class="crypto-label">Show Crypto Prices</span>
+  `;
+  
+  navbarRight.insertBefore(toggleContainer, navbarRight.firstChild);
+  
+  // Add event listener to toggle
+  document.getElementById('crypto-toggle').addEventListener('change', function(e) {
+    cryptoPricesEnabled = e.target.checked;
+    updateAllProductPrices();
+    // Store preference
+    localStorage.setItem('cryptoPricesEnabled', cryptoPricesEnabled);
+  });
+}
+
+// Update price display function
+function formatCryptoPrice(usdPrice) {
+  if (!cryptoPricesEnabled) return `${usdPrice} $`;
+  
+  const btcPrice = (usdPrice * cryptoRates.BTC).toFixed(8);
+  const ethPrice = (usdPrice * cryptoRates.ETH).toFixed(6);
+  
+  return `${usdPrice} $ | ₿${btcPrice} | Ξ${ethPrice}`;
+}
+
+// Update all product prices
+function updateAllProductPrices() {
+  document.querySelectorAll('.price-span').forEach(priceSpan => {
+    const usdPrice = parseFloat(priceSpan.getAttribute('data-usd-price'));
+    if (!isNaN(usdPrice)) {
+      priceSpan.textContent = `Price: ${formatCryptoPrice(usdPrice)}`;
+    }
+  });
+}
 function displayProducts(products) {
   console.log('Displaying products:', products);
   
@@ -809,7 +887,7 @@ function displayProducts(products) {
     gridItem.innerHTML = `
       ${imageSlider}
       <div class="overlay">
-        ${product.name} | <span class="price-span">Price: ${product.price} $ | Q: ${product.stock}</span>
+        ${product.name} | <span class="price-span" data-usd-price="${product.price}">Price: ${formatCryptoPrice(product.price)} | Q: ${product.stock}</span>
       </div>
     `;
     const addToCartButton = document.createElement("button");
