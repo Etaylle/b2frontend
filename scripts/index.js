@@ -473,20 +473,18 @@ const paymentManager = {
     }
   }
 };
-// Crypto price management
 const cryptoManager = {
   state: {
     cryptoPricesEnabled: false,
     cryptoRates: { BTC: 0, ETH: 0 },
     updateInterval: null,
     lastFetchTime: null,
-    rateFetchInterval: 300000 // 5 minutes
+    rateFetchInterval: 300000, 
   },
 
+  
   formatCryptoPrice(usdPrice) {
-    if (!this.state.cryptoPricesEnabled || !usdPrice) {
-      return `${usdPrice} $`;
-    }
+    if (!this.state.cryptoPricesEnabled || !usdPrice) return `${usdPrice} $`;
 
     try {
       const btcPrice = (usdPrice * this.state.cryptoRates.BTC).toFixed(8);
@@ -499,13 +497,12 @@ const cryptoManager = {
   },
 
   async fetchCryptoRates() {
-    try {
-      // Prevent frequent refetching
-      if (this.state.lastFetchTime && 
-          Date.now() - this.state.lastFetchTime < 60000) {
-        return;
-      }
+    if (this.state.lastFetchTime && 
+        Date.now() - this.state.lastFetchTime < 60000) {
+      return;
+    }
 
+    try {
       const response = await fetch(
         "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd"
       );
@@ -524,22 +521,20 @@ const cryptoManager = {
       this.state.cryptoRates.ETH = 1 / data.ethereum.usd;
       this.state.lastFetchTime = Date.now();
 
-      // Only update prices if crypto display is enabled
+      // Important: Update prices whenever we get new rates
       if (this.state.cryptoPricesEnabled) {
         this.updateAllProductPrices();
       }
     } catch (error) {
       console.error("Error fetching crypto rates:", error);
-      showNotification("Failed to fetch crypto rates", "error");
+      showNotification("Failed to fetch crypto rates. Retrying in 1 minute...", "error");
+      setTimeout(() => this.fetchCryptoRates(), 60000);
     }
   },
 
   createCryptoToggle() {
     const navbarRight = document.querySelector(".navbar-right");
-    if (!navbarRight) {
-      console.error("Navbar right not found");
-      return;
-    }
+    if (!navbarRight) return;
 
     // Remove existing toggle if present
     const existingToggle = document.querySelector(".crypto-toggle-container");
@@ -561,41 +556,35 @@ const cryptoManager = {
 
     const toggle = document.getElementById("crypto-toggle");
     if (toggle) {
-      // Set initial state from localStorage
+      // Set initial state
       toggle.checked = this.state.cryptoPricesEnabled;
       
+      // Add event listener
       toggle.addEventListener("change", async (e) => {
-        console.log('Toggle changed:', e.target.checked);
         this.state.cryptoPricesEnabled = e.target.checked;
-        localStorage.setItem("cryptoPricesEnabled", this.state.cryptoPricesEnabled.toString());
+        localStorage.setItem("cryptoPricesEnabled", this.state.cryptoPricesEnabled);
         
+        // Fetch fresh rates if enabled
         if (this.state.cryptoPricesEnabled) {
-          console.log('Fetching crypto rates...');
           await this.fetchCryptoRates();
         }
-        
-        console.log('Updating prices...');
+        console.log("update ALL PRODUCT PRICES CALL");
         this.updateAllProductPrices();
       });
     }
   },
 
   updateAllProductPrices() {
-    // Get all price spans
+    console.log("start")
     const priceSpans = document.querySelectorAll(".price-span");
-    
-    if (!priceSpans.length) {
-      console.log('No price spans found to update');
-      return;
-    }
-
-    console.log(`Updating ${priceSpans.length} price spans`);
-    
-    priceSpans.forEach(span => {
-      const usdPrice = parseFloat(span.getAttribute("data-usd-price"));
+    console.log(priceSpan);
+    priceSpans.forEach((priceSpan) => {
+      
+const usdPrice = parseFloat(priceSpan.getAttribute("data-usd-price"));
       if (!isNaN(usdPrice)) {
-        span.textContent = `Price: ${this.formatCryptoPrice(usdPrice)}`;
+        priceSpan.textContent = `Price: ${this.formatCryptoPrice(usdPrice)}`;
       }
+      
     });
   },
 
@@ -604,8 +593,6 @@ const cryptoManager = {
       // Load saved preference
       const savedPreference = localStorage.getItem("cryptoPricesEnabled");
       this.state.cryptoPricesEnabled = savedPreference === "true";
-      
-      console.log('Initializing crypto manager, enabled:', this.state.cryptoPricesEnabled);
       
       // Create UI elements
       this.createCryptoToggle();
@@ -618,10 +605,8 @@ const cryptoManager = {
       // Start update interval
       this.startUpdateInterval();
       
-      // Initial price update
-      if (this.state.cryptoPricesEnabled) {
-        this.updateAllProductPrices();
-      }
+      // Update initial prices
+      this.updateAllProductPrices();
     } catch (error) {
       console.error("Error initializing crypto manager:", error);
       showNotification("Failed to initialize cryptocurrency features", "error");
@@ -646,12 +631,6 @@ const cryptoManager = {
   }
 };
 
-// Add cleanup listener
-window.addEventListener('unload', () => {
-  if (cryptoManager.state.updateInterval) {
-    cryptoManager.stopUpdateInterval();
-  }
-});
 // Make sure to clean up when page unloads
 window.addEventListener('unload', () => {
   if (cryptoManager.state.updateInterval) {
@@ -811,7 +790,7 @@ const categoryManager = {
       gridItem.innerHTML = `
         ${imageSlider}
         <div class="overlay">
-         ${product.name} | <span class="price-span">Price: ${product.price} $ | Q: ${product.stock}</span>
+          ${product.name} | <span class="price-span">Price: ${product.price} $ | Q: ${product.stock}</span>
         </div>
         <button class="add-to-cart-btn">+</button>
       `;
