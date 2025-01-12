@@ -1087,7 +1087,32 @@ renderProducts() {
     ratingManager.initialize();
     window.ratingManagerInitialized = true;
   }
+
+
   
+  const style = document.createElement('style');
+  style.textContent = `
+    .grid-item {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .product-rating {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 2;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 5px;
+      border-radius: 4px;
+    }
+    
+    .rating-container {
+      margin: 0;
+    }
+  `;
+  document.head.appendChild(style);
 
   initializeImageSliders();
   attachCartEventListeners();
