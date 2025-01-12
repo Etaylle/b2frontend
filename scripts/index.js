@@ -497,69 +497,37 @@ setProductData(products) {
       total_ratings: 0
     };
   },
-
-  async openRatingModal(productId) {
-    try {
-      // Fetch latest rating data
-      const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`, {
-        credentials: 'include'
-      });
-      if (!response.ok) throw new Error('Failed to fetch ratings');
-      const data = await response.json();
-
-      // Get product details from state
-      const product = this.findProduct(productId);
-
-      // Create modal if it doesn't exist
-      if (!this.state.modalContainer) {
-        this.state.modalContainer = document.createElement('div');
-        this.state.modalContainer.className = 'rating-modal-container';
-        document.body.appendChild(this.state.modalContainer);
-      }
-      // Process the rating distribution properly
-      const distribution = data.ratings ? this.processRatingDistribution(data.ratings) : [0, 0, 0, 0, 0];
-
-      const modalContent = this.createRatingModal(
-        productId,
-        product.name,
-        data.averageRating || product.average_rating,
-        data.totalRatings || product.total_ratings,
-        distribution
-      );
-
-      this.state.modalContainer.innerHTML = `
-        <div class="modal-backdrop"></div>
-        <div class="modal-content">
-          <button class="close-modal">×</button>
-          ${modalContent}
-        </div>
-      `;
-
-      this.state.modalContainer.classList.add('active');
-      
-      // Attach event listeners after creating the modal
-      this.attachModalEventListeners(productId);
-    } catch (error) {
-      console.error('Error opening rating modal:', error);
-      showNotification('Failed to load rating details', 'error');
-    }
-  },
-  processRatingDistribution(distributionData) {
+// Data processing functions
+processRatingDistribution = (distributionData) => {
   // Initialize array with zeros for all possible ratings (1-5)
   const distribution = [0, 0, 0, 0, 0];
   
+  if (!distributionData) return distribution;
+  
+  // Handle array of rating objects
   if (Array.isArray(distributionData)) {
     distributionData.forEach(item => {
       const rating = parseInt(item.rating);
-      const count = parseInt(item.count);
+      const count = parseInt(item.count || 1); // If count is not provided, assume 1
       if (rating >= 1 && rating <= 5) {
         distribution[rating - 1] = count;
+      }
+    });
+  }
+  // Handle object with rating counts
+  else if (typeof distributionData === 'object') {
+    Object.entries(distributionData).forEach(([rating, count]) => {
+      const ratingNum = parseInt(rating);
+      if (ratingNum >= 1 && ratingNum <= 5) {
+        distribution[ratingNum - 1] = parseInt(count);
       }
     });
   }
   
   return distribution;
 },
+
+
   processRatingDistribution(ratings) {
     const distribution = [0, 0, 0, 0, 0];
     if (Array.isArray(ratings)) {
