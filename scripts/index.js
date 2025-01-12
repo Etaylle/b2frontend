@@ -666,57 +666,6 @@ setProductData(products) {
       throw error;
     }
   },
-
-  // Modal Management
-  /*async openRatingModal(productId) {
-    try {
-      // Fetch latest rating data
-      const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`, {
-        credentials: 'include'
-      });
-      if (!response.ok) throw new Error('Failed to fetch ratings');
-      const data = await response.json();
-
-      // Find product details (assuming products are available in some global state)
-      const product = this.findProduct(productId);
-      if (!product) throw new Error('Product not found');
-
-      // Create modal if it doesn't exist
-      if (!this.state.modalContainer) {
-        this.state.modalContainer = document.createElement('div');
-        this.state.modalContainer.className = 'rating-modal-container';
-        document.body.appendChild(this.state.modalContainer);
-      }
-    // Process the distribution data
-    const distribution = data.success && data.distribution ? 
-      this.processRatingDistribution(data.distribution) : 
-      [0, 0, 0, 0, 0];
-
-    // Create and show modal
-    const modalContent = this.createRatingModal(
-      productId,
-      product.name,
-      data.averageRating || 0,
-      data.totalRatings || distribution.reduce((a, b) => a + b, 0),
-      distribution
-    );
-
-
-      this.state.modalContainer.innerHTML = `
-        <div class="modal-backdrop"></div>
-        <div class="modal-content">
-          <button class="close-modal">×</button>
-          ${modalContent}
-        </div>
-      `;
-
-      this.state.modalContainer.classList.add('active');
-    } catch (error) {
-      console.error('Error opening rating modal:', error);
-      showNotification('Failed to load rating details', 'error');
-    }
-  },
-  */
  async openRatingModal(productId) {
     try {
       console.log('Opening rating modal for product:', productId);
@@ -811,35 +760,6 @@ setProductData(products) {
       </div>
     `;
   },
-/*
-  createRatingModal(productId, productName, averageRating, totalRatings, distribution) {
-    const userRating = this.state.userRatings.get(productId);
-    return `
-      <div class="rating-modal">
-        <h3>${productName}</h3>
-        <div class="rating-overview">
-          <div class="average-rating">
-            <span class="big-number">${averageRating.toFixed(1)}</span>
-            <div class="rating-stars large">
-              ${this.createStars(averageRating)}
-            </div>
-            <div class="total-ratings">${totalRatings} total ratings</div>
-          </div>
-          <div class="rating-breakdown">
-            ${this.createRatingBreakdown(distribution)}
-          </div>
-        </div>
-        <div class="user-rating-section">
-          <h4>${userRating ? 'Your Rating' : 'Rate this Product'}</h4>
-          <div class="interactive-stars" data-product-id="${productId}">
-            ${this.createInteractiveStars(userRating)}
-          </div>
-          
-        </div>
-      </div>
-    `;
-  },
- */
  createRatingModal(productId, productName, averageRating, totalRatings, distribution) {
     const userRating = this.state.userRatings.get(productId);
     return `
@@ -891,13 +811,6 @@ setProductData(products) {
     return stars;
   },
 
-  /*createInteractiveStars(userRating = null) {
-    return Array.from({ length: 5 }, (_, i) => `
-      <span class="star interactive ${userRating && userRating >= i + 1 ? 'selected' : ''}"
-            data-rating="${i + 1}"
-            title="${this.getRatingLabel(i + 1)}">★</span>
-    `).join('');
-  },*/
 
   getRatingLabel(rating) {
     return ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][rating - 1] || '';
@@ -1569,54 +1482,8 @@ renderProducts() {
     window.ratingManagerInitialized = true;
   }
   initializeImageSliders();
-  attachCartEventListeners();
-}
-  /*renderProducts() {
-    const container = document.querySelector(".grid-container");
-    if (!container) {
-      console.error("Grid container not found");
-      return;
-    }
-
-    container.innerHTML = "";
-
-    this.state.products.forEach(product => {
-      // Create image slider
-      let imageSlider = '<div class="image-slider">';
-      if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-        product.images.forEach((img, index) => {
-          imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
-        });
-      } else if (product.image_url) {
-        imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
-      } else {
-        imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
-      }
-      imageSlider += '</div>';
-
-      const gridItem = document.createElement("div");
-      gridItem.className = "grid-item grid-item-xl";
-      gridItem.setAttribute("data-product-id", product.product_id);
-      console.log("Rendering product with ID:", product.product_id);
-
-      gridItem.innerHTML = `
-        ${imageSlider}
-        <div class="overlay">
-          ${product.name} | <span class="price-span" data-usd-price="${product.price}"> ${product.price} $ | Stock: ${product.stock}</span>
-        
-         <div class="product-rating">
-          ${ratingHTML}
-        </div>
-        </div>
-        <button class="add-to-cart-btn">+</button>
-      `;
-
-      container.appendChild(gridItem);
-    });
-
-    this.initializeImageSliders();
-    this.attachCartEventListeners();
-  }*/,
+  
+},
 
   initializeImageSliders() {
     document.querySelectorAll('.image-slider').forEach(slider => {
@@ -1629,20 +1496,6 @@ renderProducts() {
         currentIndex = (currentIndex + 1) % images.length;
         images[currentIndex].classList.add('active');
       }, 3000);
-    });
-  },
-
-  attachCartEventListeners() {
-    document.querySelectorAll(".add-to-cart-btn").forEach(button => {
-      button.addEventListener("click", (e) => {
-        const gridItem = e.target.closest('.grid-item');
-        if (gridItem) {
-          const productId = gridItem.getAttribute("data-product-id");
-          if (productId) {
-            cartManager.addItem(productId);
-          }
-        }
-      });
     });
   },
 
@@ -1753,59 +1606,6 @@ async function fetchProducts(categoryId = null) {
   }
 
 }
-
-/*function displayProducts(products) {
-  console.log('Displaying products:', products);
-  const ratingHtml = ratingManager.createStarRating(productId, averageRating, totalRatings, userRating);
-productContainer.innerHTML = ratingHtml;
-  const gridContainer = document.querySelector(".grid-container");
-  if (!gridContainer) return;
-  
-  gridContainer.innerHTML = "";
-
-  products.forEach((product) => {
-    const gridItem = document.createElement("div");
-    gridItem.classList.add("grid-item", "grid-item-xl");
-    gridItem.setAttribute("data-product-id", product.product_id);
-
-    // Create image slider
-    let imageSlider = '<div class="image-slider">';
-    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-      product.images.forEach((img, index) => {
-        imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
-      });
-    } else if (product.image_url) {
-      imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
-    } else {
-      imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
-    }
-    imageSlider += '</div>';
-
-    gridItem.innerHTML = `
-      ${imageSlider}
-      <div class="overlay">
-        ${product.name} | <span class="price-span" data-usd-price="${product.price}">
-          Price: ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
-        </span>
-        <span class="crypto-price-usd" style="display: none;">${product.price}</span>
-          Crypto: ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
-        </span>
-         ${ratingManager.createStarRating(product.product_id, product.average_rating || 0, product.total_ratings || 0)}
-      </div>
-    `;
-    
-    const addToCartButton = document.createElement("button");
-    addToCartButton.textContent = "+";
-    addToCartButton.className = "add-to-cart-btn";
-    gridItem.appendChild(addToCartButton);
-    gridContainer.appendChild(gridItem);
-  });
-
-  initializeImageSliders();
-  attachCartEventListeners();
-}
-*/
-
 function initializeImageSliders() {
   document.querySelectorAll('.image-slider').forEach(slider => {
     const images = slider.querySelectorAll('img');
@@ -1886,15 +1686,7 @@ window.cartManager = cartManager;
 window.paymentManager = paymentManager;
 window.uiManager = uiManager;
 window.categoryManager = categoryManager;
-/*async function fetchProducts() {
-  try {
-    const response = await fetch('https://backend-3mvr.onrender.com/api/products');
-    const products = await response.json();
-    displayProducts(products);
-  } catch (error) {
-    console.error("Error fetching products:", error);
-  }
-}*/
+
 function displayProducts(products) {
   console.log('Displaying products:', products);
   
