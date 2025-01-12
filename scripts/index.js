@@ -516,7 +516,7 @@ setProductData(products) {
         this.state.modalContainer.className = 'rating-modal-container';
         document.body.appendChild(this.state.modalContainer);
       }
-  // Process the rating distribution properly
+      // Process the rating distribution properly
       const distribution = data.ratings ? this.processRatingDistribution(data.ratings) : [0, 0, 0, 0, 0];
 
       const modalContent = this.createRatingModal(
@@ -544,7 +544,22 @@ setProductData(products) {
       showNotification('Failed to load rating details', 'error');
     }
   },
-
+  processRatingDistribution(distributionData) {
+  // Initialize array with zeros for all possible ratings (1-5)
+  const distribution = [0, 0, 0, 0, 0];
+  
+  if (Array.isArray(distributionData)) {
+    distributionData.forEach(item => {
+      const rating = parseInt(item.rating);
+      const count = parseInt(item.count);
+      if (rating >= 1 && rating <= 5) {
+        distribution[rating - 1] = count;
+      }
+    });
+  }
+  
+  return distribution;
+},
   processRatingDistribution(ratings) {
     const distribution = [0, 0, 0, 0, 0];
     if (Array.isArray(ratings)) {
@@ -664,6 +679,10 @@ setProductData(products) {
         this.state.modalContainer.className = 'rating-modal-container';
         document.body.appendChild(this.state.modalContainer);
       }
+    // Process the distribution data
+    const distribution = data.success && data.distribution ? 
+      this.processRatingDistribution(data.distribution) : 
+      [0, 0, 0, 0, 0];
 
       // Create and show modal
       const modalContent = this.createRatingModal(
@@ -671,7 +690,8 @@ setProductData(products) {
         product.name,
         data.averageRating,
         data.totalRatings,
-        data.distribution || [0, 0, 0, 0, 0]
+        data.distribution || distribution.reduce((a, b) => a + b, 0),
+        distribution
       );
 
       this.state.modalContainer.innerHTML = `
@@ -688,7 +708,25 @@ setProductData(products) {
       showNotification('Failed to load rating details', 'error');
     }
   },
-
+createRatingBreakdown(distribution) {
+  const total = distribution.reduce((a, b) => a + b, 0);
+  
+  // Create breakdown rows for ratings 5 to 1
+  return distribution.reverse().map((count, index) => {
+    const starCount = 5 - index;
+    const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
+    
+    return `
+      <div class="breakdown-row">
+        <span class="star-label">${starCount} stars</span>
+        <div class="bar-container">
+          <div class="bar-fill" style="width: ${percentage}%"></div>
+        </div>
+        <span class="count">${count}</span>
+      </div>
+    `;
+  }).join('');
+},
   closeRatingModal() {
     if (this.state.modalContainer) {
       this.state.modalContainer.classList.remove('active');
