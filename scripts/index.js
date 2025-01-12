@@ -544,7 +544,22 @@ setProductData(products) {
       showNotification('Failed to load rating details', 'error');
     }
   },
-
+  processRatingDistribution(distributionData) {
+  // Initialize array with zeros for all possible ratings (1-5)
+  const distribution = [0, 0, 0, 0, 0];
+  
+  if (Array.isArray(distributionData)) {
+    distributionData.forEach(item => {
+      const rating = parseInt(item.rating);
+      const count = parseInt(item.count);
+      if (rating >= 1 && rating <= 5) {
+        distribution[rating - 1] = count;
+      }
+    });
+  }
+  
+  return distribution;
+},
   processRatingDistribution(ratings) {
     const distribution = [0, 0, 0, 0, 0];
     if (Array.isArray(ratings)) {
@@ -675,7 +690,7 @@ setProductData(products) {
         product.name,
         data.averageRating,
         data.totalRatings,
-        data.distribution || distribution ((a, b) => a + b, 0),
+        data.distribution || distribution.reduce((a, b) => a + b, 0),
         distribution
       );
 
