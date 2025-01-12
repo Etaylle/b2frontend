@@ -584,7 +584,7 @@ setProductData(products) {
     const modalContent = this.state.modalContainer.querySelector('.modal-content');
     
     // Handle star rating clicks
-    const stars = modalContent.querySelectorAll('.star.interactive');
+    const stars = modalContent.querySelectorAll('.star interactive');
     stars.forEach(star => {
       star.addEventListener('click', async () => {
         const rating = parseInt(star.dataset.rating);
@@ -622,7 +622,7 @@ setProductData(products) {
     closeButton.addEventListener('click', () => this.closeRatingModal());
     backdrop.addEventListener('click', () => this.closeRatingModal());
   },
-  
+
   async removeRating(productId) {
     try {
       const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`, {
@@ -750,60 +750,7 @@ setProductData(products) {
       </div>
     `;
   },
-  attachEventListeners() {
-    document.addEventListener('click', async (e) => {
-      // Handle product card click
-      if (e.target.closest('.grid-item') && !e.target.closest('.rating-modal')) {
-        const productId = e.target.closest('.grid-item').dataset.productId;
-        await this.openRatingModal(productId);
-        return;
-      }
-
-      // Handle star rating click
-      if (e.target.classList.contains('star') && e.target.classList.contains('interactive')) {
-        const productId = e.target.closest('[data-product-id]').dataset.productId;
-        const rating = parseInt(e.target.dataset.rating);
-        if (!isNaN(rating)) {
-          await this.submitRating(productId, rating);
-          // Close modal after rating
-          this.closeRatingModal();
-        }
-        return;
-      }
-
-      // Handle remove rating button
-      if (e.target.classList.contains('remove-rating-btn')) {
-        const productId = e.target.closest('[data-product-id]').dataset.productId;
-        await this.removeRating(productId);
-        this.closeRatingModal();
-        return;
-      }
-
-      // Handle modal close
-      if (e.target.classList.contains('close-modal') || e.target.classList.contains('modal-backdrop')) {
-        this.closeRatingModal();
-      }
-    });
-
-    // Add hover effects for interactive stars
-    document.addEventListener('mouseover', (e) => {
-      if (e.target.classList.contains('star') && e.target.classList.contains('interactive')) {
-        const stars = e.target.parentElement.querySelectorAll('.star.interactive');
-        const rating = parseInt(e.target.dataset.rating);
-        stars.forEach((star, index) => {
-          star.classList.toggle('hover', index < rating);
-        });
-      }
-    });
-
-    document.addEventListener('mouseout', (e) => {
-      if (e.target.classList.contains('star') && e.target.classList.contains('interactive')) {
-        const stars = e.target.parentElement.querySelectorAll('.star.interactive');
-        stars.forEach(star => star.classList.remove('hover'));
-      }
-    });
-  },
-
+ 
   updateProductRatingDisplay(productId, averageRating, totalRatings) {
     const container = document.querySelector(`.rating-summary[data-product-id="${productId}"]`);
     if (container) {
@@ -836,32 +783,6 @@ setProductData(products) {
             title="${this.getRatingLabel(i + 1)}">★</span>
     `).join('');
   },*/
- createInteractiveStars(userRating = null) {
-    return `
-      <div class="stars-container">
-        ${Array.from({ length: 5 }, (_, i) => `
-          <span class="star interactive ${userRating && userRating >= i + 1 ? 'selected' : ''}"
-                data-rating="${i + 1}"
-                title="${this.getRatingLabel(i + 1)}">★</span>
-        `).join('')}
-      </div>
-    `;
-  },
-  createRatingBreakdown(distribution) {
-    const total = distribution.reduce((a, b) => a + b, 0);
-    return distribution.map((count, index) => {
-      const percentage = total ? (count / total * 100).toFixed(1) : 0;
-      return `
-        <div class="breakdown-row">
-          <span class="star-label">${5 - index} stars</span>
-          <div class="bar-container">
-            <div class="bar-fill" style="width: ${percentage}%"></div>
-          </div>
-          <span class="count">${count}</span>
-        </div>
-      `;
-    }).join('');
-  },
 
   getRatingLabel(rating) {
     return ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][rating - 1] || '';
@@ -874,28 +795,88 @@ setProductData(products) {
   },
 
   attachEventListeners() {
-    document.addEventListener('click', (e) => {
-      if (e.target.closest('.grid-item')) {
-        const productId = e.target.closest('.grid-item').dataset.productId;
-        this.openRatingModal(productId);
-      }
+  // Global event listener for product cards
+  document.addEventListener('click', async (e) => {
+    // Handle product card click
+    if (e.target.closest('.grid-item') && !e.target.closest('.rating-modal')) {
+      const productId = e.target.closest('.grid-item').dataset.productId;
+      await this.openRatingModal(productId);
+      return;
+    }
 
-      if (e.target.classList.contains('star.interactive')) {
-        const rating = parseInt(e.target.dataset.rating);
-        const productId = e.target.closest('[data-product-id]').dataset.productId;
-        this.submitRating(productId, rating);
-      }
-
-      if (e.target.classList.contains('remove-rating-btn')) {
-        const productId = e.target.closest('[data-product-id]').dataset.productId;
-        this.removeRating(productId);
-      }
-
-      if (e.target.classList.contains('close-modal') || e.target.classList.contains('modal-backdrop')) {
+    // Handle star rating click
+    if (e.target.matches('.star.interactive')) {  // Fixed selector
+      const productId = e.target.closest('[data-product-id]').dataset.productId;
+      const rating = parseInt(e.target.dataset.rating);
+      if (!isNaN(rating)) {
+        await this.submitRating(productId, rating);
         this.closeRatingModal();
       }
-    });
-  },
+      return;
+    }
+
+    // Handle remove rating button
+    if (e.target.classList.contains('remove-rating-btn')) {
+      const productId = e.target.closest('[data-product-id]').dataset.productId;
+      await this.removeRating(productId);
+      this.closeRatingModal();
+      return;
+    }
+
+    // Handle modal close
+    if (e.target.classList.contains('close-modal') || e.target.classList.contains('modal-backdrop')) {
+      this.closeRatingModal();
+    }
+  });
+
+  // Star hover effects
+  document.addEventListener('mouseover', (e) => {
+    if (e.target.matches('.star.interactive')) {
+      const stars = e.target.closest('.stars-container').querySelectorAll('.star.interactive');
+      const rating = parseInt(e.target.dataset.rating);
+      stars.forEach((star, index) => {
+        star.classList.toggle('hover', index < rating);
+      });
+    }
+  });
+
+  document.addEventListener('mouseout', (e) => {
+    if (e.target.matches('.star.interactive')) {
+      const stars = e.target.closest('.stars-container').querySelectorAll('.star.interactive');
+      stars.forEach(star => star.classList.remove('hover'));
+    }
+  });
+},
+// Modify the createInteractiveStars method
+createInteractiveStars(userRating = null) {
+  return `
+    <div class="stars-container">
+      ${Array.from({ length: 5 }, (_, i) => `
+        <span class="star interactive ${userRating && userRating >= i + 1 ? 'selected' : ''}"
+              data-rating="${i + 1}"
+              title="${this.getRatingLabel(i + 1)}">★</span>
+      `).join('')}
+    </div>
+  `;
+},
+
+// Fix the createRatingBreakdown method
+createRatingBreakdown(distribution) {
+  const total = distribution.reduce((a, b) => a + b, 0);
+  // Reverse the distribution array to show 5 stars first
+  return [...distribution].reverse().map((count, index) => {
+    const percentage = total ? (count / total * 100).toFixed(1) : 0;
+    return `
+      <div class="breakdown-row">
+        <span class="star-label">${5 - index} stars</span>
+        <div class="bar-container">
+          <div class="bar-fill" style="width: ${percentage}%"></div>
+        </div>
+        <span class="count">${count}</span>
+      </div>
+    `;
+  }).join('');
+},
 
   // Styles
   injectStyles() {
