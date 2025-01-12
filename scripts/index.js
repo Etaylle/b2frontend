@@ -1453,7 +1453,7 @@ async renderProducts() {
     gridItem.innerHTML = `
       <div class="product-content">
         ${imageSlider}
-        <div class="product-rating">${ratingHTML}</div>
+        
         <div class="overlay">
           ${product.name} | <span class="price-span" data-usd-price="${product.price}">
             ${cryptoManager.formatCryptoPrice(product.price)}
