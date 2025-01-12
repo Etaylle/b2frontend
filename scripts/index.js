@@ -690,8 +690,8 @@ setProductData(products) {
         product.name,
         data.averageRating,
         data.totalRatings,
-        data.distribution || distribution.reduce((a, b) => a + b, 0),
-        distribution
+        data.distribution || [0, 0, 0, 0, 0]
+      
       );
 
       this.state.modalContainer.innerHTML = `
@@ -708,25 +708,7 @@ setProductData(products) {
       showNotification('Failed to load rating details', 'error');
     }
   },
-createRatingBreakdown(distribution) {
-  const total = distribution.reduce((a, b) => a + b, 0);
-  
-  // Create breakdown rows for ratings 5 to 1
-  return distribution.reverse().map((count, index) => {
-    const starCount = 5 - index;
-    const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
-    
-    return `
-      <div class="breakdown-row">
-        <span class="star-label">${starCount} stars</span>
-        <div class="bar-container">
-          <div class="bar-fill" style="width: ${percentage}%"></div>
-        </div>
-        <span class="count">${count}</span>
-      </div>
-    `;
-  }).join('');
-},
+
   closeRatingModal() {
     if (this.state.modalContainer) {
       this.state.modalContainer.classList.remove('active');
