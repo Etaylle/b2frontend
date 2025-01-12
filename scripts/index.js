@@ -697,8 +697,7 @@ async openRatingModal(productId) {
       console.error('Error opening rating modal:', error);
       showNotification('Failed to load rating details', 'error');
     }
-  }
-},
+  },
   closeRatingModal() {
     if (this.state.modalContainer) {
       this.state.modalContainer.classList.remove('active');
