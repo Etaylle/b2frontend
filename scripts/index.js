@@ -518,33 +518,53 @@ setProductData(products) {
     console.log('Final processed distribution:', distribution);
     return distribution;
   },
-// Add this new method to fetch user ratings
-  async fetchUserRatings() {
+
+    async fetchUserRatings() {
     try {
+      // Using the same format as the submit endpoint
       const response = await fetch('https://backend-3mvr.onrender.com/api/ratings/user', {
-        credentials: 'include'
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add any other headers your backend might need
+        },
+        credentials: 'include'  // Important for sending cookies
       });
       
-      if (!response.ok) throw new Error('Failed to fetch user ratings');
+      if (!response.ok) {
+        console.error('Response status:', response.status);
+        throw new Error('Failed to fetch user ratings');
+      }
       
       const data = await response.json();
-      console.log('Fetched user ratings:', data);
+      console.log('Fetched user ratings response:', data);
       
       // Clear existing ratings
       this.state.userRatings.clear();
       
-      // Store the ratings in the Map
-      if (data.ratings && Array.isArray(data.ratings)) {
+      // Handle potential null/undefined response
+      if (data && data.ratings && Array.isArray(data.ratings)) {
         data.ratings.forEach(rating => {
-          this.state.userRatings.set(rating.productId.toString(), rating.rating);
+          if (rating && rating.productId) {
+            this.state.userRatings.set(rating.productId.toString(), rating.rating);
+            console.log(`Stored rating for product ${rating.productId}: ${rating.rating}`);
+          }
         });
+      } else {
+        console.log('No ratings found in response:', data);
       }
       
       // Update all visible product ratings
       this.updateAllProductRatings();
     } catch (error) {
       console.error('Error fetching user ratings:', error);
+      // Don't show notification to user since this is background loading
     }
+  },
+
+  
+  hasUserRatings() {
+    return this.state.userRatings.size > 0;
   },
    updateAllProductRatings() {
     document.querySelectorAll('.rating-summary').forEach(container => {
@@ -885,7 +905,15 @@ setProductData(products) {
 
   
   async initialize() {
-    await this.fetchUserRatings();
+    try {
+      await this.fetchUserRatings();
+      console.log('User ratings initialized:', 
+        Array.from(this.state.userRatings.entries()));
+    } catch (error) {
+      console.error('Failed to initialize user ratings:', error);
+    }
+    
+    // Continue with other initialization even if ratings fetch fails
     this.attachEventListeners();
     this.injectStyles();
   },
