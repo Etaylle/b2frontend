@@ -1138,7 +1138,7 @@ const cryptoManager = {
 
   
   formatCryptoPrice(usdPrice, stock) {
-    if (!this.state.cryptoPricesEnabled || !usdPrice) return `$${usdPrice} | Stock: ${product.stock}`;
+    if (!this.state.cryptoPricesEnabled || !usdPrice) return `$${usdPrice} | Stock: ${stock}`;
 
     try {
       const btcPrice = (usdPrice * this.state.cryptoRates.BTC).toFixed(8);
