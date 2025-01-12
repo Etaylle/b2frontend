@@ -1143,10 +1143,10 @@ const cryptoManager = {
     try {
       const btcPrice = (usdPrice * this.state.cryptoRates.BTC).toFixed(8);
       const ethPrice = (usdPrice * this.state.cryptoRates.ETH).toFixed(6);
-      return `$${usdPrice} | ₿ ${btcPrice} | Ξ ${ethPrice} | Stock: ${product.stock}`;
+      return `$${usdPrice} | ₿ ${btcPrice} | Ξ ${ethPrice} | Stock: ${stock}`;
     } catch (error) {
       console.error('Error formatting crypto price:', error);
-      return `$${usdPrice} | Stock: ${product.stock}`;
+      return `$${usdPrice} | Stock: ${stock}`;
     }
   },
 
@@ -1368,20 +1368,14 @@ async fetchProducts(categoryId = null) {
     const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
     const response = await fetch(url);
     
-if (!response.ok) throw new Error("Failed to fetch products");
+    if (!response.ok) throw new Error("Failed to fetch products");
     const data = await response.json();
     
     // Check if the response has the new format with success property
     if (data.success) {
-      this.state.products = data.products.map(product => ({
-        ...product,
-        stock: product.stock || 0 // Add stock property with default value of 0
-      }));
+      this.state.products = data.products; // Access products array from the response
     } else {
-      this.state.products = data.map(product => ({
-        ...product,
-        stock: product.stock || 0 // Add stock property with default value of 0
-      }));
+      this.state.products = data; // Fallback for old format
     }
     
     await this.renderProducts();
