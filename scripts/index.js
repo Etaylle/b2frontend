@@ -748,18 +748,7 @@ setProductData(products) {
     return null;
   },
 
-  // UI Components
-  createProductRating(productId, averageRating, totalRatings) {
-    const rating = this.state.userRatings.get(productId);
-    return `
-      <div class="rating-summary" data-product-id="${productId}">
-        <div class="rating-stars">
-          ${this.createStars(averageRating)}
-        </div>
-        <div class="rating-count">${totalRatings} ${totalRatings === 1 ? 'rating' : 'ratings'}</div>
-      </div>
-    `;
-  },
+  
  createRatingModal(productId, productName, averageRating, totalRatings, distribution) {
     const userRating = this.state.userRatings.get(productId);
     return `
