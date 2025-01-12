@@ -498,7 +498,52 @@ setProductData(products) {
     };
   },
 
+  async openRatingModal(productId) {
+    try {
+      // Fetch latest rating data
+      const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch ratings');
+      const data = await response.json();
 
+      // Get product details from state
+      const product = this.findProduct(productId);
+
+      // Create modal if it doesn't exist
+      if (!this.state.modalContainer) {
+        this.state.modalContainer = document.createElement('div');
+        this.state.modalContainer.className = 'rating-modal-container';
+        document.body.appendChild(this.state.modalContainer);
+      }
+      // Process the rating distribution properly
+      const distribution = data.ratings ? this.processRatingDistribution(data.ratings) : [0, 0, 0, 0, 0];
+
+      const modalContent = this.createRatingModal(
+        productId,
+        product.name,
+        data.averageRating || product.average_rating,
+        data.totalRatings || product.total_ratings,
+        distribution
+      );
+
+      this.state.modalContainer.innerHTML = `
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+          <button class="close-modal">×</button>
+          ${modalContent}
+        </div>
+      `;
+
+      this.state.modalContainer.classList.add('active');
+      
+      // Attach event listeners after creating the modal
+      this.attachModalEventListeners(productId);
+    } catch (error) {
+      console.error('Error opening rating modal:', error);
+      showNotification('Failed to load rating details', 'error');
+    }
+  },
 
   processRatingDistribution(ratings) {
     const distribution = [0, 0, 0, 0, 0];
@@ -630,7 +675,7 @@ setProductData(products) {
         product.name,
         data.averageRating,
         data.totalRatings,
-        data.distribution || distribution.reduce((a, b) => a + b, 0),
+        data.distribution || distribution ((a, b) => a + b, 0),
         distribution
       );
 
