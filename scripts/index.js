@@ -1417,10 +1417,11 @@ async fetchProducts(categoryId = null) {
     this.highlightSelectedCategory();
   },
 async renderProducts() {
-  
   const gridContainer = document.querySelector(".grid-container");
   if (!gridContainer) return;
-   ratingManager.setProductData(this.state.products);
+  
+  // Set product data for rating manager first
+  ratingManager.setProductData(this.state.products);
   gridContainer.innerHTML = "";
 
   this.state.products.forEach((product) => {
@@ -1442,52 +1443,50 @@ async renderProducts() {
     imageSlider += '</div>';
 
     // Create rating display HTML
-     const ratingHTML = ratingManager.createProductRating(
+    const ratingHTML = ratingManager.createProductRating(
       product.product_id,
       product.average_rating || 0,
       product.total_ratings || 0
     );
 
-    // Only include rating div if ratingHTML exists
-    const ratingDiv = ratingHTML ? `<div class="product-rating">${ratingHTML}</div>` : '';
-
-  
-
+    // Properly structure the grid item content
     gridItem.innerHTML = `
-      ${imageSlider}
-      ${ratingDiv}
-      </div>
-      <div class="overlay">
-        ${product.name} | <span class="price-span" data-usd-price="${product.price}">
-        ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
-        </span>
-        <span class="crypto-price-usd" style="display: none;">${product.price}</span>
-        | Stock: ${product.stock} 
+      <div class="product-content">
+        ${imageSlider}
+        <div class="product-rating">${ratingHTML}</div>
+        <div class="overlay">
+          ${product.name} | <span class="price-span" data-usd-price="${product.price}">
+            ${cryptoManager.formatCryptoPrice(product.price)}
+          </span>
+          | Stock: ${product.stock}
+        </div>
       </div>
     `;
     
+    // Add the cart button
     const addToCartButton = document.createElement("button");
     addToCartButton.textContent = "+";
     addToCartButton.className = "add-to-cart-btn";
     gridItem.appendChild(addToCartButton);
-    gridContainer.appendChild(gridItem);
-    // Add event listener to the "Add to Cart" button
-    const addToCartBtn = gridItem.querySelector('.add-to-cart-btn');
-    addToCartBtn.addEventListener("click", (e) => {
-      e.stopPropagation(); // Prevent event from bubbling up to gridItem
+
+    // Add click handler for cart button
+    addToCartButton.addEventListener("click", (e) => {
+      e.stopPropagation();
       cartManager.addItem(product.product_id);
     });
+
+    gridContainer.appendChild(gridItem);
   });
-  ratingManager.setProductData(this.state.products);
-  
+
   // Initialize rating manager if needed
   if (!window.ratingManagerInitialized) {
     ratingManager.initialize();
     window.ratingManagerInitialized = true;
   }
+
+  // Fetch ratings and initialize sliders
   await ratingManager.fetchUserRatings();
-  initializeImageSliders();
-  
+  this.initializeImageSliders();
 },
 
   initializeImageSliders() {
