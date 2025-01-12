@@ -1137,16 +1137,16 @@ const cryptoManager = {
   },
 
   
-  formatCryptoPrice(usdPrice, stock) {
-    if (!this.state.cryptoPricesEnabled || !usdPrice) return `$${usdPrice} | Stock: ${stock}`;
+  formatCryptoPrice(usdPrice) {
+    if (!this.state.cryptoPricesEnabled || !usdPrice) return `$${usdPrice}`;
 
     try {
       const btcPrice = (usdPrice * this.state.cryptoRates.BTC).toFixed(8);
       const ethPrice = (usdPrice * this.state.cryptoRates.ETH).toFixed(6);
-      return `$${usdPrice} | ₿ ${btcPrice} | Ξ ${ethPrice} | Stock: ${stock}`;
+      return `$${usdPrice} | ₿ ${btcPrice} | Ξ ${ethPrice}`;
     } catch (error) {
       console.error('Error formatting crypto price:', error);
-      return `$${usdPrice} | Stock: ${stock}`;
+      return `$${usdPrice}`;
     }
   },
 
