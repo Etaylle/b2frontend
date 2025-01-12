@@ -826,7 +826,6 @@ setProductData(products) {
       console.error('Failed to initialize user ratings:', error);
     }
     
-    // Continue with other initialization even if ratings fetch fails
     this.attachEventListeners();
     this.injectStyles();
   },
@@ -1486,6 +1485,7 @@ renderProducts() {
     ratingManager.initialize();
     window.ratingManagerInitialized = true;
   }
+  await ratingManager.fetchUserRatings(thisState);
   initializeImageSliders();
   
 },
@@ -1557,6 +1557,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       ratingManager.initialize(),
       categoryManager.initialize(),
       paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl')
+      
     ]);
 
     // Fetch initial data
