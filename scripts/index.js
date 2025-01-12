@@ -497,35 +497,7 @@ setProductData(products) {
       total_ratings: 0
     };
   },
-// Data processing functions
-processRatingDistribution = (distributionData) => {
-  // Initialize array with zeros for all possible ratings (1-5)
-  const distribution = [0, 0, 0, 0, 0];
-  
-  if (!distributionData) return distribution;
-  
-  // Handle array of rating objects
-  if (Array.isArray(distributionData)) {
-    distributionData.forEach(item => {
-      const rating = parseInt(item.rating);
-      const count = parseInt(item.count || 1); // If count is not provided, assume 1
-      if (rating >= 1 && rating <= 5) {
-        distribution[rating - 1] = count;
-      }
-    });
-  }
-  // Handle object with rating counts
-  else if (typeof distributionData === 'object') {
-    Object.entries(distributionData).forEach(([rating, count]) => {
-      const ratingNum = parseInt(rating);
-      if (ratingNum >= 1 && ratingNum <= 5) {
-        distribution[ratingNum - 1] = parseInt(count);
-      }
-    });
-  }
-  
-  return distribution;
-},
+
 
 
   processRatingDistribution(ratings) {
