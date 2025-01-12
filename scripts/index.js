@@ -1324,7 +1324,7 @@ const cryptoManager = {
       console.log(priceSpan); 
       const usdPrice = parseFloat(priceSpan.getAttribute("data-usd-price"));
       if (!isNaN(usdPrice)) {
-        priceSpan.textContent = `${this.formatCryptoPrice(usdPrice)}`;
+        priceSpan.textContent = `${this.formatCryptoPrice(usdPrice)}| Stock: ${product.stock}`;
       }
       
     });
