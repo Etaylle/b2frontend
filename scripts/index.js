@@ -1419,9 +1419,10 @@ async fetchProducts(categoryId = null) {
   },
 renderProducts() {
   
+  renderProducts() {
   const gridContainer = document.querySelector(".grid-container");
   if (!gridContainer) return;
-   ratingManager.setProductData(this.state.products);
+  ratingManager.setProductData(this.state.products);
   gridContainer.innerHTML = "";
 
   this.state.products.forEach((product) => {
@@ -1442,18 +1443,19 @@ renderProducts() {
     }
     imageSlider += '</div>';
 
-    // Create rating display HTML
-     const ratingHTML = ratingManager.createProductRating(
+   
+    const ratingHTML = ratingManager.createProductRating(
       product.product_id,
       product.average_rating || 0,
       product.total_ratings || 0
     );
 
+  
+    const ratingDiv = ratingHTML ? `<div class="product-rating">${ratingHTML}</div>` : '';
+
     gridItem.innerHTML = `
       ${imageSlider}
-      <div class="product-rating">
-        ${ratingHTML}
-      </div>
+      ${ratingDiv}
       <div class="overlay">
         ${product.name} | <span class="price-span" data-usd-price="${product.price}">
         ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
@@ -1688,65 +1690,65 @@ window.paymentManager = paymentManager;
 window.uiManager = uiManager;
 window.categoryManager = categoryManager;
 
-function displayProducts(products) {
-  console.log('Displaying products:', products);
+// function displayProducts(products) {
+//   console.log('Displaying products:', products);
   
-  const gridContainer = document.querySelector(".grid-container");
-  gridContainer.innerHTML = "";
+//   const gridContainer = document.querySelector(".grid-container");
+//   gridContainer.innerHTML = "";
 
-  products.forEach((product) => {
-    const gridItem = document.createElement("div");
-    gridItem.classList.add("grid-item", "grid-item-xl");
-    gridItem.setAttribute("data-product-id", product.product_id);
+//   products.forEach((product) => {
+//     const gridItem = document.createElement("div");
+//     gridItem.classList.add("grid-item", "grid-item-xl");
+//     gridItem.setAttribute("data-product-id", product.product_id);
 
-    // Create image slider
-    let imageSlider = '<div class="image-slider">';
-    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-      product.images.forEach((img, index) => {
-        imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
-      });
-    } else if (product.image_url) {
-      imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
-    } else {
-      imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
-    }
-    imageSlider += '</div>';
+//     // Create image slider
+//     let imageSlider = '<div class="image-slider">';
+//     if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+//       product.images.forEach((img, index) => {
+//         imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
+//       });
+//     } else if (product.image_url) {
+//       imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
+//     } else {
+//       imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
+//     }
+//     imageSlider += '</div>';
 
-    gridItem.innerHTML = `
-    <div class="product-rating">
-          ${ratingHTML}
-        </div>
-      ${imageSlider}
-      <div class="overlay">
-        ${product.name} | <span class="price-span" data-usd-price="${product.price}"> ${formatCryptoPrice(product.price)} | Stock: ${product.stock}</span>
-      </div>
-    `;
-    const addToCartButton = document.createElement("button");
-    addToCartButton.textContent = "+";
-    gridItem.appendChild(addToCartButton);
-    gridContainer.appendChild(gridItem);
-  });
+//     gridItem.innerHTML = `
+//     <div class="product-rating">
+//           ${ratingHTML}
+//         </div>
+//       ${imageSlider}
+//       <div class="overlay">
+//         ${product.name} | <span class="price-span" data-usd-price="${product.price}"> ${formatCryptoPrice(product.price)} | Stock: ${product.stock}</span>
+//       </div>
+//     `;
+//     const addToCartButton = document.createElement("button");
+//     addToCartButton.textContent = "+";
+//     gridItem.appendChild(addToCartButton);
+//     gridContainer.appendChild(gridItem);
+//   });
 
-  // Add event listeners for image slider
-  document.querySelectorAll('.image-slider').forEach(slider => {
-    const images = slider.querySelectorAll('img');
-    let currentIndex = 0;
+//   // Add event listeners for image slider
+//   document.querySelectorAll('.image-slider').forEach(slider => {
+//     const images = slider.querySelectorAll('img');
+//     let currentIndex = 0;
 
-    setInterval(() => {
-      images[currentIndex].classList.remove('active');
-      currentIndex = (currentIndex + 1) % images.length;
-      images[currentIndex].classList.add('active');
-    }, 3000);
-  });
+//     setInterval(() => {
+//       images[currentIndex].classList.remove('active');
+//       currentIndex = (currentIndex + 1) % images.length;
+//       images[currentIndex].classList.add('active');
+//     }, 3000);
+//   });
 
-  // Add event listeners for add to cart buttons
-  document.querySelectorAll(".grid-item button").forEach((button) => {
-    button.addEventListener("click", () => {
-      const productId = button.parentElement.getAttribute("data-product-id");
-      cartManager.addItem(productId);
-    });
-  });
-}
+//   // Add event listeners for add to cart buttons
+//   document.querySelectorAll(".grid-item button").forEach((button) => {
+//     button.addEventListener("click", () => {
+//       const productId = button.parentElement.getAttribute("data-product-id");
+//       cartManager.addItem(productId);
+//     });
+//   });
+// }
 function showNotification(message, type = 'success',) {
   const notification = document.createElement('div');
   notification.textContent = message;
