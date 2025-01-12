@@ -199,7 +199,7 @@ async fetchCart() {
         <img src="${imageUrl}" alt="${productName}" class="cart-item-image">
         <div class="cart-item-details">
           <span class="item-name">${productName} | </span>
-          <span class="item-price">Price: ${parseFloat(productPrice).toFixed(2)} $ |</span>
+          <span class="item-price"> ${parseFloat(productPrice).toFixed(2)} $ |</span>
           <span class="item-quantity">Quantity: ${item.quantity}</span>
         </div>
         <div class="cart-item-controls">
@@ -1920,7 +1920,7 @@ function displayProducts(products) {
         </div>
       ${imageSlider}
       <div class="overlay">
-        ${product.name} | <span class="price-span" data-usd-price="${product.price}">Price: ${formatCryptoPrice(product.price)} | Q: ${product.stock}</span>
+        ${product.name} | <span class="price-span" data-usd-price="${product.price}"> ${formatCryptoPrice(product.price)} | Stock: ${product.stock}</span>
       </div>
     `;
     const addToCartButton = document.createElement("button");
