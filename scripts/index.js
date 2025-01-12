@@ -1368,14 +1368,20 @@ async fetchProducts(categoryId = null) {
     const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
     const response = await fetch(url);
     
-    if (!response.ok) throw new Error("Failed to fetch products");
+if (!response.ok) throw new Error("Failed to fetch products");
     const data = await response.json();
     
     // Check if the response has the new format with success property
     if (data.success) {
-      this.state.products = data.products; // Access products array from the response
+      this.state.products = data.products.map(product => ({
+        ...product,
+        stock: product.stock || 0 // Add stock property with default value of 0
+      }));
     } else {
-      this.state.products = data; // Fallback for old format
+      this.state.products = data.map(product => ({
+        ...product,
+        stock: product.stock || 0 // Add stock property with default value of 0
+      }));
     }
     
     await this.renderProducts();
