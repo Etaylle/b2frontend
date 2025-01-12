@@ -684,15 +684,15 @@ setProductData(products) {
       this.processRatingDistribution(data.distribution) : 
       [0, 0, 0, 0, 0];
 
-      // Create and show modal
-      const modalContent = this.createRatingModal(
-        productId,
-        product.name,
-        data.averageRating,
-        data.totalRatings,
-        data.distribution || [0, 0, 0, 0, 0]
-      
-      );
+    // Create and show modal
+    const modalContent = this.createRatingModal(
+      productId,
+      product.name,
+      data.averageRating || 0,
+      data.totalRatings || distribution.reduce((a, b) => a + b, 0),
+      distribution
+    );
+
 
       this.state.modalContainer.innerHTML = `
         <div class="modal-backdrop"></div>
