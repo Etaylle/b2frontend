@@ -476,10 +476,70 @@ const paymentManager = {
 // RATING MANAGER
 const ratingManager = {
   state: {
-    userRatings: new Map(), // Using Map for better key-value management
-    modalContainer: null
+    userRatings: new Map(),
+    modalContainer: null, 
+    products: new Map(), 
+  },
+setProductData(products) {
+    products.forEach(product => {
+      this.state.products.set(product.product_id.toString(), {
+        name: product.name,
+        average_rating: product.average_rating || 0,
+        total_ratings: product.total_ratings || 0
+      });
+    });
   },
 
+  findProduct(productId) {
+    return this.state.products.get(productId.toString()) || {
+      name: 'Product',
+      average_rating: 0,
+      total_ratings: 0
+    };
+  },
+
+  async openRatingModal(productId) {
+    try {
+      // Fetch latest rating data
+      const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch ratings');
+      const data = await response.json();
+
+      // Get product details from state
+      const product = this.findProduct(productId);
+
+      // Create modal if it doesn't exist
+      if (!this.state.modalContainer) {
+        this.state.modalContainer = document.createElement('div');
+        this.state.modalContainer.className = 'rating-modal-container';
+        document.body.appendChild(this.state.modalContainer);
+      }
+
+      // Create and show modal
+      const modalContent = this.createRatingModal(
+        productId,
+        product.name,
+        data.averageRating || product.average_rating,
+        data.totalRatings || product.total_ratings,
+        data.distribution || [0, 0, 0, 0, 0]
+      );
+
+      this.state.modalContainer.innerHTML = `
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+          <button class="close-modal">×</button>
+          ${modalContent}
+        </div>
+      `;
+
+      this.state.modalContainer.classList.add('active');
+    } catch (error) {
+      console.error('Error opening rating modal:', error);
+      showNotification('Failed to load rating details', 'error');
+    }
+  },
   // Core rating management functions
   async submitRating(productId, rating) {
     try {
@@ -1168,7 +1228,7 @@ renderProducts() {
   
   const gridContainer = document.querySelector(".grid-container");
   if (!gridContainer) return;
-  
+   ratingManager.setProductData(this.state.products);
   gridContainer.innerHTML = "";
 
   this.state.products.forEach((product) => {
@@ -1201,9 +1261,20 @@ renderProducts() {
       <div class="product-rating">
         ${ratingHTML}
       </div>
-      /* rest of your product card HTML */
+      <div class="overlay">
+        ${product.name} | <span class="price-span" data-usd-price="${product.price}">
+          Price: ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
+        </span>
+        <span class="crypto-price-usd" style="display: none;">${product.price}</span>
+          Crypto: ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
+        </span>
+      </div>
     `;
-
+    
+    const addToCartButton = document.createElement("button");
+    addToCartButton.textContent = "+";
+    addToCartButton.className = "add-to-cart-btn";
+    gridItem.appendChild(addToCartButton);
     gridContainer.appendChild(gridItem);
   });
 
