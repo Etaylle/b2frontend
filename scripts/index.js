@@ -497,20 +497,33 @@ setProductData(products) {
       total_ratings: 0
     };
   },
-processRatingDistribution(distributionData) {
+  processRatingDistribution(distributionData) {
+    console.log('Raw distribution data:', distributionData);
+    
     // Initialize array with zeros for all possible ratings (1-5)
     const distribution = [0, 0, 0, 0, 0];
     
     if (Array.isArray(distributionData)) {
-      distributionData.forEach(item => {
+      console.log('Distribution data is an array of length:', distributionData.length);
+      
+      distributionData.forEach((item, index) => {
+        console.log(`Processing item ${index}:`, item);
         const rating = parseInt(item.rating);
         const count = parseInt(item.count);
+        console.log(`Parsed values - rating: ${rating}, count: ${count}`);
+        
         if (rating >= 1 && rating <= 5) {
           distribution[rating - 1] = count;
+          console.log(`Updated distribution array at index ${rating - 1} with count ${count}`);
+        } else {
+          console.warn(`Invalid rating value: ${rating}`);
         }
       });
+    } else {
+      console.warn('Distribution data is not an array:', typeof distributionData);
     }
     
+    console.log('Final processed distribution:', distribution);
     return distribution;
   },
 
@@ -653,28 +666,53 @@ processRatingDistribution(distributionData) {
   */
 async openRatingModal(productId) {
     try {
-      // Fetch latest rating data
+      console.log('Opening rating modal for product:', productId);
+      
       const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`, {
         credentials: 'include'
       });
-      if (!response.ok) throw new Error('Failed to fetch ratings');
+      
+      if (!response.ok) {
+        console.error('API response not OK:', response.status, response.statusText);
+        throw new Error('Failed to fetch ratings');
+      }
+      
       const data = await response.json();
+      console.log('Raw API response:', data);
 
       // Find product details
       const product = this.findProduct(productId);
-      if (!product) throw new Error('Product not found');
+      console.log('Found product:', product);
+
+      if (!product) {
+        console.error('Product not found for ID:', productId);
+        throw new Error('Product not found');
+      }
 
       // Create modal if it doesn't exist
       if (!this.state.modalContainer) {
         this.state.modalContainer = document.createElement('div');
         this.state.modalContainer.className = 'rating-modal-container';
         document.body.appendChild(this.state.modalContainer);
+        console.log('Created new modal container');
       }
 
       // Process the distribution data
+      console.log('Processing distribution data:', data.distribution);
       const distribution = data.distribution ? 
         this.processRatingDistribution(data.distribution) : 
         [0, 0, 0, 0, 0];
+
+      console.log('Final distribution array:', distribution);
+      
+      // Log the values being passed to createRatingModal
+      console.log('Creating modal with values:', {
+        productId,
+        productName: product.name,
+        averageRating: data.averageRating || 0,
+        totalRatings: data.totalRatings || distribution.reduce((a, b) => a + b, 0),
+        distribution
+      });
 
       // Create and show modal
       this.state.modalContainer.innerHTML = `
@@ -693,8 +731,9 @@ async openRatingModal(productId) {
 
       this.state.modalContainer.classList.add('active');
       this.attachModalEventListeners(productId);
+      
     } catch (error) {
-      console.error('Error opening rating modal:', error);
+      console.error('Error in openRatingModal:', error);
       showNotification('Failed to load rating details', 'error');
     }
   },
@@ -894,14 +933,17 @@ createInteractiveStars(userRating = null) {
     </div>
   `;
 },
- createRatingBreakdown(distribution) {
+  createRatingBreakdown(distribution) {
+    console.log('Creating breakdown with distribution:', distribution);
     const total = distribution.reduce((a, b) => a + b, 0);
+    console.log('Total ratings:', total);
     
-    // Create breakdown rows for ratings 5 to 1 (no need to reverse since we'll iterate backwards)
     return Array.from({ length: 5 }, (_, i) => {
       const starCount = 5 - i;
-      const count = distribution[starCount - 1]; // Get count for current star rating
+      const count = distribution[starCount - 1];
       const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
+      
+      console.log(`Star ${starCount}: count=${count}, percentage=${percentage}%`);
       
       return `
         <div class="breakdown-row">
