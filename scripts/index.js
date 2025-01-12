@@ -1547,7 +1547,7 @@ renderProducts() {
           Price: ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
         </span>
         <span class="crypto-price-usd" style="display: none;">${product.price}</span>
-          Crypto: ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
+         | Stock: ${product.stock}
         </span>
       </div>
     `;
