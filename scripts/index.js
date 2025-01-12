@@ -1416,7 +1416,7 @@ async fetchProducts(categoryId = null) {
     await this.fetchProducts(categoryId);
     this.highlightSelectedCategory();
   },
-renderProducts() {
+async renderProducts() {
   
   const gridContainer = document.querySelector(".grid-container");
   if (!gridContainer) return;
