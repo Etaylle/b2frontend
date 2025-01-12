@@ -516,7 +516,8 @@ setProductData(products) {
         this.state.modalContainer.className = 'rating-modal-container';
         document.body.appendChild(this.state.modalContainer);
       }
-
+ // Process the rating distribution
+      const distribution = data.ratings ? this.processRatingDistribution(data.ratings) : [0, 0, 0, 0, 0];
       // Create and show modal
       const modalContent = this.createRatingModal(
         productId,
@@ -539,6 +540,15 @@ setProductData(products) {
       console.error('Error opening rating modal:', error);
       showNotification('Failed to load rating details', 'error');
     }
+  },
+   processRatingDistribution(ratings) {
+    const distribution = [0, 0, 0, 0, 0];
+    ratings.forEach(rating => {
+      if (rating.rating >= 1 && rating.rating <= 5) {
+        distribution[5 - rating.rating]++;
+      }
+    });
+    return distribution;
   },
   // Core rating management functions
   async submitRating(productId, rating) {
@@ -691,6 +701,59 @@ setProductData(products) {
       </div>
     `;
   },
+  attachEventListeners() {
+    document.addEventListener('click', async (e) => {
+      // Handle product card click
+      if (e.target.closest('.grid-item') && !e.target.closest('.rating-modal')) {
+        const productId = e.target.closest('.grid-item').dataset.productId;
+        await this.openRatingModal(productId);
+        return;
+      }
+
+      // Handle star rating click
+      if (e.target.classList.contains('star') && e.target.classList.contains('interactive')) {
+        const productId = e.target.closest('[data-product-id]').dataset.productId;
+        const rating = parseInt(e.target.dataset.rating);
+        if (!isNaN(rating)) {
+          await this.submitRating(productId, rating);
+          // Close modal after rating
+          this.closeRatingModal();
+        }
+        return;
+      }
+
+      // Handle remove rating button
+      if (e.target.classList.contains('remove-rating-btn')) {
+        const productId = e.target.closest('[data-product-id]').dataset.productId;
+        await this.removeRating(productId);
+        this.closeRatingModal();
+        return;
+      }
+
+      // Handle modal close
+      if (e.target.classList.contains('close-modal') || e.target.classList.contains('modal-backdrop')) {
+        this.closeRatingModal();
+      }
+    });
+
+    // Add hover effects for interactive stars
+    document.addEventListener('mouseover', (e) => {
+      if (e.target.classList.contains('star') && e.target.classList.contains('interactive')) {
+        const stars = e.target.parentElement.querySelectorAll('.star.interactive');
+        const rating = parseInt(e.target.dataset.rating);
+        stars.forEach((star, index) => {
+          star.classList.toggle('hover', index < rating);
+        });
+      }
+    });
+
+    document.addEventListener('mouseout', (e) => {
+      if (e.target.classList.contains('star') && e.target.classList.contains('interactive')) {
+        const stars = e.target.parentElement.querySelectorAll('.star.interactive');
+        stars.forEach(star => star.classList.remove('hover'));
+      }
+    });
+  },
 
   updateProductRatingDisplay(productId, averageRating, totalRatings) {
     const container = document.querySelector(`.rating-summary[data-product-id="${productId}"]`);
@@ -717,14 +780,24 @@ setProductData(products) {
     return stars;
   },
 
-  createInteractiveStars(userRating = null) {
+  /*createInteractiveStars(userRating = null) {
     return Array.from({ length: 5 }, (_, i) => `
       <span class="star interactive ${userRating && userRating >= i + 1 ? 'selected' : ''}"
             data-rating="${i + 1}"
             title="${this.getRatingLabel(i + 1)}">★</span>
     `).join('');
+  },*/
+ createInteractiveStars(userRating = null) {
+    return `
+      <div class="stars-container">
+        ${Array.from({ length: 5 }, (_, i) => `
+          <span class="star interactive ${userRating && userRating >= i + 1 ? 'selected' : ''}"
+                data-rating="${i + 1}"
+                title="${this.getRatingLabel(i + 1)}">★</span>
+        `).join('')}
+      </div>
+    `;
   },
-
   createRatingBreakdown(distribution) {
     const total = distribution.reduce((a, b) => a + b, 0);
     return distribution.map((count, index) => {
@@ -786,7 +859,55 @@ setProductData(products) {
         background: rgba(255, 255, 255, 0.9);
         border-radius: 4px;
       }
+ .stars-container {
+        display: flex;
+        gap: 4px;
+      }
 
+      .star.interactive {
+        cursor: pointer;
+        transition: color 0.2s, transform 0.1s;
+        font-size: 1.5rem;
+      }
+
+      .star.interactive:hover {
+        color: #ffd700;
+        transform: scale(1.1);
+      }
+
+      .star.interactive.hover {
+        color: #ffd700;
+      }
+
+      .star.interactive.selected {
+        color: #ffd700;
+      }
+
+      /* Make modal content more prominent */
+      .modal-content {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        padding: 24px;
+        min-width: 320px;
+      }
+
+      .rating-modal h3 {
+        margin: 0 0 20px 0;
+        font-size: 1.5rem;
+        color: #333;
+      }
+
+      .user-rating-section {
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+      }
+
+      .user-rating-section h4 {
+        margin: 0 0 12px 0;
+        color: #666;
+      }
       .rating-stars {
         display: flex;
         gap: 2px;
@@ -1277,7 +1398,7 @@ renderProducts() {
     gridItem.appendChild(addToCartButton);
     gridContainer.appendChild(gridItem);
   });
-
+  ratingManager.setProductData(this.state.products);
   // Initialize rating manager if needed
   if (!window.ratingManagerInitialized) {
     ratingManager.initialize();
