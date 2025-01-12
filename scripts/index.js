@@ -1234,9 +1234,9 @@ const cryptoManager = {
     
     priceSpans.forEach((priceSpan) => {
       const usdPrice = parseFloat(priceSpan.getAttribute("data-usd-price"));
-      const stock = priceSpan.getAttribute("data-stock");
+      
       if (!isNaN(usdPrice)) {
-        priceSpan.textContent = this.formatCryptoPrice(usdPrice, stock);
+        priceSpan.textContent = this.formatCryptoPrice(usdPrice);
       }
     });
   }
@@ -1458,7 +1458,8 @@ renderProducts() {
         ${product.name} | <span class="price-span" data-usd-price="${product.price}">
         ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
         </span>
-        <span class="crypto-price-usd" style="display: none;">${product.price} | Stock: ${product.stock}</span>
+        <span class="crypto-price-usd" style="display: none;">${product.price}</span>
+        | Stock: ${product.stock} 
       </div>
     `;
     
