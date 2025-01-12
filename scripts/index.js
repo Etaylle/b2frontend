@@ -518,7 +518,47 @@ setProductData(products) {
     console.log('Final processed distribution:', distribution);
     return distribution;
   },
-
+// Add this new method to fetch user ratings
+  async fetchUserRatings() {
+    try {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/ratings/user', {
+        credentials: 'include'
+      });
+      
+      if (!response.ok) throw new Error('Failed to fetch user ratings');
+      
+      const data = await response.json();
+      console.log('Fetched user ratings:', data);
+      
+      // Clear existing ratings
+      this.state.userRatings.clear();
+      
+      // Store the ratings in the Map
+      if (data.ratings && Array.isArray(data.ratings)) {
+        data.ratings.forEach(rating => {
+          this.state.userRatings.set(rating.productId.toString(), rating.rating);
+        });
+      }
+      
+      // Update all visible product ratings
+      this.updateAllProductRatings();
+    } catch (error) {
+      console.error('Error fetching user ratings:', error);
+    }
+  },
+   updateAllProductRatings() {
+    document.querySelectorAll('.rating-summary').forEach(container => {
+      const productId = container.dataset.productId;
+      const product = this.findProduct(productId);
+      if (product) {
+        this.updateProductRatingDisplay(
+          productId,
+          product.average_rating,
+          product.total_ratings
+        );
+      }
+    });
+  },
   // Core rating management functions
   async submitRating(productId, rating) {
     try {
@@ -532,7 +572,7 @@ setProductData(products) {
       if (!response.ok) throw new Error('Failed to submit rating');
       const result = await response.json();
       
-      this.state.userRatings.set(productId, rating);
+      this.state.userRatings.set(productId.toString(), rating);
       this.updateProductRatingDisplay(productId, result.averageRating, result.totalRatings);
       showNotification('Rating submitted successfully!', 'success');
       return result;
@@ -595,7 +635,8 @@ setProductData(products) {
       if (!response.ok) throw new Error('Failed to remove rating');
       const result = await response.json();
       
-      this.state.userRatings.delete(productId);
+      // Remove from userRatings Map
+      this.state.userRatings.delete(productId.toString());
       this.updateProductRatingDisplay(productId, result.averageRating, result.totalRatings);
       showNotification('Rating removed successfully', 'success');
       return result;
@@ -842,8 +883,9 @@ setProductData(products) {
     return ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][rating - 1] || '';
   },
 
-  // Event handling and initialization
-  initialize() {
+  
+  async initialize() {
+    await this.fetchUserRatings();
     this.attachEventListeners();
     this.injectStyles();
   },
