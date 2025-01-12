@@ -498,7 +498,7 @@ setProductData(products) {
     };
   },
 
-  async openRatingModal(productId) {
+  /*async openRatingModal(productId) {
     try {
       // Fetch latest rating data
       const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`, {
@@ -543,7 +543,7 @@ setProductData(products) {
       console.error('Error opening rating modal:', error);
       showNotification('Failed to load rating details', 'error');
     }
-  },
+  },*/
   processRatingDistribution(distributionData) {
   // Initialize array with zeros for all possible ratings (1-5)
   const distribution = [0, 0, 0, 0, 0];
@@ -659,7 +659,89 @@ setProductData(products) {
     }
   },
 
+  // Modal Management
+  async openRatingModal(productId) {
+    try {
+      // Fetch latest rating data
+      const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch ratings');
+      const data = await response.json();
 
+      // Find product details (assuming products are available in some global state)
+      const product = this.findProduct(productId);
+      if (!product) throw new Error('Product not found');
+
+      // Create modal if it doesn't exist
+      if (!this.state.modalContainer) {
+        this.state.modalContainer = document.createElement('div');
+        this.state.modalContainer.className = 'rating-modal-container';
+        document.body.appendChild(this.state.modalContainer);
+      }
+    // Process the distribution data
+    const distribution = data.success && data.distribution ? 
+      this.processRatingDistribution(data.distribution) : 
+      [0, 0, 0, 0, 0];
+
+    // Create and show modal
+    const modalContent = this.createRatingModal(
+      productId,
+      product.name,
+      data.averageRating || 0,
+      data.totalRatings || distribution.reduce((a, b) => a + b, 0),
+      distribution
+    );
+
+
+      this.state.modalContainer.innerHTML = `
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+          <button class="close-modal">×</button>
+          ${modalContent}
+        </div>
+      `;
+
+      this.state.modalContainer.classList.add('active');
+    } catch (error) {
+      console.error('Error opening rating modal:', error);
+      showNotification('Failed to load rating details', 'error');
+    }
+  },
+
+  closeRatingModal() {
+    if (this.state.modalContainer) {
+      this.state.modalContainer.classList.remove('active');
+    }
+  },
+
+  // Helper function to find product details
+  findProduct(productId) {
+    // You'll need to adapt this based on how you store your products
+    const products = document.querySelectorAll('.grid-item');
+    for (const product of products) {
+      if (product.dataset.productId === productId) {
+        return {
+          name: product.querySelector('.overlay').textContent.split('|')[0].trim(),
+          product_id: productId
+        };
+      }
+    }
+    return null;
+  },
+
+  // UI Components
+  createProductRating(productId, averageRating, totalRatings) {
+    const rating = this.state.userRatings.get(productId);
+    return `
+      <div class="rating-summary" data-product-id="${productId}">
+        <div class="rating-stars">
+          ${this.createStars(averageRating)}
+        </div>
+        <div class="rating-count">${totalRatings} ${totalRatings === 1 ? 'rating' : 'ratings'}</div>
+      </div>
+    `;
+  },
 
   createRatingModal(productId, productName, averageRating, totalRatings, distribution) {
     const userRating = this.state.userRatings.get(productId);
