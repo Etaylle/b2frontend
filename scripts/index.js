@@ -1554,10 +1554,12 @@ renderProducts() {
     addToCartButton.className = "add-to-cart-btn";
     gridItem.appendChild(addToCartButton);
     gridContainer.appendChild(gridItem);
+    // Add event listener to the "Add to Cart" button
     const addToCartBtn = gridItem.querySelector('.add-to-cart-btn');
-      addToCartBtn.addEventListener("click", (e) => {
-        e.stopPropagation(); // Prevent event from bubbling up to gridItem
-        cartManager.addItem(product.product_id);
+    addToCartBtn.addEventListener("click", (e) => {
+      e.stopPropagation(); // Prevent event from bubbling up to gridItem
+      cartManager.addItem(product.product_id);
+    });
   });
   ratingManager.setProductData(this.state.products);
   
