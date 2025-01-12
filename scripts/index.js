@@ -1485,7 +1485,7 @@ async renderProducts() {
     ratingManager.initialize();
     window.ratingManagerInitialized = true;
   }
-  await ratingManager.fetchUserRatings(thisState);
+  await ratingManager.fetchUserRatings();
   initializeImageSliders();
   
 },
