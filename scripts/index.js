@@ -473,7 +473,7 @@ const paymentManager = {
     }
   }
 };
-// Enhanced Rating Manager with additional features
+// RATING MANAGER
 const ratingManager = {
   state: {
     userRatings: {},
@@ -573,7 +573,7 @@ updateRatingDisplay(productId, averageRating, totalRatings) {
   // Update the average rating and total ratings label
   const ratingLabel = container.querySelector('.rating-label');
   if (ratingLabel) {
-    ratingLabel.textContent = `Average: ${averageRating.toFixed(1)} (${totalRatings} ratings)`;
+    ratingLabel.textContent = `Average: ${averageRating.toFixed(1)} (${totalRatings} ovo ratings)`;
   }
 
   // Update the star visuals based on the average rating
