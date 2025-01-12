@@ -477,6 +477,7 @@ const paymentManager = {
 const ratingManager = {
   state: {
     userRatings: new Map(), // Using Map for better key-value management
+    modalContainer: null
   },
 
   // Core rating management functions
@@ -524,6 +525,72 @@ const ratingManager = {
     }
   },
 
+  // Modal Management
+  async openRatingModal(productId) {
+    try {
+      // Fetch latest rating data
+      const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch ratings');
+      const data = await response.json();
+
+      // Find product details (assuming products are available in some global state)
+      const product = this.findProduct(productId);
+      if (!product) throw new Error('Product not found');
+
+      // Create modal if it doesn't exist
+      if (!this.state.modalContainer) {
+        this.state.modalContainer = document.createElement('div');
+        this.state.modalContainer.className = 'rating-modal-container';
+        document.body.appendChild(this.state.modalContainer);
+      }
+
+      // Create and show modal
+      const modalContent = this.createRatingModal(
+        productId,
+        product.name,
+        data.averageRating,
+        data.totalRatings,
+        data.distribution || [0, 0, 0, 0, 0]
+      );
+
+      this.state.modalContainer.innerHTML = `
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+          <button class="close-modal">×</button>
+          ${modalContent}
+        </div>
+      `;
+
+      this.state.modalContainer.classList.add('active');
+    } catch (error) {
+      console.error('Error opening rating modal:', error);
+      showNotification('Failed to load rating details', 'error');
+    }
+  },
+
+  closeRatingModal() {
+    if (this.state.modalContainer) {
+      this.state.modalContainer.classList.remove('active');
+    }
+  },
+
+  // Helper function to find product details
+  findProduct(productId) {
+    // You'll need to adapt this based on how you store your products
+    const products = document.querySelectorAll('.grid-item');
+    for (const product of products) {
+      if (product.dataset.productId === productId) {
+        return {
+          name: product.querySelector('.overlay').textContent.split('|')[0].trim(),
+          product_id: productId
+        };
+      }
+    }
+    return null;
+  },
+
   // UI Components
   createProductRating(productId, averageRating, totalRatings) {
     const rating = this.state.userRatings.get(productId);
@@ -563,6 +630,13 @@ const ratingManager = {
         </div>
       </div>
     `;
+  },
+
+  updateProductRatingDisplay(productId, averageRating, totalRatings) {
+    const container = document.querySelector(`.rating-summary[data-product-id="${productId}"]`);
+    if (container) {
+      container.innerHTML = this.createProductRating(productId, averageRating, totalRatings);
+    }
   },
 
   // Helper functions
@@ -619,9 +693,8 @@ const ratingManager = {
 
   attachEventListeners() {
     document.addEventListener('click', (e) => {
-      const productCard = e.target.closest('.grid-item');
-      if (productCard) {
-        const productId = productCard.dataset.productId;
+      if (e.target.closest('.grid-item')) {
+        const productId = e.target.closest('.grid-item').dataset.productId;
         this.openRatingModal(productId);
       }
 
@@ -634,6 +707,10 @@ const ratingManager = {
       if (e.target.classList.contains('remove-rating-btn')) {
         const productId = e.target.closest('[data-product-id]').dataset.productId;
         this.removeRating(productId);
+      }
+
+      if (e.target.classList.contains('close-modal') || e.target.classList.contains('modal-backdrop')) {
+        this.closeRatingModal();
       }
     });
   },
@@ -678,6 +755,54 @@ const ratingManager = {
 
       .star.interactive:hover {
         color: #ffd700;
+      }
+
+      .rating-modal-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+
+      .rating-modal-container.active {
+        display: flex;
+      }
+
+      .modal-backdrop {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+      }
+
+      .modal-content {
+        position: relative;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        max-width: 90%;
+        max-height: 90%;
+        overflow-y: auto;
+        z-index: 1;
+      }
+
+      .close-modal {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 24px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 5px;
+        line-height: 1;
       }
 
       .rating-modal {
@@ -1087,32 +1212,6 @@ renderProducts() {
     ratingManager.initialize();
     window.ratingManagerInitialized = true;
   }
-
-
-  
-  const style = document.createElement('style');
-  style.textContent = `
-    .grid-item {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .product-rating {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 2;
-      background: rgba(255, 255, 255, 0.9);
-      padding: 5px;
-      border-radius: 4px;
-    }
-    
-    .rating-container {
-      margin: 0;
-    }
-  `;
-  document.head.appendChild(style);
 
   initializeImageSliders();
   attachCartEventListeners();
