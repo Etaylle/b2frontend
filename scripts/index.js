@@ -1419,10 +1419,9 @@ async fetchProducts(categoryId = null) {
   },
 renderProducts() {
   
-  renderProducts() {
   const gridContainer = document.querySelector(".grid-container");
   if (!gridContainer) return;
-  ratingManager.setProductData(this.state.products);
+   ratingManager.setProductData(this.state.products);
   gridContainer.innerHTML = "";
 
   this.state.products.forEach((product) => {
@@ -1443,19 +1442,22 @@ renderProducts() {
     }
     imageSlider += '</div>';
 
-   
-    const ratingHTML = ratingManager.createProductRating(
+    // Create rating display HTML
+     const ratingHTML = ratingManager.createProductRating(
       product.product_id,
       product.average_rating || 0,
       product.total_ratings || 0
     );
 
-  
+    // Only include rating div if ratingHTML exists
     const ratingDiv = ratingHTML ? `<div class="product-rating">${ratingHTML}</div>` : '';
+
+  
 
     gridItem.innerHTML = `
       ${imageSlider}
       ${ratingDiv}
+      </div>
       <div class="overlay">
         ${product.name} | <span class="price-span" data-usd-price="${product.price}">
         ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
@@ -1715,7 +1717,9 @@ function displayProducts(products) {
     imageSlider += '</div>';
 
     gridItem.innerHTML = `
-    //removed rating from here
+    <div class="product-rating">
+          ${ratingHTML}
+        </div>
       ${imageSlider}
       <div class="overlay">
         ${product.name} | <span class="price-span" data-usd-price="${product.price}"> ${formatCryptoPrice(product.price)} | Stock: ${product.stock}</span>
