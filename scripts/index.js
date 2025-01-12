@@ -1225,15 +1225,15 @@ const cryptoManager = {
 
   
   formatCryptoPrice(usdPrice) {
-    if (!this.state.cryptoPricesEnabled || !usdPrice) return `$ ${usdPrice}`;
+    if (!this.state.cryptoPricesEnabled || !usdPrice) return `$${usdPrice}`;
 
     try {
       const btcPrice = (usdPrice * this.state.cryptoRates.BTC).toFixed(8);
       const ethPrice = (usdPrice * this.state.cryptoRates.ETH).toFixed(6);
-      return `$ ${usdPrice} | ₿ ${btcPrice} | Ξ ${ethPrice}`;
+      return `$${usdPrice} | ₿ ${btcPrice} | Ξ ${ethPrice}`;
     } catch (error) {
       console.error('Error formatting crypto price:', error);
-      return `$ ${usdPrice}`;
+      return `$${usdPrice}`;
     }
   },
 
@@ -1546,7 +1546,7 @@ renderProducts() {
         ${product.name} | <span class="price-span" data-usd-price="${product.price}">
         ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
         </span>
-        <span class="crypto-price-usd" style="display: none;">${product.price}</span>
+        <span class="crypto-price-usd" style="display: none;">${product.price} | Stock: ${product.stock}</span>
       </div>
     `;
     
