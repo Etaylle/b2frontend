@@ -183,7 +183,7 @@ html {
   
   .grid-item:hover {
     border-radius: 10px;
-    filter: drop-shadow(0px 0px 5px rgba(0, 255, 0, 0.1333333333));
+    filter: drop-shadow(0px 0px 5px rgba(132, 0, 255, 0.644));
   }
   .grid-item:hover button {
     opacity: 1;
@@ -1169,7 +1169,7 @@ input:checked+.slider:before {
   left: 0;
   right: 0;
   background: rgba(0, 0, 0, 0.7);
-  color: white;
+  color: rgb(243, 11, 11);
   padding: 10px;
   z-index: 1;
 }
