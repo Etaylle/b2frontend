@@ -1517,37 +1517,51 @@ renderProducts() {
     gridItem.setAttribute("data-product-id", product.product_id);
 
     // Create image slider
-    let imageSlider = '<div class="image-slider">';
-    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-      product.images.forEach((img, index) => {
-        imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
+      let imageSlider = '<div class="image-slider">';
+      if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+        product.images.forEach((img, index) => {
+          imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
+        });
+      } else if (product.image_url) {
+        imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
+      } else {
+        imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
+      }
+      imageSlider += '</div>';
+
+      const ratingHTML = ratingManager.createProductRating(
+        product.product_id,
+        product.average_rating || 0,
+        product.total_ratings || 0
+      );
+
+      gridItem.innerHTML = `
+        ${imageSlider}
+        <div class="product-rating">
+          ${ratingHTML}
+        </div>
+        <div class="overlay">
+          ${product.name} | <span class="price-span" data-usd-price="${product.price}" data-stock="${product.stock}">
+          ${cryptoManager.formatCryptoPrice(product.price, product.stock)}
+          </span>
+        </div>
+        <button class="add-to-cart-btn">+</button>
+      `;
+
+      // Add click event for rating modal
+      gridItem.addEventListener("click", (e) => {
+        // Only open rating modal if not clicking the add to cart button
+        if (!e.target.classList.contains('add-to-cart-btn')) {
+          ratingManager.openRatingModal(product.product_id);
+        }
       });
-    } else if (product.image_url) {
-      imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
-    } else {
-      imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
-    }
-    imageSlider += '</div>';
 
-    // Create rating display HTML
-     const ratingHTML = ratingManager.createProductRating(
-      product.product_id,
-      product.average_rating || 0,
-      product.total_ratings || 0
-    );
-
-    gridItem.innerHTML = `
-      ${imageSlider}
-      <div class="product-rating">
-        ${ratingHTML}
-      </div>
-      <div class="overlay">
-        ${product.name} | <span class="price-span" data-usd-price="${product.price}">
-        ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
-        </span>
-        <span class="crypto-price-usd" style="display: none;">${product.price} | Stock: ${product.stock}</span>
-      </div>
-    `;
+      // Separate event listener for add to cart button
+      const addToCartBtn = gridItem.querySelector('.add-to-cart-btn');
+      addToCartBtn.addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent event from bubbling up to gridItem
+        cartManager.addItem(product.product_id);
+      });
     
     const addToCartButton = document.createElement("button");
     addToCartButton.textContent = "+";
