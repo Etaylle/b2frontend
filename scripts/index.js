@@ -481,6 +481,7 @@ const ratingManager = {
     products: new Map(), 
   },
 setProductData(products) {
+  this.state.products.clear();
     products.forEach(product => {
       this.state.products.set(product.product_id.toString(), {
         name: product.name,
@@ -488,14 +489,26 @@ setProductData(products) {
         total_ratings: product.total_ratings || 0
       });
     });
+     console.log('Updated products in rating manager:', 
+      Array.from(this.state.products.entries()));
   },
 
   findProduct(productId) {
+    const product = this.state.products.get(productId.toString());
+    console.log(`Looking for product ${productId}:`, product);
+    if (!product) {
+      // If product not found in state, try to find it in the DOM
+      const productElement = document.querySelector(`.grid-item[data-product-id="${productId}"]`);
+      if (productElement) {
+        const name = productElement.querySelector('.overlay').textContent.split('|')[0].trim();
     return this.state.products.get(productId.toString()) || {
-      name: 'Product',
+      name: name,
       average_rating: 0,
       total_ratings: 0
     };
+     }
+    }
+    return product;
   },
   processRatingDistribution(ratings) {
     console.log('Processing ratings:', ratings);
