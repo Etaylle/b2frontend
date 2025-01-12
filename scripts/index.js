@@ -497,81 +497,23 @@ setProductData(products) {
       total_ratings: 0
     };
   },
-
-  /*async openRatingModal(productId) {
-    try {
-      // Fetch latest rating data
-      const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`, {
-        credentials: 'include'
-      });
-      if (!response.ok) throw new Error('Failed to fetch ratings');
-      const data = await response.json();
-
-      // Get product details from state
-      const product = this.findProduct(productId);
-
-      // Create modal if it doesn't exist
-      if (!this.state.modalContainer) {
-        this.state.modalContainer = document.createElement('div');
-        this.state.modalContainer.className = 'rating-modal-container';
-        document.body.appendChild(this.state.modalContainer);
-      }
-      // Process the rating distribution properly
-      const distribution = data.ratings ? this.processRatingDistribution(data.ratings) : [0, 0, 0, 0, 0];
-
-      const modalContent = this.createRatingModal(
-        productId,
-        product.name,
-        data.averageRating || product.average_rating,
-        data.totalRatings || product.total_ratings,
-        distribution
-      );
-
-      this.state.modalContainer.innerHTML = `
-        <div class="modal-backdrop"></div>
-        <div class="modal-content">
-          <button class="close-modal">×</button>
-          ${modalContent}
-        </div>
-      `;
-
-      this.state.modalContainer.classList.add('active');
-      
-      // Attach event listeners after creating the modal
-      this.attachModalEventListeners(productId);
-    } catch (error) {
-      console.error('Error opening rating modal:', error);
-      showNotification('Failed to load rating details', 'error');
-    }
-  },*/
-  processRatingDistribution(distributionData) {
-  // Initialize array with zeros for all possible ratings (1-5)
-  const distribution = [0, 0, 0, 0, 0];
-  
-  if (Array.isArray(distributionData)) {
-    distributionData.forEach(item => {
-      const rating = parseInt(item.rating);
-      const count = parseInt(item.count);
-      if (rating >= 1 && rating <= 5) {
-        distribution[rating - 1] = count;
-      }
-    });
-  }
-  
-  return distribution;
-},
-  processRatingDistribution(ratings) {
+processRatingDistribution(distributionData) {
+    // Initialize array with zeros for all possible ratings (1-5)
     const distribution = [0, 0, 0, 0, 0];
-    if (Array.isArray(ratings)) {
-      ratings.forEach(rating => {
-        if (rating.rating >= 1 && rating.rating <= 5) {
-          distribution[rating.rating - 1]++;
+    
+    if (Array.isArray(distributionData)) {
+      distributionData.forEach(item => {
+        const rating = parseInt(item.rating);
+        const count = parseInt(item.count);
+        if (rating >= 1 && rating <= 5) {
+          distribution[rating - 1] = count;
         }
       });
     }
-    // Reverse the array so 5 stars appears first
-    return distribution.reverse();
+    
+    return distribution;
   },
+
   // Core rating management functions
   async submitRating(productId, rating) {
     try {
@@ -660,7 +602,7 @@ setProductData(products) {
   },
 
   // Modal Management
-  async openRatingModal(productId) {
+  /*async openRatingModal(productId) {
     try {
       // Fetch latest rating data
       const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`, {
@@ -708,7 +650,55 @@ setProductData(products) {
       showNotification('Failed to load rating details', 'error');
     }
   },
+  */
+async openRatingModal(productId) {
+    try {
+      // Fetch latest rating data
+      const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to fetch ratings');
+      const data = await response.json();
 
+      // Find product details
+      const product = this.findProduct(productId);
+      if (!product) throw new Error('Product not found');
+
+      // Create modal if it doesn't exist
+      if (!this.state.modalContainer) {
+        this.state.modalContainer = document.createElement('div');
+        this.state.modalContainer.className = 'rating-modal-container';
+        document.body.appendChild(this.state.modalContainer);
+      }
+
+      // Process the distribution data
+      const distribution = data.distribution ? 
+        this.processRatingDistribution(data.distribution) : 
+        [0, 0, 0, 0, 0];
+
+      // Create and show modal
+      this.state.modalContainer.innerHTML = `
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+          <button class="close-modal">×</button>
+          ${this.createRatingModal(
+            productId,
+            product.name,
+            data.averageRating || 0,
+            data.totalRatings || distribution.reduce((a, b) => a + b, 0),
+            distribution
+          )}
+        </div>
+      `;
+
+      this.state.modalContainer.classList.add('active');
+      this.attachModalEventListeners(productId);
+    } catch (error) {
+      console.error('Error opening rating modal:', error);
+      showNotification('Failed to load rating details', 'error');
+    }
+  }
+},
   closeRatingModal() {
     if (this.state.modalContainer) {
       this.state.modalContainer.classList.remove('active');
@@ -742,7 +732,7 @@ setProductData(products) {
       </div>
     `;
   },
-
+/*
   createRatingModal(productId, productName, averageRating, totalRatings, distribution) {
     const userRating = this.state.userRatings.get(productId);
     return `
@@ -770,7 +760,33 @@ setProductData(products) {
       </div>
     `;
   },
- 
+ */
+ createRatingModal(productId, productName, averageRating, totalRatings, distribution) {
+    const userRating = this.state.userRatings.get(productId);
+    return `
+      <div class="rating-modal">
+        <h3>${productName}</h3>
+        <div class="rating-overview">
+          <div class="average-rating">
+            <span class="big-number">${averageRating.toFixed(1)}</span>
+            <div class="rating-stars large">
+              ${this.createStars(averageRating)}
+            </div>
+            <div class="total-ratings">${totalRatings} total ratings</div>
+          </div>
+          <div class="rating-breakdown">
+            ${this.createRatingBreakdown(distribution)}
+          </div>
+        </div>
+        <div class="user-rating-section">
+          <h4>${userRating ? 'Your Rating' : 'Rate this Product'}</h4>
+          <div class="interactive-stars" data-product-id="${productId}">
+            ${this.createInteractiveStars(userRating)}
+          </div>
+        </div>
+      </div>
+    `;
+  },
   updateProductRatingDisplay(productId, averageRating, totalRatings) {
     const container = document.querySelector(`.rating-summary[data-product-id="${productId}"]`);
     if (container) {
@@ -879,26 +895,27 @@ createInteractiveStars(userRating = null) {
     </div>
   `;
 },
-
-createRatingBreakdown(distribution) {
-   const total = distribution.reduce((a, b) => a + b, 0);
-  
-  // Create breakdown rows for ratings 5 to 1
-  return distribution.reverse().map((count, index) => {
-    const starCount = 5 - index;
-    const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
+ createRatingBreakdown(distribution) {
+    const total = distribution.reduce((a, b) => a + b, 0);
     
-    return `
-      <div class="breakdown-row">
-        <span class="star-label">${starCount} stars</span>
-        <div class="bar-container">
-          <div class="bar-fill" style="width: ${percentage}%"></div>
+    // Create breakdown rows for ratings 5 to 1 (no need to reverse since we'll iterate backwards)
+    return Array.from({ length: 5 }, (_, i) => {
+      const starCount = 5 - i;
+      const count = distribution[starCount - 1]; // Get count for current star rating
+      const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
+      
+      return `
+        <div class="breakdown-row">
+          <span class="star-label">${starCount} stars</span>
+          <div class="bar-container">
+            <div class="bar-fill" style="width: ${percentage}%"></div>
+          </div>
+          <span class="count">${count}</span>
         </div>
-        <span class="count">${count}</span>
-      </div>
-    `;
-  }).join('');
-},
+      `;
+    }).join('');
+  },
+
 
   // Styles
   injectStyles() {
