@@ -1225,7 +1225,7 @@ const cryptoManager = {
 
   
   formatCryptoPrice(usdPrice) {
-    if (!this.state.cryptoPricesEnabled || !usdPrice) return `${usdPrice} $`;
+    if (!this.state.cryptoPricesEnabled || !usdPrice) return `$ ${usdPrice}`;
 
     try {
       const btcPrice = (usdPrice * this.state.cryptoRates.BTC).toFixed(8);
@@ -1233,7 +1233,7 @@ const cryptoManager = {
       return `${usdPrice} $ | ₿ ${btcPrice} | Ξ ${ethPrice}`;
     } catch (error) {
       console.error('Error formatting crypto price:', error);
-      return `${usdPrice} $`;
+      return `$ ${usdPrice}`;
     }
   },
 
