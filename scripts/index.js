@@ -1554,14 +1554,18 @@ renderProducts() {
     addToCartButton.className = "add-to-cart-btn";
     gridItem.appendChild(addToCartButton);
     gridContainer.appendChild(gridItem);
+    const addToCartBtn = gridItem.querySelector('.add-to-cart-btn');
+      addToCartBtn.addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent event from bubbling up to gridItem
+        cartManager.addItem(product.product_id);
   });
   ratingManager.setProductData(this.state.products);
+  
   // Initialize rating manager if needed
   if (!window.ratingManagerInitialized) {
     ratingManager.initialize();
     window.ratingManagerInitialized = true;
   }
-
   initializeImageSliders();
   attachCartEventListeners();
 }
