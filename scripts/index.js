@@ -497,30 +497,22 @@ setProductData(products) {
       total_ratings: 0
     };
   },
-  processRatingDistribution(distributionData) {
-    console.log('Raw distribution data:', distributionData);
+  processRatingDistribution(ratings) {
+    console.log('Processing ratings:', ratings);
     
     // Initialize array with zeros for all possible ratings (1-5)
     const distribution = [0, 0, 0, 0, 0];
     
-    if (Array.isArray(distributionData)) {
-      console.log('Distribution data is an array of length:', distributionData.length);
-      
-      distributionData.forEach((item, index) => {
-        console.log(`Processing item ${index}:`, item);
-        const rating = parseInt(item.rating);
-        const count = parseInt(item.count);
-        console.log(`Parsed values - rating: ${rating}, count: ${count}`);
-        
+    if (Array.isArray(ratings)) {
+      ratings.forEach(ratingObj => {
+        console.log('Processing rating:', ratingObj);
+        // Assuming the rating object has a 'rating' property
+        const rating = parseInt(ratingObj.rating);
         if (rating >= 1 && rating <= 5) {
-          distribution[rating - 1] = count;
-          console.log(`Updated distribution array at index ${rating - 1} with count ${count}`);
-        } else {
-          console.warn(`Invalid rating value: ${rating}`);
+          distribution[rating - 1]++;
+          console.log(`Incremented count for rating ${rating}`);
         }
       });
-    } else {
-      console.warn('Distribution data is not an array:', typeof distributionData);
     }
     
     console.log('Final processed distribution:', distribution);
@@ -664,7 +656,7 @@ setProductData(products) {
     }
   },
   */
-async openRatingModal(productId) {
+ async openRatingModal(productId) {
     try {
       console.log('Opening rating modal for product:', productId);
       
@@ -680,7 +672,6 @@ async openRatingModal(productId) {
       const data = await response.json();
       console.log('Raw API response:', data);
 
-      // Find product details
       const product = this.findProduct(productId);
       console.log('Found product:', product);
 
@@ -689,7 +680,6 @@ async openRatingModal(productId) {
         throw new Error('Product not found');
       }
 
-      // Create modal if it doesn't exist
       if (!this.state.modalContainer) {
         this.state.modalContainer = document.createElement('div');
         this.state.modalContainer.className = 'rating-modal-container';
@@ -697,24 +687,14 @@ async openRatingModal(productId) {
         console.log('Created new modal container');
       }
 
-      // Process the distribution data
-      console.log('Processing distribution data:', data.distribution);
-      const distribution = data.distribution ? 
-        this.processRatingDistribution(data.distribution) : 
+      // Use the ratings array instead of looking for distribution
+      console.log('Processing ratings array:', data.ratings);
+      const distribution = data.ratings ? 
+        this.processRatingDistribution(data.ratings) : 
         [0, 0, 0, 0, 0];
 
       console.log('Final distribution array:', distribution);
       
-      // Log the values being passed to createRatingModal
-      console.log('Creating modal with values:', {
-        productId,
-        productName: product.name,
-        averageRating: data.averageRating || 0,
-        totalRatings: data.totalRatings || distribution.reduce((a, b) => a + b, 0),
-        distribution
-      });
-
-      // Create and show modal
       this.state.modalContainer.innerHTML = `
         <div class="modal-backdrop"></div>
         <div class="modal-content">
