@@ -476,352 +476,276 @@ const paymentManager = {
 // RATING MANAGER
 const ratingManager = {
   state: {
-    userRatings: {},
-    hoverRating: null,
+    userRatings: new Map(), // Using Map for better key-value management
   },
 
-  createStarRating(productId, currentRating, totalRatings, userRating = null) {
-    return `
-      <div class="rating-container" data-product-id="${productId}">
-        <div class="rating-display">
-          <div class="stars-outer">
-            <div class="stars-inner" style="width: ${(currentRating / 5) * 100}%"></div>
-          </div>
-          <div class="rating-info">
-            <span class="average-rating">${currentRating.toFixed(1)}</span>
-            <span class="total-ratings">(${totalRatings} ${totalRatings === 1 ? 'rating' : 'ratings'})</span>
-          </div>
-        </div>
-        ${this.createInteractiveStars(productId, userRating)}
-        <div class="rating-breakdown"></div>
-      </div>
-    `;
-  },
-
-  createInteractiveStars(productId, userRating = null) {
-    return `
-      <div class="interactive-stars" data-product-id="${productId}">
-        <div class="stars-container">
-          ${Array.from({ length: 5 }, (_, i) => `
-            <span class="star-rating ${userRating && userRating >= i + 1 ? 'selected' : ''}" 
-                  data-rating="${i + 1}"
-                  title="${this.getRatingLabel(i + 1)}">★</span>
-          `).join('')}
-        </div>
-        <div class="rating-label"></div>
-        ${userRating ? '<button class="remove-rating">Remove Rating</button>' : ''}
-      </div>
-    `;
-  },
-
-  getRatingLabel(rating) {
-    const labels = {
-      1: 'Poor',
-      2: 'Fair',
-      3: 'Good',
-      4: 'Very Good',
-      5: 'Excellent'
-    };
-    return labels[rating] || '';
-  },
-
-  async fetchProductRatings(productId) {
+  // Core rating management functions
+  async submitRating(productId, rating) {
     try {
-      const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`,  {
-        ...fetchConfig,
-        
-        credentials: 'include'
+      const response = await fetch('https://backend-3mvr.onrender.com/api/ratings/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ productId, rating })
       });
-      if (!response.ok) throw new Error('Failed to fetch ratings');
 
-      const data = await response.json();
-      if (!data.success) throw new Error(data.message);
-
-      const { ratings } = data;
-      const ratingStats = this.calculateRatingStats(ratings);
+      if (!response.ok) throw new Error('Failed to submit rating');
+      const result = await response.json();
       
-      const ratingContainer = document.querySelector(`.rating-container[data-product-id="${productId}"]`);
-      if (ratingContainer) {
-        this.updateRatingDisplay(productId, ratingStats.averageRating, ratings.length);
-        this.updateRatingBreakdown(productId, ratingStats.distribution);
-      }
+      this.state.userRatings.set(productId, rating);
+      this.updateProductRatingDisplay(productId, result.averageRating, result.totalRatings);
+      showNotification('Rating submitted successfully!', 'success');
+      return result;
     } catch (error) {
-      console.error('Error fetching ratings:', error);
-      showNotification('Failed to load ratings', 'error');
+      console.error('Error submitting rating:', error);
+      showNotification('Failed to submit rating', 'error');
+      throw error;
     }
-  },
-
-  calculateRatingStats(ratings) {
-    const distribution = Array(5).fill(0);
-    let sum = 0;
-
-    ratings.forEach(rating => {
-      sum += rating.rating;
-      distribution[rating.rating - 1]++;
-    });
-
-    return {
-      averageRating: ratings.length ? sum / ratings.length : 0,
-      distribution
-    };
-  },
-updateRatingDisplay(productId, averageRating, totalRatings) {
-  // Find the rating container for the specific product
-  const container = document.querySelector(`.interactive-stars[data-product-id="${productId}"]`);
-  if (!container) return; // Exit if the container is not found
-
-  // Update the average rating and total ratings label
-  const ratingLabel = container.querySelector('.rating-label');
-  if (ratingLabel) {
-    ratingLabel.textContent = `Average: ${averageRating.toFixed(1)} (${totalRatings} ovo ratings)`;
-  }
-
-  // Update the star visuals based on the average rating
-  const stars = container.querySelectorAll('.star-rating');
-  if (stars) {
-    stars.forEach((star, index) => {
-      // Highlight stars up to the rounded average rating
-      star.classList.toggle('selected', index < Math.round(averageRating));
-    });
-  }
-}
-,
-  updateRatingBreakdown(productId, distribution) {
-    const container = document.querySelector(`.rating-container[data-product-id="${productId}"] .rating-breakdown`,  {
-        ...fetchConfig,
-        
-        credentials: 'include'
-      });
-    if (!container) return;
-
-    const total = distribution.reduce((a, b) => a + b, 0);
-    const breakdownHTML = distribution.map((count, index) => {
-      const percentage = total ? (count / total * 100).toFixed(1) : 0;
-      return `
-        <div class="breakdown-row">
-          <span>${5 - index} stars</span>
-          <div class="breakdown-bar">
-            <div class="bar-fill" style="width: ${percentage}%"></div>
-          </div>
-          <span>${count}</span>
-        </div>
-      `;
-    }).join('');
-
-    container.innerHTML = breakdownHTML;
   },
 
   async removeRating(productId) {
     try {
-      const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`,  {
-        ...fetchConfig,
-        
+      const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`, {
         method: 'DELETE',
-        credentials: 'include',
+        credentials: 'include'
       });
 
       if (!response.ok) throw new Error('Failed to remove rating');
-
       const result = await response.json();
-      delete this.state.userRatings[productId];
-      this.updateRatingDisplay(productId, result.averageRating, result.totalRatings);
+      
+      this.state.userRatings.delete(productId);
+      this.updateProductRatingDisplay(productId, result.averageRating, result.totalRatings);
       showNotification('Rating removed successfully', 'success');
+      return result;
     } catch (error) {
       console.error('Error removing rating:', error);
       showNotification('Failed to remove rating', 'error');
+      throw error;
     }
   },
 
-  submitRating(productId, rating) {
-    return fetch('https://backend-3mvr.onrender.com/api/ratings/submit', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // Fix: 'credentials' should be in the options, not headers
-      },
-      // Add this as a separate option
-      credentials: 'include',
-      body: JSON.stringify({
-        productId,
-        rating
-      })
-    })
-    .then(response => {
-      if (!response.ok) throw new Error('Failed to submit rating');
-      return response.json();
-    })
-    .then(result => {
-      this.state.userRatings[productId] = rating;
-      this.updateRatingDisplay(productId, result.averageRating, result.totalRatings);
-      showNotification('Rating submitted successfully!', 'success');
-    })
-    .catch(error => {
-      console.error('Error submitting rating:', error);
-      showNotification(error.message || 'Failed to submit rating', 'error');
-    });
+  // UI Components
+  createProductRating(productId, averageRating, totalRatings) {
+    const rating = this.state.userRatings.get(productId);
+    return `
+      <div class="rating-summary" data-product-id="${productId}">
+        <div class="rating-stars">
+          ${this.createStars(averageRating)}
+        </div>
+        <div class="rating-count">${totalRatings} ${totalRatings === 1 ? 'rating' : 'ratings'}</div>
+      </div>
+    `;
   },
+
+  createRatingModal(productId, productName, averageRating, totalRatings, distribution) {
+    const userRating = this.state.userRatings.get(productId);
+    return `
+      <div class="rating-modal">
+        <h3>${productName}</h3>
+        <div class="rating-overview">
+          <div class="average-rating">
+            <span class="big-number">${averageRating.toFixed(1)}</span>
+            <div class="rating-stars large">
+              ${this.createStars(averageRating)}
+            </div>
+            <div class="total-ratings">${totalRatings} total ratings</div>
+          </div>
+          <div class="rating-breakdown">
+            ${this.createRatingBreakdown(distribution)}
+          </div>
+        </div>
+        <div class="user-rating-section">
+          <h4>${userRating ? 'Your Rating' : 'Rate this Product'}</h4>
+          <div class="interactive-stars" data-product-id="${productId}">
+            ${this.createInteractiveStars(userRating)}
+          </div>
+          ${userRating ? '<button class="remove-rating-btn">Remove Rating</button>' : ''}
+        </div>
+      </div>
+    `;
+  },
+
+  // Helper functions
+  createStars(rating) {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    let stars = '';
+    
+    for (let i = 0; i < 5; i++) {
+      if (i < fullStars) {
+        stars += '<span class="star full">★</span>';
+      } else if (i === fullStars && hasHalfStar) {
+        stars += '<span class="star half">★</span>';
+      } else {
+        stars += '<span class="star empty">★</span>';
+      }
+    }
+    return stars;
+  },
+
+  createInteractiveStars(userRating = null) {
+    return Array.from({ length: 5 }, (_, i) => `
+      <span class="star interactive ${userRating && userRating >= i + 1 ? 'selected' : ''}"
+            data-rating="${i + 1}"
+            title="${this.getRatingLabel(i + 1)}">★</span>
+    `).join('');
+  },
+
+  createRatingBreakdown(distribution) {
+    const total = distribution.reduce((a, b) => a + b, 0);
+    return distribution.map((count, index) => {
+      const percentage = total ? (count / total * 100).toFixed(1) : 0;
+      return `
+        <div class="breakdown-row">
+          <span class="star-label">${5 - index} stars</span>
+          <div class="bar-container">
+            <div class="bar-fill" style="width: ${percentage}%"></div>
+          </div>
+          <span class="count">${count}</span>
+        </div>
+      `;
+    }).join('');
+  },
+
+  getRatingLabel(rating) {
+    return ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][rating - 1] || '';
+  },
+
+  // Event handling and initialization
   initialize() {
+    this.attachEventListeners();
+    this.injectStyles();
+  },
+
+  attachEventListeners() {
     document.addEventListener('click', (e) => {
-      if (e.target.classList.contains('star-rating')) {
-        const productId = e.target.closest('.interactive-stars').dataset.productId;
+      const productCard = e.target.closest('.grid-item');
+      if (productCard) {
+        const productId = productCard.dataset.productId;
+        this.openRatingModal(productId);
+      }
+
+      if (e.target.classList.contains('star.interactive')) {
         const rating = parseInt(e.target.dataset.rating);
+        const productId = e.target.closest('[data-product-id]').dataset.productId;
         this.submitRating(productId, rating);
-      } else if (e.target.classList.contains('remove-rating')) {
-        const productId = e.target.closest('.interactive-stars').dataset.productId;
+      }
+
+      if (e.target.classList.contains('remove-rating-btn')) {
+        const productId = e.target.closest('[data-product-id]').dataset.productId;
         this.removeRating(productId);
       }
     });
-
-    document.addEventListener('mouseover', (e) => {
-      if (e.target.classList.contains('star-rating')) {
-        const rating = parseInt(e.target.dataset.rating);
-        const container = e.target.closest('.interactive-stars');
-        const label = container.querySelector('.rating-label');
-        label.textContent = this.getRatingLabel(rating);
-        
-        // Highlight stars up to the hovered one
-        container.querySelectorAll('.star-rating').forEach((star, index) => {
-          star.classList.toggle('hover', index < rating);
-        });
-      }
-    });
-
-    document.addEventListener('mouseout', (e) => {
-      if (e.target.classList.contains('star-rating')) {
-        const container = e.target.closest('.interactive-stars');
-        const label = container.querySelector('.rating-label');
-        label.textContent = '';
-        
-        // Remove hover effect
-        container.querySelectorAll('.star-rating').forEach(star => {
-          star.classList.remove('hover');
-        });
-      }
-    });
-
-    const style = document.createElement('style');
-    style.textContent = this.getStyles();
-    document.head.appendChild(style);
   },
 
-  getStyles() {
-    return `
-      .rating-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 1rem;
-        padding: 1rem;
-        max-width: 400px;
-        margin: 0 auto;
-      }
-
-      .rating-display {
+  // Styles
+  injectStyles() {
+    const styles = `
+      .rating-summary {
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 0.5rem;
+        padding: 0.25rem;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 4px;
       }
 
-      .stars-outer {
-        position: relative;
-        display: inline-block;
-        font-size: 24px;
+      .rating-stars {
+        display: flex;
+        gap: 2px;
       }
 
-      .stars-outer::before {
-        content: "★★★★★";
+      .star {
+        font-size: 1rem;
         color: #ddd;
       }
 
-      .stars-inner {
-        position: absolute;
-        top: 0;
-        left: 0;
-        white-space: nowrap;
-        overflow: hidden;
+      .star.full, .star.selected {
         color: #ffd700;
       }
 
-      .stars-inner::before {
-        content: "★★★★★";
+      .star.half {
+        position: relative;
+        background: linear-gradient(90deg, #ffd700 50%, #ddd 50%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
       }
 
-      .interactive-stars {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.5rem;
-      }
-
-      .stars-container {
-        display: flex;
-        gap: 0.25rem;
-      }
-
-      .star-rating {
+      .star.interactive {
         cursor: pointer;
-        font-size: 28px;
-        color: #ddd;
         transition: color 0.2s;
       }
 
-      .star-rating.hover,
-      .star-rating.selected {
+      .star.interactive:hover {
         color: #ffd700;
       }
 
-      .rating-label {
-        min-height: 1.5em;
-        font-size: 14px;
-        color: #666;
+      .rating-modal {
+        padding: 1.5rem;
+        max-width: 500px;
+        margin: 0 auto;
       }
 
-      .rating-info {
-        font-size: 16px;
-        color: #666;
+      .rating-overview {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 2rem;
+        margin: 1.5rem 0;
       }
 
-      .remove-rating {
-        padding: 0.5rem 1rem;
-        background-color: #f44336;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: background-color 0.2s;
+      .average-rating {
+        text-align: center;
       }
 
-      .remove-rating:hover {
-        background-color: #d32f2f;
+      .big-number {
+        font-size: 2.5rem;
+        font-weight: bold;
       }
 
-      .rating-breakdown {
-        width: 100%;
-        margin-top: 1rem;
+      .rating-stars.large .star {
+        font-size: 1.5rem;
       }
 
       .breakdown-row {
-        display: flex;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 1rem;
         align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.5rem;
       }
 
-      .breakdown-bar {
-        flex-grow: 1;
-        height: 12px;
-        background-color: #eee;
-        border-radius: 6px;
+      .bar-container {
+        height: 8px;
+        background: #eee;
+        border-radius: 4px;
         overflow: hidden;
       }
 
       .bar-fill {
         height: 100%;
-        background-color: #ffd700;
+        background: #ffd700;
         transition: width 0.3s ease;
       }
+
+      .remove-rating-btn {
+        margin-top: 1rem;
+        padding: 0.5rem 1rem;
+        background: #ff4444;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      .remove-rating-btn:hover {
+        background: #cc0000;
+      }
     `;
+
+    const styleSheet = document.createElement('style');
+    styleSheet.textContent = styles;
+    document.head.appendChild(styleSheet);
   }
 };
 const cryptoManager = {
@@ -1116,7 +1040,7 @@ async fetchProducts(categoryId = null) {
     this.highlightSelectedCategory();
   },
 renderProducts() {
-  console.log('Displaying products:', this.state.products);
+  
   const gridContainer = document.querySelector(".grid-container");
   if (!gridContainer) return;
   
@@ -1141,9 +1065,9 @@ renderProducts() {
     imageSlider += '</div>';
 
     // Create rating display HTML
-    const ratingHTML = ratingManager.createStarRating(
-      product.product_id, 
-      product.average_rating || 0, 
+     const ratingHTML = ratingManager.createProductRating(
+      product.product_id,
+      product.average_rating || 0,
       product.total_ratings || 0
     );
 
@@ -1152,53 +1076,18 @@ renderProducts() {
       <div class="product-rating">
         ${ratingHTML}
       </div>
-      <div class="overlay">
-        ${product.name} | <span class="price-span" data-usd-price="${product.price}">
-          Price: ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
-        </span>
-        <span class="crypto-price-usd" style="display: none;">${product.price}</span>
-          Crypto: ${cryptoManager.formatCryptoPrice(product.price)} | Stock: ${product.stock}
-        </span>
-      </div>
+      /* rest of your product card HTML */
     `;
-    
-    const addToCartButton = document.createElement("button");
-    addToCartButton.textContent = "+";
-    addToCartButton.className = "add-to-cart-btn";
-    gridItem.appendChild(addToCartButton);
+
     gridContainer.appendChild(gridItem);
   });
 
-  // Initialize rating manager if not already initialized
+  // Initialize rating manager if needed
   if (!window.ratingManagerInitialized) {
     ratingManager.initialize();
     window.ratingManagerInitialized = true;
   }
-
-  // Add these styles to properly position the rating
-  const style = document.createElement('style');
-  style.textContent = `
-    .grid-item {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .product-rating {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 2;
-      background: rgba(255, 255, 255, 0.9);
-      padding: 5px;
-      border-radius: 4px;
-    }
-    
-    .rating-container {
-      margin: 0;
-    }
-  `;
-  document.head.appendChild(style);
+  
 
   initializeImageSliders();
   attachCartEventListeners();
