@@ -516,15 +516,15 @@ setProductData(products) {
         this.state.modalContainer.className = 'rating-modal-container';
         document.body.appendChild(this.state.modalContainer);
       }
- // Process the rating distribution
+  // Process the rating distribution properly
       const distribution = data.ratings ? this.processRatingDistribution(data.ratings) : [0, 0, 0, 0, 0];
-      // Create and show modal
+
       const modalContent = this.createRatingModal(
         productId,
         product.name,
         data.averageRating || product.average_rating,
         data.totalRatings || product.total_ratings,
-        data.distribution || [0, 0, 0, 0, 0]
+        distribution
       );
 
       this.state.modalContainer.innerHTML = `
@@ -536,19 +536,26 @@ setProductData(products) {
       `;
 
       this.state.modalContainer.classList.add('active');
+      
+      // Attach event listeners after creating the modal
+      this.attachModalEventListeners(productId);
     } catch (error) {
       console.error('Error opening rating modal:', error);
       showNotification('Failed to load rating details', 'error');
     }
   },
-   processRatingDistribution(ratings) {
+
+  processRatingDistribution(ratings) {
     const distribution = [0, 0, 0, 0, 0];
-    ratings.forEach(rating => {
-      if (rating.rating >= 1 && rating.rating <= 5) {
-        distribution[5 - rating.rating]++;
-      }
-    });
-    return distribution;
+    if (Array.isArray(ratings)) {
+      ratings.forEach(rating => {
+        if (rating.rating >= 1 && rating.rating <= 5) {
+          distribution[rating.rating - 1]++;
+        }
+      });
+    }
+    // Reverse the array so 5 stars appears first
+    return distribution.reverse();
   },
   // Core rating management functions
   async submitRating(productId, rating) {
@@ -573,7 +580,49 @@ setProductData(products) {
       throw error;
     }
   },
+    attachModalEventListeners(productId) {
+    const modalContent = this.state.modalContainer.querySelector('.modal-content');
+    
+    // Handle star rating clicks
+    const stars = modalContent.querySelectorAll('.star.interactive');
+    stars.forEach(star => {
+      star.addEventListener('click', async () => {
+        const rating = parseInt(star.dataset.rating);
+        if (!isNaN(rating)) {
+          await this.submitRating(productId, rating);
+        }
+      });
 
+      // Handle hover effects
+      star.addEventListener('mouseover', () => {
+        const rating = parseInt(star.dataset.rating);
+        stars.forEach((s, index) => {
+          s.classList.toggle('hover', index < rating);
+        });
+      });
+
+      star.addEventListener('mouseout', () => {
+        stars.forEach(s => s.classList.remove('hover'));
+      });
+    });
+
+    // Handle remove rating button
+    const removeButton = modalContent.querySelector('.remove-rating-btn');
+    if (removeButton) {
+      removeButton.addEventListener('click', async () => {
+        await this.removeRating(productId);
+        this.closeRatingModal();
+      });
+    }
+
+    // Handle modal close
+    const closeButton = modalContent.querySelector('.close-modal');
+    const backdrop = this.state.modalContainer.querySelector('.modal-backdrop');
+    
+    closeButton.addEventListener('click', () => this.closeRatingModal());
+    backdrop.addEventListener('click', () => this.closeRatingModal());
+  },
+  
   async removeRating(productId) {
     try {
       const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`, {
