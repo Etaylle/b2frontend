@@ -1918,12 +1918,12 @@ function setupEventListeners() {
   if (elements.emptyCartButton) {
     elements.emptyCartButton.addEventListener("click", () => cartManager.clearCart());
   }
-  if (elements.loginForm) {
-    elements.loginForm.addEventListener("submit", (e) => authManager.login(e));
-  }
-  if (elements.registerForm) {
-    elements.registerForm.addEventListener("submit", (e) => authManager.register(e));
-  }
+  // if (elements.loginForm) {
+  //   elements.loginForm.addEventListener("submit", (e) => authManager.login(e));
+  // }
+  // if (elements.registerForm) {
+  //   elements.registerForm.addEventListener("submit", (e) => authManager.register(e));
+  // }
 
   // Update UI based on user state
   uiManager.updateButtonVisibility(currentUser);
