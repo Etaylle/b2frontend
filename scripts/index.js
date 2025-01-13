@@ -331,7 +331,35 @@ const authManager = {
       console.error(error);
       return null;
     }
-  },async logout() {
+  },  
+  async login(event) {
+    event.preventDefault();
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    try {
+      const response = await fetch("https://backend-3mvr.onrender.com/api/auth/login", {
+        ...fetchConfig,  // Use the base config
+      method: "POST",
+      body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        showNotification('Login successful!', 'success');
+        uiManager.closeLogin();
+        window.location.reload();
+      } else {
+        showNotification(data.message, 'error');
+      }
+    } catch (error) {
+      showNotification(error.message, 'error');
+    }
+  },
+
+  async logout() {
     try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/auth/logout', {
         method: "POST",
@@ -351,86 +379,36 @@ const authManager = {
     }
   }
 ,
+async register(event) {
+    event.preventDefault();
 
- 
-  
-//   async login(event) {
-//     event.preventDefault();
+    const username = document.getElementById("username").value;
+    const firstname = document.getElementById("firstname").value;
+    const lastname = document.getElementById("lastname").value;
+    const email = document.getElementById("reg-email").value;
+    const password = document.getElementById("reg-password").value;
 
-//     const email = document.getElementById("email").value;
-//     const password = document.getElementById("password").value;
+    try {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/auth/register', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, firstname, lastname, email, password }),
+      });
 
-//     try {
-//       const response = await fetch("https://backend-3mvr.onrender.com/api/auth/login", {
-//         ...fetchConfig,  // Use the base config
-//       method: "POST",
-//       body: JSON.stringify({ email, password })
-//       });
-
-//       const data = await response.json();
-      
-//       if (response.ok) {
-//         showNotification('Login successful!', 'success');
-//         uiManager.closeLogin();
-//         window.location.reload();
-//       } else {
-//         showNotification(data.message, 'error');
-//       }
-//     } catch (error) {
-//       showNotification(error.message, 'error');
-//     }
-//   },
-
-//   async logout() {
-//     try {
-//       const response = await fetch('https://backend-3mvr.onrender.com/api/auth/logout', {
-//         method: "POST",
-//         credentials: 'include',
-//         headers: fetchConfig.headers
-//       });
-
-//       if (response.ok) {
-//         // Clear any local storage if you're using it
-//         localStorage.clear();
-//         window.location.reload();
-//       } else {
-//         showNotification('Failed to log out', 'error');
-//       }
-//     } catch (error) {
-//       showNotification('Error logging out', 'error');
-//     }
-//   }
-// ,
-// async register(event) {
-//     event.preventDefault();
-
-//     const username = document.getElementById("username").value;
-//     const firstname = document.getElementById("firstname").value;
-//     const lastname = document.getElementById("lastname").value;
-//     const email = document.getElementById("reg-email").value;
-//     const password = document.getElementById("reg-password").value;
-
-//     try {
-//       const response = await fetch('https://backend-3mvr.onrender.com/api/auth/register', {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({ username, firstname, lastname, email, password }),
-//       });
-
-//       if (response.ok) {
-//         showNotification('Registration successful!', 'success');
-//         uiManager.closeRegister();
-//         window.location.href = "index.html";
-//       } else {
-//         const data = await response.json();
-//         showNotification(data.message, 'error');
-//       }
-//     } catch (error) {
-//       showNotification(error.message, 'error');
-//     }
-//   },
+      if (response.ok) {
+        showNotification('Registration successful!', 'success');
+        uiManager.closeRegister();
+        window.location.href = "index.html";
+      } else {
+        const data = await response.json();
+        showNotification(data.message, 'error');
+      }
+    } catch (error) {
+      showNotification(error.message, 'error');
+    }
+  },
   async displayUserInfo() {
     const userInfoDisplay = document.getElementById("user-info-display");
     const currentUser = await this.fetchCurrentUser();
