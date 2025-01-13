@@ -614,7 +614,10 @@ const AuthModal = {
             
             if (success) {
                 this.showMessage('login-message', 'Login successful!', 'success');
-                setTimeout(() => this.hideModal(), 1500);
+                 setTimeout(() => {
+                this.hideModal();
+                window.location.reload();
+            }, 1500);
             } else {
                 this.showMessage('login-message', 'Invalid credentials', 'error');
             }
