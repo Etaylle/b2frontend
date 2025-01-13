@@ -62,71 +62,87 @@
 
 
     <main>
-        <!-- Updated Login Form -->
-        <section id="login" class="login-container">
-            <div>
-                <button class="close-login" aria-label="Close login form">×</button>
-                <h2>Login</h2>
-                <form id="login-form" onsubmit="handleLogin(event)">
-                    <div class="form-overlay">
-                        <div class="spinner"></div>
-                    </div>
-                    <div class="form-group">
-                        <input type="email" id="email" placeholder=" " required />
-                        <label for="email">Email</label>
-                    </div>
-                    <div class="form-group">
-                        <input type="password" id="password" placeholder=" " required />
-                        <label for="password">Password</label>
-                    </div>
-                    <button type="submit">
-                        <div class="btn-content">
-                            <span>Login</span>
-                            <div class="spinner"></div>
-                        </div>
-                    </button>
-                    <div id="login-message"></div>
-                </form>
-            </div>
-        </section>
+        <section id="auth-modal" class="auth-modal">
+            <div class="auth-container">
+                <button class="close-modal" aria-label="Close">&times;</button>
         
-        <!-- Updated Register Form -->
-        <section id="register" class="login-container">
-            <div>
-                <button class="close-register" aria-label="Close register form">×</button>
-                <h2>Register</h2>
-                <form id="register-form" onsubmit="handleRegister(event)">
-                    <div class="form-overlay">
-                        <div class="spinner"></div>
-                    </div>
-                    <div class="form-group">
-                        <input type="text" id="username" placeholder=" " required />
-                        <label for="username">Username</label>
-                    </div>
-                    <div class="form-group">
-                        <input type="text" id="firstname" placeholder=" " required />
-                        <label for="firstname">First Name</label>
-                    </div>
-                    <div class="form-group">
-                        <input type="text" id="lastname" placeholder=" " required />
-                        <label for="lastname">Last Name</label>
-                    </div>
-                    <div class="form-group">
-                        <input type="email" id="reg-email" placeholder=" " required />
-                        <label for="reg-email">Email</label>
-                    </div>
-                    <div class="form-group">
-                        <input type="password" id="reg-password" placeholder=" " required />
-                        <label for="reg-password">Password</label>
-                    </div>
-                    <button type="submit">
-                        <div class="btn-content">
-                            <span>Register</span>
-                            <div class="spinner"></div>
+                <!-- Login Form -->
+                <div id="login-form-container" class="form-container active">
+                    <h2>Login</h2>
+                    <form id="login-form" class="auth-form">
+                        <div class="form-group">
+                            <input type="email" id="login-email" required>
+                            <label for="login-email">Email</label>
+                            <span class="focus-border"></span>
                         </div>
-                    </button>
-                    <div id="register-message"></div>
-                </form>
+        
+                        <div class="form-group">
+                            <input type="password" id="login-password" required>
+                            <label for="login-password">Password</label>
+                            <span class="focus-border"></span>
+                        </div>
+        
+                        <button type="submit" class="submit-btn">
+                            <span class="btn-text">Login</span>
+                            <span class="spinner"></span>
+                        </button>
+        
+                        <p class="switch-form-text">
+                            Don't have an account?
+                            <a href="#" id="switch-to-register">Register</a>
+                        </p>
+                    </form>
+                    <div id="login-message" class="message"></div>
+                </div>
+        
+                <!-- Register Form -->
+                <div id="register-form-container" class="form-container">
+                    <h2>Register</h2>
+                    <form id="register-form" class="auth-form">
+                        <div class="form-group">
+                            <input type="text" id="register-username" required>
+                            <label for="register-username">Username</label>
+                            <span class="focus-border"></span>
+                        </div>
+        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <input type="text" id="register-firstname" required>
+                                <label for="register-firstname">First Name</label>
+                                <span class="focus-border"></span>
+                            </div>
+        
+                            <div class="form-group">
+                                <input type="text" id="register-lastname" required>
+                                <label for="register-lastname">Last Name</label>
+                                <span class="focus-border"></span>
+                            </div>
+                        </div>
+        
+                        <div class="form-group">
+                            <input type="email" id="register-email" required>
+                            <label for="register-email">Email</label>
+                            <span class="focus-border"></span>
+                        </div>
+        
+                        <div class="form-group">
+                            <input type="password" id="register-password" required>
+                            <label for="register-password">Password</label>
+                            <span class="focus-border"></span>
+                        </div>
+        
+                        <button type="submit" class="submit-btn">
+                            <span class="btn-text">Register</span>
+                            <span class="spinner"></span>
+                        </button>
+        
+                        <p class="switch-form-text">
+                            Already have an account?
+                            <a href="#" id="switch-to-login">Login</a>
+                        </p>
+                    </form>
+                    <div id="register-message" class="message"></div>
+                </div>
             </div>
         </section>
         <!-- Search  -->
@@ -166,7 +182,7 @@
     
     <!-- Scripts -->
     <script defer src="scripts/index.js"></script>
-    
+    <script defer src="scripts/auth.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             startPanoramaSlideshow();
