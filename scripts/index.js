@@ -1080,13 +1080,24 @@ setProductData(products) {
   attachEventListeners() {
   // Global event listener for product cards
   document.addEventListener('click', async (e) => {
-    // Handle product card click
-    if (e.target.closest('.grid-item') && !e.target.closest('.rating-modal')) {
-      const productId = e.target.closest('.grid-item').dataset.productId;
-      await this.openRatingModal(productId);
+    // // Handle product card click
+    // if (e.target.closest('.grid-item') && !e.target.closest('.rating-modal')) {
+    //   const productId = e.target.closest('.grid-item').dataset.productId;
+    //   await this.openRatingModal(productId);
+    //   return;
+    // }
+
+    // Check if the clicked element is the rate button
+    const rateBtn = e.target.closest('.rate-btn');
+    if (rateBtn && !e.target.closest('.rating-modal')) {
+      // Get the product ID from the parent grid item
+      const gridItem = rateBtn.closest('.grid-item');
+      if (gridItem) {
+        const productId = gridItem.dataset.productId;
+        await this.openRatingModal(productId);
+      }
       return;
     }
-
     // Handle star rating click
     if (e.target.matches('.star.interactive')) {  // Fixed selector
       const productId = e.target.closest('[data-product-id]').dataset.productId;
