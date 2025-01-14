@@ -1587,7 +1587,7 @@ const recommendationManager = {
     const container = document.createElement('div');
     container.className = 'recommendations-container';
     container.innerHTML = `
-      <h3>Sie könnten auch mögen:</h3>
+      <h3>You might also like:</h3>
       <div class="recommendations-grid"></div>
     `;
 
