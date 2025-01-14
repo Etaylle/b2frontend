@@ -29,121 +29,36 @@
         <div class="navbar-content">
             <!-- Logo -->
             <img src="/images/pobednik.jpg" class="logo animate__animated animate__fadeIn" alt="Logo" />
-            
-            
-            
+            <section id="search">
+                <div class="navbar-right">
+                    <!-- Placeholder for future elements -->
+                </div>
+            </section>
+             
             <!-- User Section -->
             <div class="user-section">
                 <ul class="navbar-links">
                     <li><a href="#cart" aria-label="View Cart">Cart</a></li>
                     <li id="login-btn"><a href="#login" aria-label="Login">Login</a></li>
                     <li id="register-btn"><a href="#register" aria-label="Register">Register</a></li>
-                    
+                    <li id="logout-button" style="display: none;"><a href="#logout" aria-label="Logout">Logout</a></li>
                 </ul>
                 
                 <!-- User Avatar and Admin Dropdown (Visible only for admin) -->
                 <div id="user-avatar-display" class="user-avatar-display">
-                    <div class="avatar-container">
-                        <img src="/images/avatar.jpg" alt="User Avatar" class="user-avatar">
-                        <div class="user-dropdown">
-                            <a href="orderHistory.html" class="dropdown-item">Order History</a>
-                            <a href="/admin" id="admin-link" class="dropdown-item admin-link">Admin Panel</a>
-                            <button id="logout-button" class="dropdown-item">Logout</button>
-                        </div>
+                    <div class="admin-dropdown">
+                        <a href="/admin" id="admin-link" aria-label="Admin Panel">Admin Panel</a>
                     </div>
                 </div>
-                
-                <style>
-                    .user-avatar-display {
-                        position: relative;
-                        cursor: pointer;
-                    }
-                
-                    .avatar-container {
-                        position: relative;
-                    }
-                
-                    .user-avatar {
-                        width: 40px;
-                        height: 40px;
-                        border-radius: 50%;
-                    }
-                
-                    .user-dropdown {
-                        display: none;
-                        position: absolute;
-                        top: 100%;
-                        right: 0;
-                        background-color: white;
-                        border: 1px solid #ddd;
-                        border-radius: 4px;
-                        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-                        min-width: 150px;
-                        z-index: 1000;
-                    }
-                
-                    .user-dropdown.show {
-                        display: block;
-                    }
-                
-                    .dropdown-item {
-                        display: block;
-                        padding: 10px 15px;
-                        color: #333;
-                        text-decoration: none;
-                        transition: background-color 0.2s;
-                    }
-                
-                    .dropdown-item:hover {
-                        background-color: #f5f5f5;
-                    }
-                
-                    .admin-link {
-                        display: none;
-                    }
-                </style>
-                
-                <script>
-                    document.addEventListener('DOMContentLoaded', () => {
-                        const avatarContainer = document.querySelector('.avatar-container');
-                        const dropdown = document.querySelector('.user-dropdown');
-                        const adminLink = document.querySelector('.admin-link');
-
-                        // Show/hide dropdown on avatar click
-                        avatarContainer.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            dropdown.classList.toggle('show');
-                        });
-
-                        // Close dropdown when clicking outside
-                        document.addEventListener('click', () => {
-                            dropdown.classList.remove('show');
-                        });
-
-                        // Update visibility based on user role
-                        const currentUser = localStorage.getItem('currentUser');
-                        if (currentUser) {
-                            const isAdmin = JSON.parse(currentUser)?.isAdmin || false;
-                            if (isAdmin) {
-                                adminLink.style.display = 'block';
-                            }
-                        }
-                    });
-                </script>
             </div>
-<section id="search">  
-<div class="navbar-right">
-    <!-- Placeholder for future elements -->
-</div>
+<section class="search-results">
+    <!-- Admin Link (Hidden by default) -->
+    <a id="admin-link" href="/admin" class="admin-link" style="display:none" aria-label="Admin Panel">Admin Panel</a>
+
+    <!-- Navigation Links -->
+    <a href="orderHistory.html" aria-label="Order History">Order History</a>
 </section>
-            <!-- Search  -->
-            <section id="search">
-                <div class="search-container">
-                    <input type="text" id="product-search" placeholder="Please type to search"
-                        aria-label="Search products">
-                </div>
-            </section>
-         
+          
     </nav>
 
 
@@ -231,14 +146,21 @@
                 </div>
             </div>
         </section>
-    <section id="categories" class="categories-section">
-        <div class="categories">
-            <!-- Category buttons will be rendered here -->
-        </div>
-    </section>
-    <section id="product-grid" class="grid-section">
-        <div class="grid-container"></div>
-    </section>
+        <!-- Search  -->
+        <section id="search">
+            <div class="search-container">
+                <input type="text" id="product-search" placeholder="Search products by name, description, or price..."
+                    aria-label="Search products">
+            </div>
+        </section>
+        <section id="categories" class="categories-section">
+            <div class="categories">
+                <!-- Category buttons will be rendered here -->
+            </div>
+        </section>
+        <section id="product-grid" class="grid-section">
+            <div class="grid-container"></div>
+        </section>
     
         <!-- Cart Section -->
         <section id="cart" class="cart-section">
@@ -302,27 +224,22 @@
             const elements = {
                 loginBtn: document.getElementById("login-btn"),
                 registerBtn: document.getElementById("register-btn"),
+                logoutButton: document.getElementById("logout-button"),
                 userAvatarDisplay: document.getElementById("user-avatar-display")
             };
 
-            if (currentUser) {
-                elements.loginBtn.style.display = "none";
-                elements.registerBtn.style.display = "none";
-                elements.userAvatarDisplay.style.display = "block";
+            elements.loginBtn.style.display = currentUser ? "none" : "block";
+            elements.registerBtn.style.display = currentUser ? "none" : "block";
+            elements.logoutButton.style.display = currentUser ? "block" : "none";
 
-                // Don't overwrite the entire HTML, just update visibility
-                const adminLink = document.querySelector('.admin-link');
-                if (adminLink) {
-                    const isAdmin = JSON.parse(currentUser)?.isAdmin || false;
-                    adminLink.style.display = isAdmin ? "block" : "none";
-                }
-            } else {
-                elements.loginBtn.style.display = "block";
-                elements.registerBtn.style.display = "block";
-                elements.userAvatarDisplay.style.display = "none";
+            if (currentUser) {
+                const isAdmin = JSON.parse(currentUser)?.isAdmin || false;
+                elements.userAvatarDisplay.innerHTML = `
+                    <img src="/images/avatar.jpg" alt="User Avatar">
+                    ${isAdmin ? '<div class="admin-dropdown"><a href="/admin">Admin Panel</a></div>' : ''}
+                `;
             }
         }
-        
 
         function setupModalHandlers() {
             const loginBtn = document.getElementById("login-btn");
@@ -453,15 +370,6 @@
                 button.classList.add('selected');
             });
         });
-        // Add logout functionality
-        const logoutButton = document.querySelector('.dropdown-item#logout-button');
-        if (logoutButton) {
-            logoutButton.addEventListener('click', () => {
-                localStorage.removeItem('currentUser');
-                updateUIVisibility(null);
-                window.location.reload(); // Optional: reload page after logout
-            });
-        }
     });
         
     </script>
