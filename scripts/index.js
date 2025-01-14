@@ -1546,16 +1546,22 @@ const recommendationManager = {
   // Get recommendations based on current product's category
   async getRecommendations(productId) {
     try {
-      // Get the current product details
-      const response = await fetch(`https://backend-3mvr.onrender.com/api/products/${productId}`);
-      if (!response.ok) throw new Error("Failed to fetch product");
-      const product = await response.json();
-      this.state.currentProduct = product;
+      // First get all products
+      const response = await fetch('https://backend-3mvr.onrender.com/api/products');
+      if (!response.ok) throw new Error("Failed to fetch products");
+      const data = await response.json();
+      const products = data.success ? data.products : data;
 
-      // Get other products from the same category
-      const categoryResponse = await fetch(`https://backend-3mvr.onrender.com/api/products/category/${product.category_id}`);
+      // Find the current product
+      const currentProduct = products.find(p => p.product_id === productId);
+      if (!currentProduct) throw new Error("Product not found");
+      this.state.currentProduct = currentProduct;
+
+      // Get products from the same category
+      const categoryResponse = await fetch(`https://backend-3mvr.onrender.com/api/products/category/${currentProduct.category_id}`);
       if (!categoryResponse.ok) throw new Error("Failed to fetch recommendations");
-      let recommendations = await categoryResponse.json();
+      const categoryData = await categoryResponse.json();
+      let recommendations = categoryData.success ? categoryData.products : categoryData;
 
       // Filter out the current product and limit to 4 recommendations
       recommendations = recommendations
@@ -1575,7 +1581,7 @@ const recommendationManager = {
     const container = document.createElement('div');
     container.className = 'recommendations-container';
     container.innerHTML = `
-      <h3>You might also like:</h3>
+      <h3>Sie könnten auch mögen:</h3>
       <div class="recommendations-grid"></div>
     `;
 
@@ -1588,7 +1594,11 @@ const recommendationManager = {
         <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
         <h4>${product.name}</h4>
         <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
-        <button class="recommend-add-to-cart">Add to Cart</button>
+        <div class="product-rating">
+          ${'★'.repeat(Math.round(product.average_rating || 0))}${'☆'.repeat(5 - Math.round(product.average_rating || 0))}
+          (${product.total_ratings || 0})
+        </div>
+        <button class="recommend-add-to-cart">In den Warenkorb</button>
       `;
 
       // Add click handler for cart button
@@ -1620,6 +1630,7 @@ const recommendationManager = {
     });
   }
 };
+
 const categoryManager = {
   state: {
     categories: [],
