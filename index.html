@@ -17,48 +17,237 @@
     
 </head>
 <body>
-    <nav class="navbar">
-        <!-- Panorama Container for Image Slider -->
-        <div class="panorama-container">
-            <img src="/images/belgrade-panorama-1.jpg" class="panorama-slide active" alt="Belgrade Panorama 1" />
-            <img src="/images/belgrade-panorama-2.webp" class="panorama-slide" alt="Belgrade Panorama 2" />
-            <img src="/images/belgrade-panorama-3.jpg" class="panorama-slide" alt="Belgrade Panorama 3" />
-        </div>
-        
-        <!-- Navbar Content -->
-        <div class="navbar-content">
-            <!-- Logo -->
-            <img src="/images/pobednik.jpg" class="logo animate__animated animate__fadeIn" alt="Logo" />
-            
-            <!-- Admin Link (Hidden by default) -->
-            <a id="admin-link" href="/admin" class="admin-link" style="display:none" aria-label="Admin Panel">Admin Panel</a>
-
-            <!-- Navigation Links -->
-            <a href="orderHistory.html" aria-label="Order History">Order History</a>
-            
-            <!-- User Section -->
-            <div class="user-section">
-                <ul class="navbar-links">
-                    <li><a href="#cart" aria-label="View Cart">Cart</a></li>
-                    <li id="login-btn"><a href="#login" aria-label="Login">Login</a></li>
-                    <li id="register-btn"><a href="#register" aria-label="Register">Register</a></li>
-                    <li id="logout-button" style="display: none;"><a href="#logout" aria-label="Logout">Logout</a></li>
-                </ul>
-                
-                <!-- User Avatar and Admin Dropdown (Visible only for admin) -->
-                <div id="user-avatar-display" class="user-avatar-display">
-                    <div class="admin-dropdown">
-                        <a href="/admin" id="admin-link" aria-label="Admin Panel">Admin Panel</a>
-                    </div>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --text-light: #f8fafc;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-800: #1f2937;
+        }
+    
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+    
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.5;
+            background-color: var(--gray-100);
+        }
+    
+        /* Enhanced Navbar */
+        .navbar {
+            background: linear-gradient(to right, var(--primary-color), var(--primary-dark));
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+    
+        .navbar-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+        }
+    
+        .logo {
+            height: 40px;
+            border-radius: 8px;
+        }
+    
+        /* Search Section */
+        .search-container {
+            flex: 1;
+            max-width: 600px;
+            position: relative;
+        }
+    
+        .search-container input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+    
+        .search-container input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+    
+        .search-container input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+    
+        /* Navigation Links */
+        .navbar-links {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            list-style: none;
+        }
+    
+        .navbar-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+            font-weight: 500;
+        }
+    
+        .navbar-links a:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+    
+        /* Categories Section */
+        .categories-section {
+            padding: 2rem;
+            background: white;
+            margin: 2rem auto;
+            max-width: 1280px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+    
+        .categories {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+    
+        /* Product Grid */
+        .grid-section {
+            max-width: 1280px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+    
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+    
+        /* Auth Modal */
+        .auth-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+    
+        .auth-modal.visible {
+            display: flex;
+        }
+    
+        .auth-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+    
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+    
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--gray-200);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+        }
+    
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+    
+        .submit-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+    
+        .submit-btn:hover {
+            background: var(--primary-dark);
+        }
+    
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .navbar-content {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem 0;
+            }
+    
+            .search-container {
+                width: 100%;
+            }
+    
+            .navbar-links {
+                width: 100%;
+                justify-content: center;
+            }
+    
+            .grid-container {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                gap: 1rem;
+            }
+        }
+    </style>
+    </head>
+    
+    <body>
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="navbar-content">
+                <!-- Logo -->
+                <img src="/api/placeholder/40/40" alt="Logo" class="logo animate__animated animate__fadeIn">
+    
+                <!-- Search -->
+                <div class="search-container">
+                    <input type="text" placeholder="Search products by name, description, or price..."
+                        aria-label="Search products">
                 </div>
+    
+                <!-- Navigation Links -->
+                <ul class="navbar-links">
+                    <li><a href="#cart">Cart</a></li>
+                    <li><a href="#" id="login-btn">Login</a></li>
+                    <li><a href="#" id="register-btn">Register</a></li>
+                    <li style="display: none;"><a href="#" id="logout-button">Logout</a></li>
+                </ul>
             </div>
-<section id="search">  
-<div class="navbar-right">
-    <!-- Placeholder for future elements -->
-</div>
-</section>
-          
-    </nav>
+        </nav>
 
 
     <main>
