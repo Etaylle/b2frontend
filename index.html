@@ -38,7 +38,7 @@
                     <li><a href="#cart" aria-label="View Cart">Cart</a></li>
                     <li id="login-btn"><a href="#login" aria-label="Login">Login</a></li>
                     <li id="register-btn"><a href="#register" aria-label="Register">Register</a></li>
-                    <li id="logout-button" style="display: none;"><a href="#logout" aria-label="Logout">Logout</a></li>
+                    
                 </ul>
                 
                 <!-- User Avatar and Admin Dropdown (Visible only for admin) -->
@@ -302,22 +302,27 @@
             const elements = {
                 loginBtn: document.getElementById("login-btn"),
                 registerBtn: document.getElementById("register-btn"),
-                logoutButton: document.getElementById("logout-button"),
-                userAvatarDisplay: document.getElementById("user-avatar-display"),
-                adminLink: document.querySelector('.admin-link')
+                userAvatarDisplay: document.getElementById("user-avatar-display")
             };
 
-            elements.loginBtn.style.display = currentUser ? "none" : "block";
-            elements.registerBtn.style.display = currentUser ? "none" : "block";
-            elements.logoutButton.style.display = currentUser ? "block" : "none";
-            elements.userAvatarDisplay.style.display = currentUser ? "block" : "none";
-             if (currentUser) {
-                const isAdmin = JSON.parse(currentUser)?.isAdmin || false;
-                if (isAdmin && elements.adminLink) {
-                    elements.adminLink.style.display = "block";
+            if (currentUser) {
+                elements.loginBtn.style.display = "none";
+                elements.registerBtn.style.display = "none";
+                elements.userAvatarDisplay.style.display = "block";
+
+                // Don't overwrite the entire HTML, just update visibility
+                const adminLink = document.querySelector('.admin-link');
+                if (adminLink) {
+                    const isAdmin = JSON.parse(currentUser)?.isAdmin || false;
+                    adminLink.style.display = isAdmin ? "block" : "none";
                 }
+            } else {
+                elements.loginBtn.style.display = "block";
+                elements.registerBtn.style.display = "block";
+                elements.userAvatarDisplay.style.display = "none";
             }
         }
+        
 
         function setupModalHandlers() {
             const loginBtn = document.getElementById("login-btn");
@@ -448,6 +453,15 @@
                 button.classList.add('selected');
             });
         });
+        // Add logout functionality
+        const logoutButton = document.querySelector('.dropdown-item#logout-button');
+        if (logoutButton) {
+            logoutButton.addEventListener('click', () => {
+                localStorage.removeItem('currentUser');
+                updateUIVisibility(null);
+                window.location.reload(); // Optional: reload page after logout
+            });
+        }
     });
         
     </script>
