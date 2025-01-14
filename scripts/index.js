@@ -1787,37 +1787,41 @@ const productPageManager = {
 
   // Modify handleDirectNavigation to use the stored products
   handleDirectNavigation() {
-    const match = window.location.pathname.match(/\/product\/(\d+)/);
-    if (match) {
-      const productId = match[1];
-      const product = this.state.products.find(p => p.product_id === productId);
-      if (product) {
-        this.openProductPage(product);
-      }
+  const hash = window.location.hash;
+  const match = hash.match(/product-(\d+)/);
+  if (match) {
+    const productId = match[1];
+    const product = this.state.products.find(p => p.product_id === productId);
+    if (product) {
+      this.openProductPage(product);
     }
-  },
+  }
+},
   initialize() {
-    // Create modal container if it doesn't exist
-    if (!document.getElementById('product-page-modal')) {
-      const modal = document.createElement('div');
-      modal.id = 'product-page-modal';
-      modal.className = 'modal-container';
-      modal.style.display = 'none';
-      document.body.appendChild(modal);
+     if (!document.getElementById('product-page-modal')) {
+    const modal = document.createElement('div');
+    modal.id = 'product-page-modal';
+    modal.className = 'modal-container';
+    modal.style.display = 'none';
+    document.body.appendChild(modal);
+  }
 
-      // Add event listener to handle browser back button
-      window.addEventListener('popstate', () => {
-        this.closeProductPage();
-      });
-    }
+  // React to hash changes
+  window.addEventListener('hashchange', () => {
+    this.handleDirectNavigation();
+  });
+
+  // Handle hash on initial page load
+  this.handleDirectNavigation();
   },
 
   openProductPage(product) {
+    window.location.hash = `product-${product.product_id}`;
     const modal = document.getElementById('product-page-modal');
     
-    // Update URL without page reload
-    const productUrl = `/product/${product.product_id}`;
-    window.history.pushState({ productId: product.product_id }, '', productUrl);
+    
+    // const productUrl = `/product/${product.product_id}`;
+    // window.history.pushState({ productId: product.product_id }, '', productUrl);
 
     // Create image slider HTML
     let imageSliderHtml = '<div class="product-image-slider">';
@@ -1867,30 +1871,15 @@ const productPageManager = {
   },
 
   closeProductPage() {
-    const modal = document.getElementById('product-page-modal');
-    if (modal) {
-      modal.style.display = 'none';
-      document.body.style.overflow = ''; // Restore scrolling
-      
-      // Restore original URL if we're on a product page
-      if (window.location.pathname.includes('/product/')) {
-        window.history.pushState({}, '', '/');
-      }
-    }
-  },
+  const modal = document.getElementById('product-page-modal');
+  if (modal) {
+    modal.style.display = 'none';
+    document.body.style.overflow = ''; // Restore scrolling
 
-  // Handle direct navigation to product URLs
-  handleDirectNavigation() {
-    const match = window.location.pathname.match(/\/product\/(\d+)/);
-    if (match) {
-      const productId = match[1];
-      // Assuming you have a way to fetch product data
-      const product = this.state.products.find(p => p.product_id === productId);
-      if (product) {
-        this.openProductPage(product);
-      }
-    }
+    // Clear the hash
+    window.location.hash = '';
   }
+}
 };
 const categoryManager = {
   state: {
