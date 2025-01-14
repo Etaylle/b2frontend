@@ -17,215 +17,56 @@
     
 </head>
 <body>
-   - Modified navbar section -->
-<nav class="navbar">
-    <!-- Panorama Container remains unchanged -->
-    <div class="panorama-container">
-        <img src="/images/belgrade-panorama-1.jpg" class="panorama-slide active" alt="Belgrade Panorama 1" />
-        <img src="/images/belgrade-panorama-2.webp" class="panorama-slide" alt="Belgrade Panorama 2" />
-        <img src="/images/belgrade-panorama-3.jpg" class="panorama-slide" alt="Belgrade Panorama 3" />
-    </div>
-
-    <!-- Updated navbar content with new layout -->
-    <div class="navbar-content">
-        <!-- Logo -->
-        <img src="/images/pobednik.jpg" class="logo animate__animated animate__fadeIn" alt="Logo" />
-
-        <!-- Enhanced Search Section -->
-        <div class="search-section">
-            <div class="search-container">
-                <input type="text" id="product-search" placeholder="Please type to search" aria-label="Search products">
-                <div id="search-dropdown" class="search-dropdown">
-                    <!-- Search results will be populated here -->
+    <nav class="navbar">
+        <!-- Panorama Container for Image Slider -->
+        <div class="panorama-container">
+            <img src="/images/belgrade-panorama-1.jpg" class="panorama-slide active" alt="Belgrade Panorama 1" />
+            <img src="/images/belgrade-panorama-2.webp" class="panorama-slide" alt="Belgrade Panorama 2" />
+            <img src="/images/belgrade-panorama-3.jpg" class="panorama-slide" alt="Belgrade Panorama 3" />
+        </div>
+        
+        <!-- Navbar Content -->
+        <div class="navbar-content">
+            <!-- Logo -->
+            <img src="/images/pobednik.jpg" class="logo animate__animated animate__fadeIn" alt="Logo" />
+            <section id="search">
+                <div class="navbar-right">
+                    <!-- Placeholder for future elements -->
+                </div>
+            </section>
+            <!-- Search  -->
+            <section id="search">
+                <div class="search-container">
+                    <input type="text" id="product-search" placeholder="Please type to search"
+                        aria-label="Search products">
+                </div>
+            </section>
+            <!-- User Section -->
+            <div class="user-section">
+                <ul class="navbar-links">
+                    <li><a href="#cart" aria-label="View Cart">Cart</a></li>
+                    <a href="orderHistory.html" aria-label="Order History">Order History</a>
+                    <li id="login-btn"><a href="#login" aria-label="Login">Login</a></li>
+                    <li id="register-btn"><a href="#register" aria-label="Register">Register</a></li>
+                    <li id="logout-button" style="display: none;"><a href="#logout" aria-label="Logout">Logout</a></li>
+                </ul>
+                
+                <!-- User Avatar and Admin Dropdown (Visible only for admin) -->
+                <div id="user-avatar-display" class="user-avatar-display">
+                    <div class="admin-dropdown">
+                        <a href="/admin" id="admin-link" aria-label="Admin Panel">Admin Panel</a>
+                    </div>
                 </div>
             </div>
-        </div>
+<section class="search-results">
+    <!-- Admin Link (Hidden by default) -->
+    <a id="admin-link" href="/admin" class="admin-link" style="display:none" aria-label="Admin Panel">Admin Panel</a>
 
-        <!-- User Section pushed to the right -->
-        <div class="user-section">
-            <ul class="navbar-links">
-                <li><a href="#cart" aria-label="View Cart">Cart</a></li>
-                <li><a href="orderHistory.html" aria-label="Order History">Order History</a></li>
-                <li id="login-btn"><a href="#login" aria-label="Login">Login</a></li>
-                <li id="register-btn"><a href="#register" aria-label="Register">Register</a></li>
-                <li id="logout-button" style="display: none;"><a href="#logout" aria-label="Logout">Logout</a></li>
-            </ul>
-
-            <div id="user-avatar-display" class="user-avatar-display">
-                <div class="admin-dropdown">
-                    <a href="/admin" id="admin-link" aria-label="Admin Panel">Admin Panel</a>
-                </div>
-            </div>
-        </div>
-    </div>
-</nav>
-
-<style>
-    /* Enhanced navbar styles */
-    .navbar {
-        width: 100%;
-        position: relative;
-        z-index: 1000;
-    }
-
-    .navbar-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem 2rem;
-        background: rgba(255, 255, 255, 0.95);
-    }
-
-    /* Enhanced search section styles */
-    .search-section {
-        flex-grow: 1;
-        max-width: 600px;
-        margin: 0 2rem;
-    }
-
-    .search-container {
-        position: relative;
-        width: 100%;
-    }
-
-    .search-container input {
-        width: 100%;
-        padding: 1rem 1.5rem;
-        font-size: 1.1rem;
-        border: 2px solid #e1e1e1;
-        border-radius: 8px;
-        transition: all 0.3s ease;
-    }
-
-    .search-container input:focus {
-        border-color: #007bff;
-        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
-    }
-
-    .search-dropdown {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: white;
-        border: 1px solid #e1e1e1;
-        border-radius: 0 0 8px 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        display: none;
-        max-height: 300px;
-        overflow-y: auto;
-    }
-
-    .search-dropdown.active {
-        display: block;
-    }
-
-    .search-item {
-        padding: 0.75rem 1rem;
-        cursor: pointer;
-        border-bottom: 1px solid #f0f0f0;
-    }
-
-    .search-item:hover {
-        background: #f8f9fa;
-    }
-
-    .search-history {
-        color: #666;
-        font-style: italic;
-    }
-
-    /* User section styles */
-    .user-section {
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
-        margin-left: auto;
-    }
-
-    .navbar-links {
-        display: flex;
-        gap: 1.5rem;
-        list-style: none;
-        margin: 0;
-        padding: 0;
-    }
-
-    .user-avatar-display {
-        display: flex;
-        align-items: center;
-    }
-</style>
-
-<script>
-    // Enhanced search functionality
-    document.addEventListener('DOMContentLoaded', function () {
-        const searchInput = document.getElementById('product-search');
-        const searchDropdown = document.getElementById('search-dropdown');
-        let searchHistory = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-
-        // Show search dropdown with history and results
-        function showSearchDropdown(items, isHistory = false) {
-            searchDropdown.innerHTML = '';
-            items.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'search-item' + (isHistory ? ' search-history' : '');
-                div.textContent = isHistory ? `Recent: ${item}` : item;
-                div.addEventListener('click', () => {
-                    searchInput.value = item;
-                    searchDropdown.classList.remove('active');
-                    performSearch(item);
-                });
-                searchDropdown.appendChild(div);
-            });
-            searchDropdown.classList.add('active');
-        }
-
-        // Add to search history
-        function addToHistory(term) {
-            searchHistory = [term, ...searchHistory.filter(item => item !== term)].slice(0, 5);
-            localStorage.setItem('searchHistory', JSON.stringify(searchHistory));
-        }
-
-        // Perform search
-        async function performSearch(term) {
-            if (term.trim()) {
-                addToHistory(term);
-                // Here you would typically make an API call to get search results
-                // For demo, we'll just show some mock results
-                const mockResults = [
-                    `Result for ${term}`,
-                    `Another result for ${term}`,
-                    `More results for ${term}`
-                ];
-                showSearchDropdown(mockResults);
-            }
-        }
-
-        // Event listeners
-        searchInput.addEventListener('focus', () => {
-            if (searchHistory.length > 0) {
-                showSearchDropdown(searchHistory, true);
-            }
-        });
-
-        searchInput.addEventListener('input', (e) => {
-            const term = e.target.value.trim();
-            if (term.length >= 2) {
-                performSearch(term);
-            } else {
-                searchDropdown.classList.remove('active');
-            }
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
-                searchDropdown.classList.remove('active');
-            }
-        });
-    });
-</script>
+    <!-- Navigation Links -->
+    
+</section>
+          
+    </nav>
 
 
     <main>
