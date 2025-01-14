@@ -1630,6 +1630,91 @@ const recommendationManager = {
     });
   }
 };
+const socialSharingManager = {
+  // Get the current website URL
+  getBaseUrl() {
+    return window.location.origin;
+  },
+
+  // Create sharing URLs for different platforms
+  getSharingUrls(product) {
+    const productUrl = `${this.getBaseUrl()}/product/${product.product_id}`;
+    const text = `Schau dir ${product.name} an! Preis: ${cryptoManager.formatCryptoPrice(product.price)}`;
+    
+    return {
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productUrl)}`,
+      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(productUrl)}`,
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(text + ' ' + productUrl)}`,
+    };
+  },
+
+  // Add sharing buttons to product display
+  addSharingButtons(productElement, product) {
+    const sharingUrls = this.getSharingUrls(product);
+    
+    const sharingContainer = document.createElement('div');
+    sharingContainer.className = 'social-sharing';
+    sharingContainer.innerHTML = `
+      <div class="sharing-buttons">
+        <button onclick="window.open('${sharingUrls.facebook}', '_blank')" class="share-btn facebook">
+          Auf Facebook teilen
+        </button>
+        <button onclick="window.open('${sharingUrls.twitter}', '_blank')" class="share-btn twitter">
+          Auf Twitter teilen
+        </button>
+        <button onclick="window.open('${sharingUrls.whatsapp}', '_blank')" class="share-btn whatsapp">
+          Auf WhatsApp teilen
+        </button>
+      </div>
+    `;
+
+    // Add native share button if Web Share API is supported
+    if (navigator.share) {
+      const nativeShareBtn = document.createElement('button');
+      nativeShareBtn.className = 'share-btn native-share';
+      nativeShareBtn.textContent = 'Teilen';
+      nativeShareBtn.onclick = () => this.nativeShare(product);
+      sharingContainer.querySelector('.sharing-buttons').appendChild(nativeShareBtn);
+    }
+
+    productElement.appendChild(sharingContainer);
+  },
+
+  // Use native sharing if available (mobile devices)
+  async nativeShare(product) {
+    const shareData = {
+      title: product.name,
+      text: `Schau dir ${product.name} an! Preis: ${cryptoManager.formatCryptoPrice(product.price)}`,
+      url: `${this.getBaseUrl()}/product/${product.product_id}`
+    };
+
+    try {
+      await navigator.share(shareData);
+      showNotification('Erfolgreich geteilt!', 'success');
+    } catch (err) {
+      console.error('Error sharing:', err);
+      showNotification('Fehler beim Teilen', 'error');
+    }
+  },
+
+  // Initialize social sharing
+  initialize() {
+    // Modify the categoryManager's renderProducts method to include sharing buttons
+    const originalRenderProducts = categoryManager.renderProducts;
+    categoryManager.renderProducts = async function() {
+      await originalRenderProducts.call(this);
+      
+      // Add sharing buttons to each product
+      document.querySelectorAll('.grid-item').forEach(item => {
+        const productId = item.getAttribute('data-product-id');
+        const product = this.state.products.find(p => p.product_id === productId);
+        if (product) {
+          socialSharingManager.addSharingButtons(item, product);
+        }
+      });
+    };
+  }
+};
 
 const categoryManager = {
   state: {
@@ -1898,6 +1983,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       categoryManager.initialize(),
       paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl'),
       recommendationManager.initialize(),
+      socialSharingManager.initialize(),
     ]);
 
     // Fetch initial data
@@ -1929,6 +2015,7 @@ window.categoryManager = categoryManager;
 window.cryptoManager = cryptoManager;
 window.ratingManager = ratingManager;
 window.recommendationManager = recommendationManager;
+window.socialSharingManager = socialSharingManager;
 async function fetchProducts(categoryId = null) {
   try {
     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
