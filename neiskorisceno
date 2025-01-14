@@ -1,0 +1,657 @@
+// async renderProducts() {
+//   const gridContainer = document.querySelector(".grid-container");
+//   if (!gridContainer) return;
+  
+//   // Set product data for rating manager first
+//   ratingManager.setProductData(this.state.products);
+//   gridContainer.innerHTML = "";
+
+//   this.state.products.forEach((product) => {
+//     const gridItem = document.createElement("div");
+//     gridItem.classList.add("grid-item", "grid-item-xl");
+//     gridItem.setAttribute("data-product-id", product.product_id);
+
+//     // Create image slider
+//     let imageSlider = '<div class="image-slider">';
+//     if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+//       product.images.forEach((img, index) => {
+//         imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
+//       });
+//     } else if (product.image_url) {
+//       imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
+//     } else {
+//       imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
+//     }
+//     imageSlider += '</div>';
+
+//     // Create rating display HTML
+//     const ratingHTML = ratingManager.createProductRating(
+//       product.product_id,
+//       product.average_rating || 0,
+//       product.total_ratings || 0
+//     );
+
+//     // Properly structure the grid item content
+//     gridItem.innerHTML = `
+//       <div class="product-content">
+//         ${imageSlider}
+        
+//         <div class="overlay">
+//           ${product.name} | <span class="price-span" data-usd-price="${product.price}">
+//             ${cryptoManager.formatCryptoPrice(product.price)}
+//           </span>
+//           | Stock: ${product.stock}
+//         </div>
+//       </div>
+//     `;
+    
+//     // Add the cart button
+//     const addToCartButton = document.createElement("button");
+//     addToCartButton.textContent = "+";
+//     addToCartButton.className = "add-to-cart-btn";
+//     gridItem.appendChild(addToCartButton);
+
+//     // Add click handler for cart button
+//     addToCartButton.addEventListener("click", (e) => {
+//       e.stopPropagation();
+//       cartManager.addItem(product.product_id);
+//     });
+
+//     gridContainer.appendChild(gridItem);
+//   });
+
+//   // Initialize rating manager if needed
+//   if (!window.ratingManagerInitialized) {
+//     ratingManager.initialize();
+//     window.ratingManagerInitialized = true;
+//   }
+
+//   // Fetch ratings and initialize sliders
+//   await ratingManager.fetchUserRatings();
+//   this.initializeImageSliders();
+// },
+// async renderProducts() {
+//   const gridContainer = document.querySelector(".grid-container");
+//   if (!gridContainer) return;
+  
+//   ratingManager.setProductData(this.state.products);
+//   gridContainer.innerHTML = "";
+
+//   this.state.products.forEach((product) => {
+//     const gridItem = document.createElement("div");
+//     gridItem.classList.add("grid-item", "grid-item-xl");
+//     gridItem.setAttribute("data-product-id", product.product_id);
+
+//     let imageSlider = '<div class="image-slider">';
+//     if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+//       product.images.forEach((img, index) => {
+//         imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
+//       });
+//     } else if (product.image_url) {
+//       imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
+//     } else {
+//       imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
+//     }
+//     imageSlider += '</div>';
+
+//     const ratingHTML = ratingManager.createProductRating(
+//       product.product_id,
+//       product.average_rating || 0,
+//       product.total_ratings || 0
+//     );
+
+//     gridItem.innerHTML = `
+//       <div class="product-content">
+//         ${imageSlider}
+        
+//         <div class="overlay">
+//           ${product.name} | <span class="price-span" data-usd-price="${product.price}">
+//             ${cryptoManager.formatCryptoPrice(product.price)}
+//           </span>
+//           | Stock: ${product.stock}
+//         </div>
+//       </div>
+//     `;
+//     productPageManager.updateProducts(this.state.products);
+//     // Create buttons container
+//     const buttonsContainer = document.createElement("div");
+//     buttonsContainer.className = "product-buttons";
+
+//     // Add to cart button
+//     const addToCartButton = document.createElement("button");
+//     addToCartButton.textContent = "+";
+//     addToCartButton.className = "add-to-cart-btn";
+//     addToCartButton.addEventListener("click", (e) => {
+//       e.stopPropagation();
+//       cartManager.addItem(product.product_id);
+//     });
+
+//     // Share button
+//     const shareButton = document.createElement("button");
+//     shareButton.textContent = "🚀";
+//     shareButton.className = "share-btn";
+//     shareButton.addEventListener("click", (e) => {
+//       e.stopPropagation();
+//       socialSharingManager.showShareOptions(product);
+//     });
+
+//     buttonsContainer.appendChild(addToCartButton);
+//     buttonsContainer.appendChild(shareButton);
+//     gridItem.appendChild(buttonsContainer);
+
+//     gridContainer.appendChild(gridItem);
+//     gridItem.addEventListener("click", () => {
+//   productPageManager.openProductPage(product);
+// });
+//   });
+
+//   if (!window.ratingManagerInitialized) {
+//     ratingManager.initialize();
+//     window.ratingManagerInitialized = true;
+//   }
+
+//   await ratingManager.fetchUserRatings();
+//   this.initializeImageSliders();
+// }
+// async renderProducts() {
+//   const gridContainer = document.querySelector(".grid-container");
+//   if (!gridContainer) return;
+  
+//   ratingManager.setProductData(this.state.products);
+//   gridContainer.innerHTML = "";
+
+//   this.state.products.forEach((product) => {
+//     const gridItem = document.createElement("div");
+//     gridItem.classList.add("grid-item", "grid-item-xl");
+//     gridItem.setAttribute("data-product-id", product.product_id);
+
+//     let imageSlider = '<div class="image-slider">';
+//     if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+//       product.images.forEach((img, index) => {
+//         imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
+//       });
+//     } else if (product.image_url) {
+//       imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
+//     } else {
+//       imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
+//     }
+//     imageSlider += '</div>';
+
+//     const ratingHTML = ratingManager.createProductRating(
+//       product.product_id,
+//       product.average_rating || 0,
+//       product.total_ratings || 0
+//     );
+
+//     gridItem.innerHTML = `
+//       <div class="product-content">
+//         ${imageSlider}
+        
+//         <div class="overlay">
+//           ${product.name} | <span class="price-span" data-usd-price="${product.price}">
+//             ${cryptoManager.formatCryptoPrice(product.price)}
+//           </span>
+//           | Stock: ${product.stock}
+//         </div>
+//       </div>
+//     `;
+    
+//     productPageManager.updateProducts(this.state.products);
+    
+//     // Create buttons container
+//     const buttonsContainer = document.createElement("div");
+//     buttonsContainer.className = "product-buttons";
+
+//     // Add to cart button
+//     const addToCartButton = document.createElement("button");
+//     addToCartButton.textContent = "+";
+//     addToCartButton.className = "add-to-cart-btn";
+//     addToCartButton.addEventListener("click", (e) => {
+//       e.stopPropagation();
+//       cartManager.addItem(product.product_id);
+//     });
+
+//     // Share button
+//     const shareButton = document.createElement("button");
+//     shareButton.textContent = "🚀";
+//     shareButton.className = "share-btn";
+//     shareButton.addEventListener("click", (e) => {
+//       e.stopPropagation();
+//       socialSharingManager.showShareOptions(product);
+//     });
+
+//     // Rate button
+//     const rateButton = document.createElement("button");
+//     rateButton.textContent = "⭐";
+//     rateButton.className = "rate-btn";
+//     rateButton.addEventListener("click", (e) => {
+//       e.stopPropagation();
+//       ratingManager.showRatingModal(product.product_id);
+//     });
+
+//     buttonsContainer.appendChild(addToCartButton);
+//     buttonsContainer.appendChild(shareButton);
+//     buttonsContainer.appendChild(rateButton);
+//     gridItem.appendChild(buttonsContainer);
+
+//     gridContainer.appendChild(gridItem);
+    
+//     // Add click event for product details
+//     gridItem.addEventListener("click", () => {
+//       productPageManager.openProductPage(product);
+//     });
+//   });
+
+//   // Add some CSS for the new button
+//   const style = document.createElement('style');
+//   style.textContent = `
+//     .rate-btn {
+//       background: none;
+//       border: none;
+//       cursor: pointer;
+//       font-size: 1.2rem;
+//       padding: 0.25rem 0.5rem;
+//       transition: transform 0.2s;
+//     }
+//     .rate-btn:hover {
+//       transform: scale(1.1);
+//     }
+//   `;
+//   document.head.appendChild(style);
+
+//   if (!window.ratingManagerInitialized) {
+//     ratingManager.initialize();
+//     window.ratingManagerInitialized = true;
+//   }
+
+//   await ratingManager.fetchUserRatings();
+//   this.initializeImageSliders();
+// },
+//   initializeImageSliders() {
+//     document.querySelectorAll('.image-slider').forEach(slider => {
+//       const images = slider.querySelectorAll('img');
+//       if (images.length <= 1) return;
+
+//       let currentIndex = 0;
+//       setInterval(() => {
+//         images[currentIndex].classList.remove('active');
+//         currentIndex = (currentIndex + 1) % images.length;
+//         images[currentIndex].classList.add('active');
+//       }, 3000);
+//     });
+//   },
+
+//   highlightSelectedCategory() {
+//   // Remove 'active' class from all buttons
+//     document.querySelectorAll(".category-btn").forEach(btn => btn.classList.remove("active"));
+
+//     if (this.state.selectedCategory === null) {
+//         // Highlight the "All" button
+//         const allButton = document.querySelector('.category-btn:first-child');
+//         if (allButton) allButton.classList.add("active");
+//     } else {
+//         // Highlight the button matching the selected category
+//         const activeButton = document.querySelector(`.category-btn[data-id="${this.state.selectedCategory}"]`);
+//         if (activeButton) activeButton.classList.add("active");
+//     }
+// },// const socialSharingManager = {
+//   // Get the current website URL
+//   getBaseUrl() {
+//     return window.location.origin;
+//   },
+
+//   // Create sharing URLs for different platforms
+//   getSharingUrls(product) {
+//     const productUrl = `${this.getBaseUrl()}/product/${product.product_id}`;
+//     const text = `Schau dir ${product.name} an! Preis: ${cryptoManager.formatCryptoPrice(product.price)}`;
+    
+//     return {
+//       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productUrl)}`,
+//       twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(productUrl)}`,
+//       whatsapp: `https://wa.me/?text=${encodeURIComponent(text + ' ' + productUrl)}`,
+//     };
+//   },
+//   showShareOptions(product) {
+//     const shareData = {
+//       title: product.name,
+//       text: `Check out ${product.name}! Price: ${cryptoManager.formatCryptoPrice(product.price)}`,
+//       url: `${window.location.origin}/product/${product.product_id}`
+//     };
+
+//     if (navigator.share) {
+//       navigator.share(shareData).catch(console.error);
+//       return;
+//     }
+
+//     // Fallback to custom sharing menu
+//     const shareUrls = {
+//       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareData.url)}`,
+//       twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareData.text)}&url=${encodeURIComponent(shareData.url)}`,
+//       whatsapp: `https://wa.me/?text=${encodeURIComponent(shareData.text + ' ' + shareData.url)}`
+//     };
+
+//     const menu = document.createElement('div');
+//     menu.className = 'share-menu';
+//     menu.innerHTML = `
+//       <button onclick="window.open('${shareUrls.facebook}', '_blank')">Facebook</button>
+//       <button onclick="window.open('${shareUrls.twitter}', '_blank')">Twitter</button>
+//       <button onclick="window.open('${shareUrls.whatsapp}', '_blank')">WhatsApp</button>
+//     `;
+
+//     // Position menu near share button
+//     const productElement = document.querySelector(`[data-product-id="${product.product_id}"]`);
+//     const shareButton = productElement.querySelector('.share-btn');
+//     const rect = shareButton.getBoundingClientRect();
+    
+//     menu.style.position = 'absolute';
+//     menu.style.top = `${rect.bottom + window.scrollY}px`;
+//     menu.style.left = `${rect.left}px`;
+
+//     // Remove existing menus
+//     document.querySelectorAll('.share-menu').forEach(m => m.remove());
+//     document.body.appendChild(menu);
+
+//     // Close menu when clicking outside
+//     document.addEventListener('click', function closeMenu(e) {
+//       if (!menu.contains(e.target) && e.target !== shareButton) {
+//         menu.remove();
+//         document.removeEventListener('click', closeMenu);
+//       }
+//     });
+//   },
+
+//   // Add sharing buttons to product display
+//   addSharingButtons(productElement, product) {
+//     const sharingUrls = this.getSharingUrls(product);
+    
+//     const sharingContainer = document.createElement('div');
+//     sharingContainer.className = 'social-sharing';
+//     sharingContainer.innerHTML = `
+//       <div class="sharing-buttons">
+//         <button onclick="window.open('${sharingUrls.facebook}', '_blank')" class="share-btn facebook">
+//           Auf Facebook teilen
+//         </button>
+//         <button onclick="window.open('${sharingUrls.twitter}', '_blank')" class="share-btn twitter">
+//           Auf Twitter teilen
+//         </button>
+//         <button onclick="window.open('${sharingUrls.whatsapp}', '_blank')" class="share-btn whatsapp">
+//           Auf WhatsApp teilen
+//         </button>
+//       </div>
+//     `;
+
+//     // Add native share button if Web Share API is supported
+//     if (navigator.share) {
+//       const nativeShareBtn = document.createElement('button');
+//       nativeShareBtn.className = 'share-btn native-share';
+//       nativeShareBtn.textContent = 'Teilen';
+//       nativeShareBtn.onclick = () => this.nativeShare(product);
+//       sharingContainer.querySelector('.sharing-buttons').appendChild(nativeShareBtn);
+//     }
+
+//     productElement.appendChild(sharingContainer);
+//   },
+
+//   // Use native sharing if available (mobile devices)
+//   async nativeShare(product) {
+//     const shareData = {
+//       title: product.name,
+//       text: `Schau dir ${product.name} an! Preis: ${cryptoManager.formatCryptoPrice(product.price)}`,
+//       url: `${this.getBaseUrl()}/product/${product.product_id}`
+//     };
+
+//     try {
+//       await navigator.share(shareData);
+//       showNotification('Erfolgreich geteilt!', 'success');
+//     } catch (err) {
+//       console.error('Error sharing:', err);
+//       showNotification('Fehler beim Teilen', 'error');
+//     }
+//   },
+
+//   // Initialize social sharing
+//   initialize() {
+//     // Modify the categoryManager's renderProducts method to include sharing buttons
+//     const originalRenderProducts = categoryManager.renderProducts;
+//     categoryManager.renderProducts = async function() {
+//       await originalRenderProducts.call(this);
+      
+//       // Add sharing buttons to each product
+//       document.querySelectorAll('.grid-item').forEach(item => {
+//         const productId = item.getAttribute('data-product-id');
+//         const product = this.state.products.find(p => p.product_id === productId);
+//         if (product) {
+//           socialSharingManager.addSharingButtons(item, product);
+//         }
+//       });
+//     };
+//   }
+// };
+// // Add this to your existing code structure
+// const productPageManager = {
+//    state: {
+//     products: [] // This will store our products
+//   },
+
+//   // Add this method to update the state
+//   updateProducts(products) {
+//     this.state.products = products;
+//   },
+
+//   // Modify handleDirectNavigation to use the stored products
+//   handleDirectNavigation() {
+//   const hash = window.location.hash;
+//   const match = hash.match(/product-(\d+)/);
+//   if (match) {
+//     const productId = match[1];
+//     const product = this.state.products.find(p => p.product_id === productId);
+//     if (product) {
+//       this.openProductPage(product);
+//     }
+//   }
+// },
+//   initialize() {
+//      if (!document.getElementById('product-page-modal')) {
+//     const modal = document.createElement('div');
+//     modal.id = 'product-page-modal';
+//     modal.className = 'modal-container';
+//     modal.style.display = 'none';
+//     document.body.appendChild(modal);
+//   }
+
+//   // React to hash changes
+//   window.addEventListener('hashchange', () => {
+//     this.handleDirectNavigation();
+//   });
+
+//   // Handle hash on initial page load
+//   this.handleDirectNavigation();
+//   },
+
+//   openProductPage(product) {
+//     window.location.hash = `product-${product.product_id}`;
+//     const modal = document.getElementById('product-page-modal');
+    
+    
+//     // const productUrl = `/product/${product.product_id}`;
+//     // window.history.pushState({ productId: product.product_id }, '', productUrl);
+
+//     // Create image slider HTML
+//     let imageSliderHtml = '<div class="product-image-slider">';
+//     if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+//       product.images.forEach((img, index) => {
+//         imageSliderHtml += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
+//       });
+//     } else if (product.image_url) {
+//       imageSliderHtml += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
+//     }
+//     imageSliderHtml += '</div>';
+
+//     // Generate modal content
+//     modal.innerHTML = `
+//       <div class="modal-content">
+//         <button class="close-btn" onclick="productPageManager.closeProductPage()">&times;</button>
+//         <div class="product-page-content">
+//           ${imageSliderHtml}
+//           <h1>${product.name}</h1>
+//           <div class="product-price">
+//             Price: <span class="price-span" data-usd-price="${product.price}">
+//               ${cryptoManager.formatCryptoPrice(product.price)}
+//             </span>
+//           </div>
+//           <div class="product-stock">Stock: ${product.stock}</div>
+//           <div class="product-rating">
+//             ${ratingManager.createProductRating(
+//               product.product_id,
+//               product.average_rating || 0,
+//               product.total_ratings || 0
+//             )}
+//           </div>
+//           <div class="product-actions">
+//             <button class="add-to-cart-btn" onclick="cartManager.addItem('${product.product_id}')">
+//               Add to Cart
+//             </button>
+//             <button class="share-btn" onclick="socialSharingManager.showShareOptions(${JSON.stringify(product)})">
+//               Share
+//             </button>
+//           </div>
+//         </div>
+//       </div>
+//     `;
+
+//     modal.style.display = 'block';
+//     document.body.style.overflow = 'hidden'; // Prevent background scrolling
+//   },
+
+//   closeProductPage() {
+//   const modal = document.getElementById('product-page-modal');
+//   if (modal) {
+//     modal.style.display = 'none';
+//     document.body.style.overflow = ''; // Restore scrolling
+
+//     // Clear the hash
+//     window.location.hash = '';
+//   }
+// }
+// };// const productPageManager = {
+//   state: {
+//     products: [],
+//     currentProduct: null
+//   },
+
+//   updateProducts(products) {
+//     this.state.products = products;
+//   },
+
+//   // Get product ID from URL hash or path
+//   getProductIdFromUrl() {
+//     // Check hash first (for SPA-style navigation)
+//     const hashMatch = window.location.hash.match(/product-(\d+)/);
+//     if (hashMatch) return hashMatch[1];
+    
+//     // Check path (for sharing URLs)
+//     const pathMatch = window.location.pathname.match(/\/product\/(\d+)/);
+//     if (pathMatch) return pathMatch[1];
+    
+//     return null;
+//   },
+
+//   // Update URL without page reload
+//   updateUrl(productId) {
+//     const newUrl = productId ? `/product/${productId}` : '/';
+//     window.history.pushState({ productId }, '', newUrl);
+//   },
+
+//   handleNavigation() {
+//     const productId = this.getProductIdFromUrl();
+//     if (productId) {
+//       const product = this.state.products.find(p => p.product_id === productId);
+//       if (product) {
+//         this.openProductPage(product);
+//       }
+//     } else {
+//       this.closeProductPage();
+//     }
+//   },
+
+//   initialize() {
+//     // Create modal if it doesn't exist
+//     if (!document.getElementById('product-page-modal')) {
+//       const modal = document.createElement('div');
+//       modal.id = 'product-page-modal';
+//       modal.className = 'modal-container';
+//       modal.style.display = 'none';
+//       document.body.appendChild(modal);
+//     }
+
+//     // Handle browser navigation
+//     window.addEventListener('popstate', (event) => {
+//       this.handleNavigation();
+//     });
+
+//     // Handle initial load
+//     this.handleNavigation();
+//   },
+
+//   openProductPage(product) {
+//     this.state.currentProduct = product;
+//     this.updateUrl(product.product_id);
+    
+//     const modal = document.getElementById('product-page-modal');
+    
+//     // Create image slider HTML
+//     let imageSliderHtml = '<div class="product-image-slider">';
+//     if (product.images?.length > 0) {
+//       product.images.forEach((img, index) => {
+//         imageSliderHtml += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
+//       });
+//     } else if (product.image_url) {
+//       imageSliderHtml += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
+//     }
+//     imageSliderHtml += '</div>';
+
+//     modal.innerHTML = `
+//       <div class="modal-content">
+//         <button class="close-btn" onclick="productPageManager.closeProductPage()">&times;</button>
+//         <div class="product-page-content">
+//           ${imageSliderHtml}
+//           <h1>${product.name}</h1>
+//           <div class="product-price">
+//             Price: <span class="price-span" data-usd-price="${product.price}">
+//               ${cryptoManager.formatCryptoPrice(product.price)}
+//             </span>
+//           </div>
+//           <div class="product-stock">Stock: ${product.stock}</div>
+//           <div class="product-rating">
+//             ${ratingManager.createProductRating(
+//               product.product_id,
+//               product.average_rating || 0,
+//               product.total_ratings || 0
+//             )}
+//           </div>
+//           <div class="product-actions">
+//             <button class="add-to-cart-btn" onclick="cartManager.addItem('${product.product_id}')">
+//               Add to Cart
+//             </button>
+//             <button class="share-btn" onclick="socialSharingManager.showShareOptions(${JSON.stringify(product)})">
+//               Share
+//             </button>
+//           </div>
+//         </div>
+//       </div>
+//     `;
+
+//     modal.style.display = 'block';
+//     document.body.style.overflow = 'hidden';
+//   },
+
+//   closeProductPage() {
+//     const modal = document.getElementById('product-page-modal');
+//     if (modal) {
+//       modal.style.display = 'none';
+//       document.body.style.overflow = '';
+//       this.state.currentProduct = null;
+//       this.updateUrl(null);
+//     }
+//   }
+// };
