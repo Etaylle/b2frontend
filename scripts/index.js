@@ -1764,267 +1764,114 @@ const recommendationManager = {
 //     }
 //   }
 // };
-// const productPageManager = {
-//   state: {
-//     products: [],
-//     currentProduct: null,
-//     modalContainer: null
-//   },
-
-//   updateProducts(products) {
-//     this.state.products = products;
-//   },
-
-//   // Initialize the modal container
-//   initialize() {
-//     // Create modal container if it doesn't exist
-//     if (!this.state.modalContainer) {
-//       this.state.modalContainer = document.createElement('div');
-//       this.state.modalContainer.id = 'product-page-modal';
-//       this.state.modalContainer.className = 'modal-container';
-//       this.state.modalContainer.style.display = 'none';
-//       document.body.appendChild(this.state.modalContainer);
-//     }
-
-//     // Handle browser navigation
-//     window.addEventListener('popstate', () => {
-//       this.handleNavigation();
-//     });
-
-//     // Add styles if not already present
-//     if (!document.getElementById('product-modal-styles')) {
-//       const styles = document.createElement('style');
-//       styles.id = 'product-modal-styles';
-//       styles.textContent = `
-//         .modal-container {
-//           position: fixed;
-//           top: 0;
-//           left: 0;
-//           width: 100%;
-//           height: 100%;
-//           background: rgba(0, 0, 0, 0.5);
-//           display: none;
-//           justify-content: center;
-//           align-items: center;
-//           z-index: 1000;
-//         }
-        
-//         .modal-content {
-//           background: white;
-//           padding: 20px;
-//           border-radius: 8px;
-//           max-width: 90%;
-//           max-height: 90vh;
-//           overflow-y: auto;
-//           position: relative;
-//         }
-        
-//         .close-btn {
-//           position: absolute;
-//           right: 10px;
-//           top: 10px;
-//           font-size: 24px;
-//           cursor: pointer;
-//           border: none;
-//           background: none;
-//         }
-        
-//         .product-image-slider {
-//           width: 100%;
-//           max-width: 500px;
-//           margin: 0 auto;
-//           position: relative;
-//           overflow: hidden;
-//         }
-        
-//         .product-image-slider img {
-//           width: 100%;
-//           height: auto;
-//           display: none;
-//         }
-        
-//         .product-image-slider img.active {
-//           display: block;
-//         }
-        
-//         .product-page-content {
-//           padding: 20px;
-//         }
-        
-//         .product-actions {
-//           margin-top: 20px;
-//           display: flex;
-//           gap: 10px;
-//         }
-//       `;
-//       document.head.appendChild(styles);
-//     }
-
-//     // Handle initial load
-//     this.handleNavigation();
-//   },
-
-//   handleNavigation() {
-//     const productId = this.getProductIdFromUrl();
-//     if (productId) {
-//       const product = this.state.products.find(p => p.product_id === productId);
-//       if (product) {
-//         this.openProductPage(product);
-//       }
-//     } else {
-//       this.closeProductPage();
-//     }
-//   },
-
-//   getProductIdFromUrl() {
-//     const hashMatch = window.location.hash.match(/product-(\d+)/);
-//     if (hashMatch) return hashMatch[1];
-    
-//     const pathMatch = window.location.pathname.match(/\/product\/(\d+)/);
-//     if (pathMatch) return pathMatch[1];
-    
-//     return null;
-//   },
-
-//   openProductPage(product) {
-//     this.state.currentProduct = product;
-//     window.location.hash = `product-${product.product_id}`;
-    
-//     // Create image slider HTML
-//     let imageSliderHtml = '<div class="product-image-slider">';
-//     if (product.images?.length > 0) {
-//       product.images.forEach((img, index) => {
-//         imageSliderHtml += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
-//       });
-//     } else if (product.image_url) {
-//       imageSliderHtml += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
-//     }
-//     imageSliderHtml += '</div>';
-
-//     this.state.modalContainer.innerHTML = `
-//       <div class="modal-content">
-//         <button class="close-btn" onclick="productPageManager.closeProductPage()">&times;</button>
-//         <div class="product-page-content">
-//           ${imageSliderHtml}
-//           <h1>${product.name}</h1>
-//           <div class="product-price">
-//             Price: <span class="price-span" data-usd-price="${product.price}">
-//               ${cryptoManager.formatCryptoPrice(product.price)}
-//             </span>
-//           </div>
-//           <div class="product-stock">Stock: ${product.stock}</div>
-//           <div class="product-rating">
-//             ${ratingManager.createProductRating(
-//               product.product_id,
-//               product.average_rating || 0,
-//               product.total_ratings || 0
-//             )}
-//           </div>
-//           <div class="product-actions">
-//             <button class="add-to-cart-btn" onclick="cartManager.addItem('${product.product_id}')">
-//               Add to Cart
-//             </button>
-//             <button class="share-btn" onclick="socialSharingManager.showShareOptions(${JSON.stringify(product)})">
-//               Share
-//             </button>
-//           </div>
-//         </div>
-//       </div>
-//     `;
-
-//     this.state.modalContainer.style.display = 'block';
-//     document.body.style.overflow = 'hidden';
-//   },
-
-//   closeProductPage() {
-//     if (this.state.modalContainer) {
-//       this.state.modalContainer.style.display = 'none';
-//       document.body.style.overflow = '';
-//       this.state.currentProduct = null;
-//       window.location.hash = '';
-//     }
-//   }
-// };
 const productPageManager = {
   state: {
     products: [],
     currentProduct: null,
-    modalContainer: null,
-    initialized: false
+    modalContainer: null
   },
 
   updateProducts(products) {
-    if (!Array.isArray(products)) {
-      console.error('Invalid products data:', products);
-      return;
-    }
     this.state.products = products;
   },
 
-  async initialize() {
-    if (this.state.initialized) return;
-    
-    try {
-      // Create modal container
-      this.createModalContainer();
-      
-      // Add styles
-      this.addModalStyles();
-      
-      // Set up navigation handlers
-      this.setupNavigationHandlers();
-      
-      this.state.initialized = true;
-      
-      // Handle initial navigation
-      await this.handleNavigation();
-    } catch (error) {
-      console.error('Failed to initialize product page manager:', error);
-      throw error;
-    }
-  },
-
-  createModalContainer() {
+  // Initialize the modal container
+  initialize() {
+    // Create modal container if it doesn't exist
     if (!this.state.modalContainer) {
       this.state.modalContainer = document.createElement('div');
       this.state.modalContainer.id = 'product-page-modal';
       this.state.modalContainer.className = 'modal-container';
+      this.state.modalContainer.style.display = 'none';
       document.body.appendChild(this.state.modalContainer);
     }
-  },
 
-  setupNavigationHandlers() {
-    // Use AbortController for clean event listener removal
-    this.navigationController = new AbortController();
-    
+    // Handle browser navigation
     window.addEventListener('popstate', () => {
       this.handleNavigation();
-    }, { signal: this.navigationController.signal });
-    
-    // Handle clicks outside modal
-    this.state.modalContainer.addEventListener('click', (e) => {
-      if (e.target === this.state.modalContainer) {
-        this.closeProductPage();
-      }
-    }, { signal: this.navigationController.signal });
+    });
+
+    // Add styles if not already present
+    if (!document.getElementById('product-modal-styles')) {
+      const styles = document.createElement('style');
+      styles.id = 'product-modal-styles';
+      styles.textContent = `
+        .modal-container {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.5);
+          display: none;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+        }
+        
+        .modal-content {
+          background: white;
+          padding: 20px;
+          border-radius: 8px;
+          max-width: 90%;
+          max-height: 90vh;
+          overflow-y: auto;
+          position: relative;
+        }
+        
+        .close-btn {
+          position: absolute;
+          right: 10px;
+          top: 10px;
+          font-size: 24px;
+          cursor: pointer;
+          border: none;
+          background: none;
+        }
+        
+        .product-image-slider {
+          width: 100%;
+          max-width: 500px;
+          margin: 0 auto;
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .product-image-slider img {
+          width: 100%;
+          height: auto;
+          display: none;
+        }
+        
+        .product-image-slider img.active {
+          display: block;
+        }
+        
+        .product-page-content {
+          padding: 20px;
+        }
+        
+        .product-actions {
+          margin-top: 20px;
+          display: flex;
+          gap: 10px;
+        }
+      `;
+      document.head.appendChild(styles);
+    }
+
+    // Handle initial load
+    this.handleNavigation();
   },
 
-  async handleNavigation() {
-    try {
-      const productId = this.getProductIdFromUrl();
-      if (productId) {
-        const product = this.state.products.find(p => p.product_id === productId);
-        if (product) {
-          await this.openProductPage(product);
-        } else {
-          console.warn(`Product ${productId} not found`);
-          this.closeProductPage();
-        }
-      } else {
-        this.closeProductPage();
+  handleNavigation() {
+    const productId = this.getProductIdFromUrl();
+    if (productId) {
+      const product = this.state.products.find(p => p.product_id === productId);
+      if (product) {
+        this.openProductPage(product);
       }
-    } catch (error) {
-      console.error('Navigation error:', error);
+    } else {
       this.closeProductPage();
     }
   },
@@ -2039,42 +1886,27 @@ const productPageManager = {
     return null;
   },
 
-  async openProductPage(product) {
-    if (!product || !product.product_id) {
-      console.error('Invalid product data:', product);
-      return;
+  openProductPage(product) {
+    this.state.currentProduct = product;
+    window.location.hash = `product-${product.product_id}`;
+    
+    // Create image slider HTML
+    let imageSliderHtml = '<div class="product-image-slider">';
+    if (product.images?.length > 0) {
+      product.images.forEach((img, index) => {
+        imageSliderHtml += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
+      });
+    } else if (product.image_url) {
+      imageSliderHtml += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
     }
+    imageSliderHtml += '</div>';
 
-    try {
-      this.state.currentProduct = product;
-      
-      // Update URL without triggering navigation handler
-      const newUrl = `#product-${product.product_id}`;
-      if (window.location.hash !== newUrl) {
-        window.history.pushState(null, '', newUrl);
-      }
-      
-      // Render product content
-      this.renderProductContent(product);
-      
-      // Show modal
-      this.state.modalContainer.style.display = 'flex';
-      document.body.style.overflow = 'hidden';
-      
-    } catch (error) {
-      console.error('Error opening product page:', error);
-      showNotification('Failed to open product page', 'error');
-    }
-  },
-
-  renderProductContent(product) {
-    const imageSliderHtml = this.createImageSlider(product);
-    const productHtml = `
+    this.state.modalContainer.innerHTML = `
       <div class="modal-content">
         <button class="close-btn" onclick="productPageManager.closeProductPage()">&times;</button>
         <div class="product-page-content">
           ${imageSliderHtml}
-          <h1>${this.sanitizeHtml(product.name)}</h1>
+          <h1>${product.name}</h1>
           <div class="product-price">
             Price: <span class="price-span" data-usd-price="${product.price}">
               ${cryptoManager.formatCryptoPrice(product.price)}
@@ -2099,30 +1931,9 @@ const productPageManager = {
         </div>
       </div>
     `;
-    
-    this.state.modalContainer.innerHTML = productHtml;
-  },
 
-  sanitizeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  },
-
-  createImageSlider(product) {
-    let imageSliderHtml = '<div class="product-image-slider">';
-    if (product.images?.length > 0) {
-      product.images.forEach((img, index) => {
-        imageSliderHtml += `<img src="${this.sanitizeHtml(img)}" 
-          alt="${this.sanitizeHtml(product.name)} - Image ${index + 1}" 
-          ${index === 0 ? 'class="active"' : ''}>`;
-      });
-    } else if (product.image_url) {
-      imageSliderHtml += `<img src="${this.sanitizeHtml(product.image_url)}" 
-        alt="${this.sanitizeHtml(product.name)}" class="active">`;
-    }
-    imageSliderHtml += '</div>';
-    return imageSliderHtml;
+    this.state.modalContainer.style.display = 'block';
+    document.body.style.overflow = 'hidden';
   },
 
   closeProductPage() {
@@ -2130,23 +1941,8 @@ const productPageManager = {
       this.state.modalContainer.style.display = 'none';
       document.body.style.overflow = '';
       this.state.currentProduct = null;
-      
-      // Update URL if necessary
-      if (window.location.hash.includes('product-')) {
-        window.history.pushState(null, '', window.location.pathname);
-      }
+      window.location.hash = '';
     }
-  },
-
-  // Cleanup method for proper teardown
-  destroy() {
-    if (this.navigationController) {
-      this.navigationController.abort();
-    }
-    if (this.state.modalContainer) {
-      this.state.modalContainer.remove();
-    }
-    this.state.initialized = false;
   }
 };
 const socialSharingManager = {
