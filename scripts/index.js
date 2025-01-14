@@ -1537,6 +1537,89 @@ window.addEventListener('unload', () => {
     cryptoManager.stopUpdateInterval();
   }
 });
+const recommendationManager = {
+  state: {
+    currentProduct: null,
+    recommendedProducts: []
+  },
+
+  // Get recommendations based on current product's category
+  async getRecommendations(productId) {
+    try {
+      // Get the current product details
+      const response = await fetch(`https://backend-3mvr.onrender.com/api/products/${productId}`);
+      if (!response.ok) throw new Error("Failed to fetch product");
+      const product = await response.json();
+      this.state.currentProduct = product;
+
+      // Get other products from the same category
+      const categoryResponse = await fetch(`https://backend-3mvr.onrender.com/api/products/category/${product.category_id}`);
+      if (!categoryResponse.ok) throw new Error("Failed to fetch recommendations");
+      let recommendations = await categoryResponse.json();
+
+      // Filter out the current product and limit to 4 recommendations
+      recommendations = recommendations
+        .filter(p => p.product_id !== productId)
+        .slice(0, 4);
+
+      this.state.recommendedProducts = recommendations;
+      await this.renderRecommendations();
+    } catch (error) {
+      console.error("Error getting recommendations:", error);
+      showNotification(error.message, "error");
+    }
+  },
+
+  // Render recommendations in the UI
+  async renderRecommendations() {
+    const container = document.createElement('div');
+    container.className = 'recommendations-container';
+    container.innerHTML = `
+      <h3>You might also like:</h3>
+      <div class="recommendations-grid"></div>
+    `;
+
+    const grid = container.querySelector('.recommendations-grid');
+
+    this.state.recommendedProducts.forEach(product => {
+      const productElement = document.createElement('div');
+      productElement.className = 'recommended-product';
+      productElement.innerHTML = `
+        <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
+        <h4>${product.name}</h4>
+        <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
+        <button class="recommend-add-to-cart">Add to Cart</button>
+      `;
+
+      // Add click handler for cart button
+      const addButton = productElement.querySelector('.recommend-add-to-cart');
+      addButton.onclick = () => cartManager.addItem(product.product_id);
+
+      grid.appendChild(productElement);
+    });
+
+    // Find and update the recommendations section
+    const existingRecommendations = document.querySelector('.recommendations-container');
+    if (existingRecommendations) {
+      existingRecommendations.replaceWith(container);
+    } else {
+      document.querySelector('.grid-container').after(container);
+    }
+  },
+
+  initialize() {
+    // Add click handlers to product grid items to show recommendations
+    document.querySelector('.grid-container').addEventListener('click', (e) => {
+      const gridItem = e.target.closest('.grid-item');
+      if (gridItem) {
+        const productId = gridItem.getAttribute('data-product-id');
+        if (productId) {
+          this.getRecommendations(productId);
+        }
+      }
+    });
+  }
+};
 const categoryManager = {
   state: {
     categories: [],
@@ -1802,8 +1885,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       cryptoManager.initialize(),
       ratingManager.initialize(),
       categoryManager.initialize(),
-      paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl')
-      
+      paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl'),
+      recommendationManager.initialize(),
     ]);
 
     // Fetch initial data
@@ -1834,7 +1917,7 @@ window.uiManager = uiManager;
 window.categoryManager = categoryManager;
 window.cryptoManager = cryptoManager;
 window.ratingManager = ratingManager;
-
+window.recommendationManager = recommendationManager;
 async function fetchProducts(categoryId = null) {
   try {
     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
