@@ -2747,13 +2747,13 @@ async fetchProducts(categoryId = null) {
       });
 
       // Rate button
-      const rateButton = document.createElement("button");
-      rateButton.textContent = "⭐";
-      rateButton.className = "rate-btn";
-      rateButton.addEventListener("click", (e) => {
-        ratingManager.openRatingModal(product.product_id, e); 
-      });
-
+   const rateButton = document.createElement("button");
+rateButton.textContent = "⭐";
+rateButton.className = "rate-btn";
+rateButton.addEventListener("click", (e) => {
+  e.stopPropagation(); // Stop the event from bubbling up
+  ratingManager.openRatingModal(product.product_id, e);
+});
       buttonsContainer.appendChild(addToCartButton);
       buttonsContainer.appendChild(shareButton);
       buttonsContainer.appendChild(rateButton);
