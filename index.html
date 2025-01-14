@@ -30,11 +30,7 @@
             <!-- Logo -->
             <img src="/images/pobednik.jpg" class="logo animate__animated animate__fadeIn" alt="Logo" />
             
-            <!-- Admin Link (Hidden by default) -->
-            <a id="admin-link" href="/admin" class="admin-link" style="display:none" aria-label="Admin Panel">Admin Panel</a>
-
-            <!-- Navigation Links -->
-            <a href="orderHistory.html" aria-label="Order History">Order History</a>
+            
             
             <!-- User Section -->
             <div class="user-section">
@@ -307,19 +303,19 @@
                 loginBtn: document.getElementById("login-btn"),
                 registerBtn: document.getElementById("register-btn"),
                 logoutButton: document.getElementById("logout-button"),
-                userAvatarDisplay: document.getElementById("user-avatar-display")
+                userAvatarDisplay: document.getElementById("user-avatar-display"),
+                adminLink: document.querySelector('.admin-link')
             };
 
             elements.loginBtn.style.display = currentUser ? "none" : "block";
             elements.registerBtn.style.display = currentUser ? "none" : "block";
             elements.logoutButton.style.display = currentUser ? "block" : "none";
-
-            if (currentUser) {
+            elements.userAvatarDisplay.style.display = currentUser ? "block" : "none";
+             if (currentUser) {
                 const isAdmin = JSON.parse(currentUser)?.isAdmin || false;
-                elements.userAvatarDisplay.innerHTML = `
-                    <img src="/images/avatar.jpg" alt="User Avatar">
-                    ${isAdmin ? '<div class="admin-dropdown"><a href="/admin">Admin Panel</a></div>' : ''}
-                `;
+                if (isAdmin && elements.adminLink) {
+                    elements.adminLink.style.display = "block";
+                }
             }
         }
 
