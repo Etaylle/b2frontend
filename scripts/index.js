@@ -1094,6 +1094,7 @@ setProductData(products) {
       const gridItem = rateBtn.closest('.grid-item');
       if (gridItem) {
         const productId = gridItem.dataset.productId;
+        console.log("Product ID:", productId); // Debugging
         await this.openRatingModal(productId);
       }
       return;
