@@ -2090,6 +2090,89 @@ async fetchProducts(categoryId = null) {
 //   await ratingManager.fetchUserRatings();
 //   this.initializeImageSliders();
 // },
+// async renderProducts() {
+//   const gridContainer = document.querySelector(".grid-container");
+//   if (!gridContainer) return;
+  
+//   ratingManager.setProductData(this.state.products);
+//   gridContainer.innerHTML = "";
+
+//   this.state.products.forEach((product) => {
+//     const gridItem = document.createElement("div");
+//     gridItem.classList.add("grid-item", "grid-item-xl");
+//     gridItem.setAttribute("data-product-id", product.product_id);
+
+//     let imageSlider = '<div class="image-slider">';
+//     if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+//       product.images.forEach((img, index) => {
+//         imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
+//       });
+//     } else if (product.image_url) {
+//       imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
+//     } else {
+//       imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
+//     }
+//     imageSlider += '</div>';
+
+//     const ratingHTML = ratingManager.createProductRating(
+//       product.product_id,
+//       product.average_rating || 0,
+//       product.total_ratings || 0
+//     );
+
+//     gridItem.innerHTML = `
+//       <div class="product-content">
+//         ${imageSlider}
+        
+//         <div class="overlay">
+//           ${product.name} | <span class="price-span" data-usd-price="${product.price}">
+//             ${cryptoManager.formatCryptoPrice(product.price)}
+//           </span>
+//           | Stock: ${product.stock}
+//         </div>
+//       </div>
+//     `;
+//     productPageManager.updateProducts(this.state.products);
+//     // Create buttons container
+//     const buttonsContainer = document.createElement("div");
+//     buttonsContainer.className = "product-buttons";
+
+//     // Add to cart button
+//     const addToCartButton = document.createElement("button");
+//     addToCartButton.textContent = "+";
+//     addToCartButton.className = "add-to-cart-btn";
+//     addToCartButton.addEventListener("click", (e) => {
+//       e.stopPropagation();
+//       cartManager.addItem(product.product_id);
+//     });
+
+//     // Share button
+//     const shareButton = document.createElement("button");
+//     shareButton.textContent = "🚀";
+//     shareButton.className = "share-btn";
+//     shareButton.addEventListener("click", (e) => {
+//       e.stopPropagation();
+//       socialSharingManager.showShareOptions(product);
+//     });
+
+//     buttonsContainer.appendChild(addToCartButton);
+//     buttonsContainer.appendChild(shareButton);
+//     gridItem.appendChild(buttonsContainer);
+
+//     gridContainer.appendChild(gridItem);
+//     gridItem.addEventListener("click", () => {
+//   productPageManager.openProductPage(product);
+// });
+//   });
+
+//   if (!window.ratingManagerInitialized) {
+//     ratingManager.initialize();
+//     window.ratingManagerInitialized = true;
+//   }
+
+//   await ratingManager.fetchUserRatings();
+//   this.initializeImageSliders();
+// }
 async renderProducts() {
   const gridContainer = document.querySelector(".grid-container");
   if (!gridContainer) return;
@@ -2132,7 +2215,9 @@ async renderProducts() {
         </div>
       </div>
     `;
+    
     productPageManager.updateProducts(this.state.products);
+    
     // Create buttons container
     const buttonsContainer = document.createElement("div");
     buttonsContainer.className = "product-buttons";
@@ -2155,15 +2240,44 @@ async renderProducts() {
       socialSharingManager.showShareOptions(product);
     });
 
+    // Rate button
+    const rateButton = document.createElement("button");
+    rateButton.textContent = "⭐";
+    rateButton.className = "rate-btn";
+    rateButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      ratingManager.showRatingModal(product.product_id);
+    });
+
     buttonsContainer.appendChild(addToCartButton);
     buttonsContainer.appendChild(shareButton);
+    buttonsContainer.appendChild(rateButton);
     gridItem.appendChild(buttonsContainer);
 
     gridContainer.appendChild(gridItem);
+    
+    // Add click event for product details
     gridItem.addEventListener("click", () => {
-  productPageManager.openProductPage(product);
-});
+      productPageManager.openProductPage(product);
+    });
   });
+
+  // Add some CSS for the new button
+  const style = document.createElement('style');
+  style.textContent = `
+    .rate-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      padding: 0.25rem 0.5rem;
+      transition: transform 0.2s;
+    }
+    .rate-btn:hover {
+      transform: scale(1.1);
+    }
+  `;
+  document.head.appendChild(style);
 
   if (!window.ratingManagerInitialized) {
     ratingManager.initialize();
@@ -2172,8 +2286,7 @@ async renderProducts() {
 
   await ratingManager.fetchUserRatings();
   this.initializeImageSliders();
-}
-,
+},
   initializeImageSliders() {
     document.querySelectorAll('.image-slider').forEach(slider => {
       const images = slider.querySelectorAll('img');
