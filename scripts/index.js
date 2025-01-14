@@ -1609,7 +1609,7 @@ const recommendationManager = {
         <h4>${product.name}</h4>
         <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
         ${ratingHTML}
-        <button class="recommend-add-to-cart">In den Warenkorb</button>
+        <button class="recommend-add-to-cart">Add to the cart</button>
       `;
 
       // Add click handler for cart button
@@ -2031,7 +2031,7 @@ async renderProducts() {
 
     // Share button
     const shareButton = document.createElement("button");
-    shareButton.textContent = "Share";
+    shareButton.textContent = "🚀";
     shareButton.className = "share-btn";
     shareButton.addEventListener("click", (e) => {
       e.stopPropagation();

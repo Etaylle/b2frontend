@@ -1509,6 +1509,7 @@ input:checked+.slider:before {
 }
 
 .share-btn {
+  position: absolute;
   padding: 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
