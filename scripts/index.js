@@ -1776,6 +1776,26 @@ const socialSharingManager = {
 };
 // Add this to your existing code structure
 const productPageManager = {
+   state: {
+    products: [] // This will store our products
+  },
+
+  // Add this method to update the state
+  updateProducts(products) {
+    this.state.products = products;
+  },
+
+  // Modify handleDirectNavigation to use the stored products
+  handleDirectNavigation() {
+    const match = window.location.pathname.match(/\/product\/(\d+)/);
+    if (match) {
+      const productId = match[1];
+      const product = this.state.products.find(p => p.product_id === productId);
+      if (product) {
+        this.openProductPage(product);
+      }
+    }
+  },
   initialize() {
     // Create modal container if it doesn't exist
     if (!document.getElementById('product-page-modal')) {
@@ -2112,7 +2132,7 @@ async renderProducts() {
         </div>
       </div>
     `;
-    
+    productPageManager.updateProducts(this.state.products);
     // Create buttons container
     const buttonsContainer = document.createElement("div");
     buttonsContainer.className = "product-buttons";
