@@ -1553,8 +1553,8 @@ const recommendationManager = {
       const products = data.success ? data.products : data;
 
       // Find the current product
-      // Convert productId to number since getAttribute returns a string
-      const currentProduct = products.find(p => p.id === parseInt(productId));
+      // Convert productId to string to match ratingManager's approach
+      const currentProduct = products.find(p => p.product_id.toString() === productId.toString());
       if (!currentProduct) {
         console.log('Available products:', products);
         console.log('Looking for product ID:', productId);
@@ -1571,7 +1571,7 @@ const recommendationManager = {
 
       // Filter out the current product and limit to 4 recommendations
       recommendations = recommendations
-        .filter(p => p.id !== parseInt(productId))
+        .filter(p => p.product_id.toString() !== productId.toString())
         .slice(0, 4);
 
       this.state.recommendedProducts = recommendations;
@@ -1596,20 +1596,25 @@ const recommendationManager = {
     this.state.recommendedProducts.forEach(product => {
       const productElement = document.createElement('div');
       productElement.className = 'recommended-product';
+      
+      // Create rating HTML using ratingManager
+      const ratingHTML = ratingManager.createProductRating(
+        product.product_id,
+        product.average_rating || 0,
+        product.total_ratings || 0
+      );
+
       productElement.innerHTML = `
         <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
         <h4>${product.name}</h4>
         <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
-        <div class="product-rating">
-          ${'★'.repeat(Math.round(product.average_rating || 0))}${'☆'.repeat(5 - Math.round(product.average_rating || 0))}
-          (${product.total_ratings || 0})
-        </div>
+        ${ratingHTML}
         <button class="recommend-add-to-cart">In den Warenkorb</button>
       `;
 
       // Add click handler for cart button
       const addButton = productElement.querySelector('.recommend-add-to-cart');
-      addButton.onclick = () => cartManager.addItem(product.id);
+      addButton.onclick = () => cartManager.addItem(product.product_id);
 
       grid.appendChild(productElement);
     });
