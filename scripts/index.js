@@ -2888,7 +2888,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl'),
       recommendationManager.initialize(),
       productPageManager.initialize(),
-      socialSharingManager.initialize()
+     
     ]).then(results => {
       // Log any failures during initialization
       results.forEach((result, index) => {
