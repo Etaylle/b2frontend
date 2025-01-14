@@ -1456,4 +1456,28 @@ input:checked+.slider:before {
 
 .share-btn.native-share {
   background-color: #666;
+}.product-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.share-menu {
+  position: absolute;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.share-menu button {
+  padding: 4px 8px;
+  border: none;
+  background: #f0f0f0;
+  cursor: pointer;
+  border-radius: 2px;
 }
