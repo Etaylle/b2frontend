@@ -913,11 +913,7 @@ setProductData(products) {
       throw error;
     }
   },
-   async showRatingModal(productId, event) {
-    if (event) {
-      event.stopPropagation(); // Prevent click from bubbling to product
-    }
-    
+ async openRatingModal(productId) {
     try {
       console.log('Opening rating modal for product:', productId);
       
@@ -948,6 +944,8 @@ setProductData(products) {
         console.log('Created new modal container');
       }
 
+      // Use the ratings array instead of looking for distribution
+      console.log('Processing ratings array:', data.ratings);
       const distribution = data.ratings ? 
         this.processRatingDistribution(data.ratings) : 
         [0, 0, 0, 0, 0];
@@ -972,119 +970,10 @@ setProductData(products) {
       this.attachModalEventListeners(productId);
       
     } catch (error) {
-      console.error('Error in showRatingModal:', error);
+      console.error('Error in openRatingModal:', error);
       showNotification('Failed to load rating details', 'error');
     }
   },
-
-  // Update the attachEventListeners method
-  attachEventListeners() {
-    // Remove the product card click handler since it's now handled by productPageManager
-    document.addEventListener('click', async (e) => {
-      // Handle star rating click
-      if (e.target.matches('.star.interactive')) {
-        const productId = e.target.closest('[data-product-id]').dataset.productId;
-        const rating = parseInt(e.target.dataset.rating);
-        if (!isNaN(rating)) {
-          await this.submitRating(productId, rating);
-          this.closeRatingModal();
-        }
-        return;
-      }
-
-      // Handle remove rating button
-      if (e.target.classList.contains('remove-rating-btn')) {
-        const productId = e.target.closest('[data-product-id]').dataset.productId;
-        await this.removeRating(productId);
-        this.closeRatingModal();
-        return;
-      }
-
-      // Handle modal close
-      if (e.target.classList.contains('close-modal') || e.target.classList.contains('modal-backdrop')) {
-        this.closeRatingModal();
-      }
-    });
-
-    // Keep the existing star hover effects
-    document.addEventListener('mouseover', (e) => {
-      if (e.target.matches('.star.interactive')) {
-        const stars = e.target.closest('.stars-container').querySelectorAll('.star.interactive');
-        const rating = parseInt(e.target.dataset.rating);
-        stars.forEach((star, index) => {
-          star.classList.toggle('hover', index < rating);
-        });
-      }
-    });
-
-    document.addEventListener('mouseout', (e) => {
-      if (e.target.matches('.star.interactive')) {
-        const stars = e.target.closest('.stars-container').querySelectorAll('.star.interactive');
-        stars.forEach(star => star.classList.remove('hover'));
-      }
-    });
-  },
-//  async openRatingModal(productId) {
-//     try {
-//       console.log('Opening rating modal for product:', productId);
-      
-//       const response = await fetch(`https://backend-3mvr.onrender.com/api/ratings/${productId}`, {
-//         credentials: 'include'
-//       });
-      
-//       if (!response.ok) {
-//         console.error('API response not OK:', response.status, response.statusText);
-//         throw new Error('Failed to fetch ratings');
-//       }
-      
-//       const data = await response.json();
-//       console.log('Raw API response:', data);
-
-//       const product = this.findProduct(productId);
-//       console.log('Found product:', product);
-
-//       if (!product) {
-//         console.error('Product not found for ID:', productId);
-//         throw new Error('Product not found');
-//       }
-
-//       if (!this.state.modalContainer) {
-//         this.state.modalContainer = document.createElement('div');
-//         this.state.modalContainer.className = 'rating-modal-container';
-//         document.body.appendChild(this.state.modalContainer);
-//         console.log('Created new modal container');
-//       }
-
-//       // Use the ratings array instead of looking for distribution
-//       console.log('Processing ratings array:', data.ratings);
-//       const distribution = data.ratings ? 
-//         this.processRatingDistribution(data.ratings) : 
-//         [0, 0, 0, 0, 0];
-
-//       console.log('Final distribution array:', distribution);
-      
-//       this.state.modalContainer.innerHTML = `
-//         <div class="modal-backdrop"></div>
-//         <div class="modal-content">
-//           <button class="close-modal">×</button>
-//           ${this.createRatingModal(
-//             productId,
-//             product.name,
-//             data.averageRating || 0,
-//             data.totalRatings || distribution.reduce((a, b) => a + b, 0),
-//             distribution
-//           )}
-//         </div>
-//       `;
-
-//       this.state.modalContainer.classList.add('active');
-//       this.attachModalEventListeners(productId);
-      
-//     } catch (error) {
-//       console.error('Error in openRatingModal:', error);
-//       showNotification('Failed to load rating details', 'error');
-//     }
-//   },
   closeRatingModal() {
     if (this.state.modalContainer) {
       this.state.modalContainer.classList.remove('active');
