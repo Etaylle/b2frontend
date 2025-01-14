@@ -319,7 +319,7 @@ html {
   .grid-item button {
     border: none;
     display: block;
-    position: absolute;
+    position: relative;
     top: 5px;
     right: 5px;
     height: 2rem;
