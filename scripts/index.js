@@ -2558,7 +2558,7 @@ async fetchProducts(categoryId = null) {
       rateButton.textContent = "⭐";
       rateButton.className = "rate-btn";
       rateButton.addEventListener("click", (e) => {
-        ratingManager.showRatingModal(product.product_id, e); // Pass the event to prevent bubbling
+        ratingManager.openRatingModal(product.product_id, e); 
       });
 
       buttonsContainer.appendChild(addToCartButton);
@@ -2606,6 +2606,34 @@ async fetchProducts(categoryId = null) {
     await this.fetchCategories();
     await this.setupSearch();
   },
+  initializeImageSliders() {
+    document.querySelectorAll('.image-slider').forEach(slider => {
+      const images = slider.querySelectorAll('img');
+      if (images.length <= 1) return;
+
+      let currentIndex = 0;
+      setInterval(() => {
+        images[currentIndex].classList.remove('active');
+        currentIndex = (currentIndex + 1) % images.length;
+        images[currentIndex].classList.add('active');
+      }, 3000);
+    });
+  },
+
+  highlightSelectedCategory() {
+  // Remove 'active' class from all buttons
+    document.querySelectorAll(".category-btn").forEach(btn => btn.classList.remove("active"));
+
+    if (this.state.selectedCategory === null) {
+        // Highlight the "All" button
+        const allButton = document.querySelector('.category-btn:first-child');
+        if (allButton) allButton.classList.add("active");
+    } else {
+        // Highlight the button matching the selected category
+        const activeButton = document.querySelector(`.category-btn[data-id="${this.state.selectedCategory}"]`);
+        if (activeButton) activeButton.classList.add("active");
+    }
+},
     setupSearch() {
       const searchInput = document.getElementById('product-search');
       let debounceTimeout;
