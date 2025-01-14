@@ -18,46 +18,49 @@
 </head>
 <body>
     <nav class="navbar">
-        <!-- Panorama Container for Image Slider -->
-        <div class="panorama-container">
-            <img src="/images/belgrade-panorama-1.jpg" class="panorama-slide active" alt="Belgrade Panorama 1" />
-            <img src="/images/belgrade-panorama-2.webp" class="panorama-slide" alt="Belgrade Panorama 2" />
-            <img src="/images/belgrade-panorama-3.jpg" class="panorama-slide" alt="Belgrade Panorama 3" />
-        </div>
-        
-        <!-- Navbar Content -->
-        <div class="navbar-content">
-            <!-- Logo -->
-            <img src="/images/pobednik.jpg" class="logo animate__animated animate__fadeIn" alt="Logo" />
-            
-            <!-- Admin Link (Hidden by default) -->
-            <a id="admin-link" href="/admin" class="admin-link" style="display:none" aria-label="Admin Panel">Admin Panel</a>
-
-            <!-- Navigation Links -->
-            <a href="orderHistory.html" aria-label="Order History">Order History</a>
-            
-            <!-- User Section -->
-            <div class="user-section">
-                <ul class="navbar-links">
-                    <li><a href="#cart" aria-label="View Cart">Cart</a></li>
-                    <li id="login-btn"><a href="#login" aria-label="Login">Login</a></li>
-                    <li id="register-btn"><a href="#register" aria-label="Register">Register</a></li>
-                    <li id="logout-button" style="display: none;"><a href="#logout" aria-label="Logout">Logout</a></li>
-                </ul>
-                
-                <!-- User Avatar and Admin Dropdown (Visible only for admin) -->
-                <div id="user-avatar-display" class="user-avatar-display">
-                    <div class="admin-dropdown">
-                        <a href="/admin" id="admin-link" aria-label="Admin Panel">Admin Panel</a>
-                    </div>
+        <div class="navbar-container">
+            <!-- Left section -->
+            <div class="navbar-left">
+                <a href="/" class="navbar-brand">
+                    <img src="/your-logo.png" alt="Logo">
+                    <span>Your Shop</span>
+                </a>
+                <span class="admin-badge">Admin</span>
+            </div>
+    
+            <!-- Center section -->
+            <div class="navbar-center">
+                <div class="search-container">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" placeholder="Search products by name, description, or price...">
                 </div>
             </div>
-<section id="search">  
-<div class="navbar-right">
-    <!-- Placeholder for future elements -->
-</div>
-</section>
-          
+    
+            <!-- Right section -->
+            <div class="navbar-right">
+                <div class="nav-items">
+                    <a href="/admin-panel" class="nav-link">
+                        <span>Admin Panel</span>
+                        ⚙️
+                    </a>
+                    <a href="/order-history" class="nav-link">
+                        <span>Orders</span>
+                        📋
+                    </a>
+                    <a href="/cart" class="nav-link">
+                        <span>Cart</span>
+                        🛒
+                    </a>
+                </div>
+    
+                <div class="user-section">
+                    <button class="crypto-toggle">
+                        Show Crypto Prices
+                    </button>
+                    <img src="/path-to-avatar.jpg" alt="User avatar" class="user-avatar">
+                </div>
+            </div>
+        </div>
     </nav>
 
 

@@ -644,7 +644,7 @@ const AuthModal = {
                 password: form.querySelector('#register-password').value
             };
 
-            // Use your existing register logic here
+           
             const success = await this.registerUser(formData);
             
             if (success) {
