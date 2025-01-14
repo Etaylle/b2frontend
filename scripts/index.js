@@ -1553,8 +1553,14 @@ const recommendationManager = {
       const products = data.success ? data.products : data;
 
       // Find the current product
-      const currentProduct = products.find(p => p.product_id === productId);
-      if (!currentProduct) throw new Error("Product not found");
+      // Convert productId to number since getAttribute returns a string
+      const currentProduct = products.find(p => p.id === parseInt(productId));
+      if (!currentProduct) {
+        console.log('Available products:', products);
+        console.log('Looking for product ID:', productId);
+        throw new Error("Product not found");
+      }
+      
       this.state.currentProduct = currentProduct;
 
       // Get products from the same category
@@ -1565,7 +1571,7 @@ const recommendationManager = {
 
       // Filter out the current product and limit to 4 recommendations
       recommendations = recommendations
-        .filter(p => p.product_id !== productId)
+        .filter(p => p.id !== parseInt(productId))
         .slice(0, 4);
 
       this.state.recommendedProducts = recommendations;
@@ -1603,7 +1609,7 @@ const recommendationManager = {
 
       // Add click handler for cart button
       const addButton = productElement.querySelector('.recommend-add-to-cart');
-      addButton.onclick = () => cartManager.addItem(product.product_id);
+      addButton.onclick = () => cartManager.addItem(product.id);
 
       grid.appendChild(productElement);
     });
