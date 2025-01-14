@@ -2844,19 +2844,19 @@ async fetchProducts(categoryId = null) {
 // Initialize everything when the page loads
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    productPageManager.initialize();
+    
     await Promise.all([
       cryptoManager.initialize(),
       ratingManager.initialize(),
       categoryManager.initialize(),
       paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl'),
       recommendationManager.initialize(),
-      socialSharingManager.initialize(),
+      
       
       
     ]);
-    
-    
+    productPageManager.initialize();
+    socialSharingManager.initialize(),
 
     // Fetch initial data
     currentUser = await authManager.fetchCurrentUser();
