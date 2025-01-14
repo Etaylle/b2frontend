@@ -2747,13 +2747,13 @@ async fetchProducts(categoryId = null) {
       });
 
       // Rate button
-   const rateButton = document.createElement("button");
-rateButton.textContent = "⭐";
-rateButton.className = "rate-btn";
-rateButton.addEventListener("click", (e) => {
-  e.stopPropagation(); // Stop the event from bubbling up
-  ratingManager.openRatingModal(product.product_id, e);
-});
+      const rateButton = document.createElement("button");
+      rateButton.textContent = "⭐";
+      rateButton.className = "rate-btn";
+      rateButton.addEventListener("click", (e) => {
+        ratingManager.openRatingModal(product.product_id, e); 
+      });
+
       buttonsContainer.appendChild(addToCartButton);
       buttonsContainer.appendChild(shareButton);
       buttonsContainer.appendChild(rateButton);
@@ -2761,10 +2761,15 @@ rateButton.addEventListener("click", (e) => {
 
       gridContainer.appendChild(gridItem);
       
-      // Add click event for product details - now ONLY opens product page
-      gridItem.addEventListener("click", () => {
-        productPageManager.openProductPage(product);
-      });
+      gridItem.addEventListener("click", (e) => {
+  // Don't open product modal if clicking buttons or controls
+  if (e.target.closest('.rate-btn') || 
+      e.target.closest('.add-to-cart-btn') || 
+      e.target.closest('.share-btn')) {
+    return;
+  }
+  productPageManager.openProductPage(product);
+});
     });
 
     // Add CSS for the rating button
