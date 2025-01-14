@@ -168,7 +168,7 @@ html {
   }
   
   .grid-item {
-    position: absolute;
+    position: relative;
     display: block;
     border-radius: 8px;
     aspect-ratio: 1;
@@ -214,28 +214,6 @@ html {
     text-align: center;
     padding-block: 1rem;
   }
-    .grid-item .product-buttons {
-      position: absolute;
-      width: 100%;
-      /* Ensure it spans the width of the grid-item */
-      display: flex;
-      flex-direction: column;
-      /* Stack buttons vertically */
-      align-items: flex-end;
-      /* Align buttons to the right */
-      gap: 8px;
-      /* Spacing between buttons */
-      top: 10px;
-      /* Adjust distance from the top */
-      right: 10px;
-      /* Adjust distance from the right */
-    }
-  
-    .grid-item .product-buttons button {
-      opacity: 0;
-      /* Keep hidden by default */
-      transition: opacity 0.3s ease-in-out;
-    }
   
   .h-scroll-container {
     width: 100%;
