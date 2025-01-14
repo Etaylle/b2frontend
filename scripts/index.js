@@ -2223,9 +2223,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl'),
       recommendationManager.initialize(),
       socialSharingManager.initialize(),
-      productPageManager.initialize(),
-      productPageManager.handleDirectNavigation(),
+      
+      
     ]);
+    productPageManager.initialize();
 
     // Fetch initial data
     currentUser = await authManager.fetchCurrentUser();
@@ -2240,6 +2241,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     // Update UI based on user state
     uiManager.updateButtonVisibility(currentUser);
+    productPageManager.handleDirectNavigation();
     
   } catch (error) {
     console.error("Error during initialization:", error);
