@@ -1658,7 +1658,38 @@ const socialSharingManager = {
       whatsapp: `https://wa.me/?text=${encodeURIComponent(text + ' ' + productUrl)}`,
     };
   },
+showShareOptions(productId) {
+    const product = categoryManager.state.products.find(p => p.product_id === productId);
+    if (!product) return;
 
+    const shareData = {
+      title: product.name,
+      text: `Check out ${product.name}! Price: ${cryptoManager.formatCryptoPrice(product.price)}`,
+      url: `${this.getBaseUrl()}/product/${product.product_id}`
+    };
+
+    if (navigator.share) {
+      navigator.share(shareData).catch(console.error);
+      return;
+    }
+
+    const urls = this.getSharingUrls(product);
+    const shareMenu = document.createElement('div');
+    shareMenu.className = 'share-menu';
+    shareMenu.innerHTML = `
+      <button onclick="window.open('${urls.facebook}', '_blank')">Facebook</button>
+      <button onclick="window.open('${urls.twitter}', '_blank')">Twitter</button>
+      <button onclick="window.open('${urls.whatsapp}', '_blank')">WhatsApp</button>
+    `;
+
+    // Remove existing menu if any
+    document.querySelectorAll('.share-menu').forEach(menu => menu.remove());
+    
+    const productElement = document.querySelector(`[data-product-id="${productId}"]`);
+    if (productElement) {
+      productElement.querySelector('.social-sharing').appendChild(shareMenu);
+    }
+  },
   // Add sharing buttons to product display
   addSharingButtons(productElement, product) {
     const sharingUrls = this.getSharingUrls(product);
@@ -1853,11 +1884,82 @@ async fetchProducts(categoryId = null) {
     await this.fetchProducts(categoryId);
     this.highlightSelectedCategory();
   },
+// async renderProducts() {
+//   const gridContainer = document.querySelector(".grid-container");
+//   if (!gridContainer) return;
+  
+//   // Set product data for rating manager first
+//   ratingManager.setProductData(this.state.products);
+//   gridContainer.innerHTML = "";
+
+//   this.state.products.forEach((product) => {
+//     const gridItem = document.createElement("div");
+//     gridItem.classList.add("grid-item", "grid-item-xl");
+//     gridItem.setAttribute("data-product-id", product.product_id);
+
+//     // Create image slider
+//     let imageSlider = '<div class="image-slider">';
+//     if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+//       product.images.forEach((img, index) => {
+//         imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
+//       });
+//     } else if (product.image_url) {
+//       imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
+//     } else {
+//       imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
+//     }
+//     imageSlider += '</div>';
+
+//     // Create rating display HTML
+//     const ratingHTML = ratingManager.createProductRating(
+//       product.product_id,
+//       product.average_rating || 0,
+//       product.total_ratings || 0
+//     );
+
+//     // Properly structure the grid item content
+//     gridItem.innerHTML = `
+//       <div class="product-content">
+//         ${imageSlider}
+        
+//         <div class="overlay">
+//           ${product.name} | <span class="price-span" data-usd-price="${product.price}">
+//             ${cryptoManager.formatCryptoPrice(product.price)}
+//           </span>
+//           | Stock: ${product.stock}
+//         </div>
+//       </div>
+//     `;
+    
+//     // Add the cart button
+//     const addToCartButton = document.createElement("button");
+//     addToCartButton.textContent = "+";
+//     addToCartButton.className = "add-to-cart-btn";
+//     gridItem.appendChild(addToCartButton);
+
+//     // Add click handler for cart button
+//     addToCartButton.addEventListener("click", (e) => {
+//       e.stopPropagation();
+//       cartManager.addItem(product.product_id);
+//     });
+
+//     gridContainer.appendChild(gridItem);
+//   });
+
+//   // Initialize rating manager if needed
+//   if (!window.ratingManagerInitialized) {
+//     ratingManager.initialize();
+//     window.ratingManagerInitialized = true;
+//   }
+
+//   // Fetch ratings and initialize sliders
+//   await ratingManager.fetchUserRatings();
+//   this.initializeImageSliders();
+// },
 async renderProducts() {
   const gridContainer = document.querySelector(".grid-container");
   if (!gridContainer) return;
   
-  // Set product data for rating manager first
   ratingManager.setProductData(this.state.products);
   gridContainer.innerHTML = "";
 
@@ -1866,7 +1968,6 @@ async renderProducts() {
     gridItem.classList.add("grid-item", "grid-item-xl");
     gridItem.setAttribute("data-product-id", product.product_id);
 
-    // Create image slider
     let imageSlider = '<div class="image-slider">';
     if (product.images && Array.isArray(product.images) && product.images.length > 0) {
       product.images.forEach((img, index) => {
@@ -1879,14 +1980,12 @@ async renderProducts() {
     }
     imageSlider += '</div>';
 
-    // Create rating display HTML
     const ratingHTML = ratingManager.createProductRating(
       product.product_id,
       product.average_rating || 0,
       product.total_ratings || 0
     );
 
-    // Properly structure the grid item content
     gridItem.innerHTML = `
       <div class="product-content">
         ${imageSlider}
@@ -1897,17 +1996,20 @@ async renderProducts() {
           </span>
           | Stock: ${product.stock}
         </div>
+        
+        <div class="product-actions">
+          <button class="add-to-cart-btn">+</button>
+          <div class="social-sharing">
+            <button class="share-btn" onclick="socialSharingManager.showShareOptions('${product.product_id}')">
+              Share
+            </button>
+          </div>
+        </div>
       </div>
     `;
-    
-    // Add the cart button
-    const addToCartButton = document.createElement("button");
-    addToCartButton.textContent = "+";
-    addToCartButton.className = "add-to-cart-btn";
-    gridItem.appendChild(addToCartButton);
 
-    // Add click handler for cart button
-    addToCartButton.addEventListener("click", (e) => {
+    const cartButton = gridItem.querySelector('.add-to-cart-btn');
+    cartButton.addEventListener("click", (e) => {
       e.stopPropagation();
       cartManager.addItem(product.product_id);
     });
@@ -1915,17 +2017,15 @@ async renderProducts() {
     gridContainer.appendChild(gridItem);
   });
 
-  // Initialize rating manager if needed
   if (!window.ratingManagerInitialized) {
     ratingManager.initialize();
     window.ratingManagerInitialized = true;
   }
 
-  // Fetch ratings and initialize sliders
   await ratingManager.fetchUserRatings();
   this.initializeImageSliders();
-},
-
+}
+,
   initializeImageSliders() {
     document.querySelectorAll('.image-slider').forEach(slider => {
       const images = slider.querySelectorAll('img');
