@@ -1996,23 +1996,34 @@ async renderProducts() {
           </span>
           | Stock: ${product.stock}
         </div>
-        
-        <div class="product-actions">
-          <button class="add-to-cart-btn">+</button>
-          <div class="social-sharing">
-            <button class="share-btn" onclick="socialSharingManager.showShareOptions('${product.product_id}')">
-              Share
-            </button>
-          </div>
-        </div>
       </div>
     `;
+    
+    // Create buttons container
+    const buttonsContainer = document.createElement("div");
+    buttonsContainer.className = "product-buttons";
 
-    const cartButton = gridItem.querySelector('.add-to-cart-btn');
-    cartButton.addEventListener("click", (e) => {
+    // Add to cart button
+    const addToCartButton = document.createElement("button");
+    addToCartButton.textContent = "+";
+    addToCartButton.className = "add-to-cart-btn";
+    addToCartButton.addEventListener("click", (e) => {
       e.stopPropagation();
       cartManager.addItem(product.product_id);
     });
+
+    // Share button
+    const shareButton = document.createElement("button");
+    shareButton.textContent = "Share";
+    shareButton.className = "share-btn";
+    shareButton.addEventListener("click", (e) => {
+      e.stopPropagation();
+      socialSharingManager.showShareOptions(product);
+    });
+
+    buttonsContainer.appendChild(addToCartButton);
+    buttonsContainer.appendChild(shareButton);
+    gridItem.appendChild(buttonsContainer);
 
     gridContainer.appendChild(gridItem);
   });
@@ -2025,6 +2036,56 @@ async renderProducts() {
   await ratingManager.fetchUserRatings();
   this.initializeImageSliders();
 }
+
+const socialSharingManager = {
+  showShareOptions(product) {
+    const shareData = {
+      title: product.name,
+      text: `Check out ${product.name}! Price: ${cryptoManager.formatCryptoPrice(product.price)}`,
+      url: `${window.location.origin}/product/${product.product_id}`
+    };
+
+    if (navigator.share) {
+      navigator.share(shareData).catch(console.error);
+      return;
+    }
+
+    // Fallback to custom sharing menu
+    const shareUrls = {
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareData.url)}`,
+      twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareData.text)}&url=${encodeURIComponent(shareData.url)}`,
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(shareData.text + ' ' + shareData.url)}`
+    };
+
+    const menu = document.createElement('div');
+    menu.className = 'share-menu';
+    menu.innerHTML = `
+      <button onclick="window.open('${shareUrls.facebook}', '_blank')">Facebook</button>
+      <button onclick="window.open('${shareUrls.twitter}', '_blank')">Twitter</button>
+      <button onclick="window.open('${shareUrls.whatsapp}', '_blank')">WhatsApp</button>
+    `;
+
+    // Position menu near share button
+    const productElement = document.querySelector(`[data-product-id="${product.product_id}"]`);
+    const shareButton = productElement.querySelector('.share-btn');
+    const rect = shareButton.getBoundingClientRect();
+    
+    menu.style.position = 'absolute';
+    menu.style.top = `${rect.bottom + window.scrollY}px`;
+    menu.style.left = `${rect.left}px`;
+
+    // Remove existing menus
+    document.querySelectorAll('.share-menu').forEach(m => m.remove());
+    document.body.appendChild(menu);
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function closeMenu(e) {
+      if (!menu.contains(e.target) && e.target !== shareButton) {
+        menu.remove();
+        document.removeEventListener('click', closeMenu);
+      }
+    });
+  }
 ,
   initializeImageSliders() {
     document.querySelectorAll('.image-slider').forEach(slider => {
