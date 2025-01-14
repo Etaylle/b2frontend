@@ -1774,7 +1774,104 @@ const socialSharingManager = {
     };
   }
 };
+// Add this to your existing code structure
+const productPageManager = {
+  initialize() {
+    // Create modal container if it doesn't exist
+    if (!document.getElementById('product-page-modal')) {
+      const modal = document.createElement('div');
+      modal.id = 'product-page-modal';
+      modal.className = 'modal-container';
+      modal.style.display = 'none';
+      document.body.appendChild(modal);
 
+      // Add event listener to handle browser back button
+      window.addEventListener('popstate', () => {
+        this.closeProductPage();
+      });
+    }
+  },
+
+  openProductPage(product) {
+    const modal = document.getElementById('product-page-modal');
+    
+    // Update URL without page reload
+    const productUrl = `/product/${product.product_id}`;
+    window.history.pushState({ productId: product.product_id }, '', productUrl);
+
+    // Create image slider HTML
+    let imageSliderHtml = '<div class="product-image-slider">';
+    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+      product.images.forEach((img, index) => {
+        imageSliderHtml += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
+      });
+    } else if (product.image_url) {
+      imageSliderHtml += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
+    }
+    imageSliderHtml += '</div>';
+
+    // Generate modal content
+    modal.innerHTML = `
+      <div class="modal-content">
+        <button class="close-btn" onclick="productPageManager.closeProductPage()">&times;</button>
+        <div class="product-page-content">
+          ${imageSliderHtml}
+          <h1>${product.name}</h1>
+          <div class="product-price">
+            Price: <span class="price-span" data-usd-price="${product.price}">
+              ${cryptoManager.formatCryptoPrice(product.price)}
+            </span>
+          </div>
+          <div class="product-stock">Stock: ${product.stock}</div>
+          <div class="product-rating">
+            ${ratingManager.createProductRating(
+              product.product_id,
+              product.average_rating || 0,
+              product.total_ratings || 0
+            )}
+          </div>
+          <div class="product-actions">
+            <button class="add-to-cart-btn" onclick="cartManager.addItem('${product.product_id}')">
+              Add to Cart
+            </button>
+            <button class="share-btn" onclick="socialSharingManager.showShareOptions(${JSON.stringify(product)})">
+              Share
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+  },
+
+  closeProductPage() {
+    const modal = document.getElementById('product-page-modal');
+    if (modal) {
+      modal.style.display = 'none';
+      document.body.style.overflow = ''; // Restore scrolling
+      
+      // Restore original URL if we're on a product page
+      if (window.location.pathname.includes('/product/')) {
+        window.history.pushState({}, '', '/');
+      }
+    }
+  },
+
+  // Handle direct navigation to product URLs
+  handleDirectNavigation() {
+    const match = window.location.pathname.match(/\/product\/(\d+)/);
+    if (match) {
+      const productId = match[1];
+      // Assuming you have a way to fetch product data
+      const product = this.state.products.find(p => p.product_id === productId);
+      if (product) {
+        this.openProductPage(product);
+      }
+    }
+  }
+};
 const categoryManager = {
   state: {
     categories: [],
@@ -2043,6 +2140,9 @@ async renderProducts() {
     gridItem.appendChild(buttonsContainer);
 
     gridContainer.appendChild(gridItem);
+    gridItem.addEventListener("click", () => {
+  productPageManager.openProductPage(product);
+});
   });
 
   if (!window.ratingManagerInitialized) {
@@ -2123,6 +2223,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl'),
       recommendationManager.initialize(),
       socialSharingManager.initialize(),
+      productPageManager.initialize(),
+      productPageManager.handleDirectNavigation(),
     ]);
 
     // Fetch initial data
@@ -2155,6 +2257,7 @@ window.cryptoManager = cryptoManager;
 window.ratingManager = ratingManager;
 window.recommendationManager = recommendationManager;
 window.socialSharingManager = socialSharingManager;
+window.productPageManager = productPageManager;
 async function fetchProducts(categoryId = null) {
   try {
     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
