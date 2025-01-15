@@ -1735,20 +1735,6 @@ openProductPage(product) {
             </span>
           </div>
           <div class="product-stock">Stock: ${product.stock}</div>
-          <div class="product-rating">
-            ${ratingManager.createProductRating(
-              product.product_id.toString(),
-              product.average_rating || 0,
-              product.total_ratings || 0
-            )}
-          </div>
-          <div class="product-actions">
-            <button class="add-to-cart-btn" onclick="cartManager.addItem('${product.product_id}')">
-              Add to Cart
-            </button>
-            <button class="share-btn" onclick="socialSharingManager.showShareOptions(${JSON.stringify(product)})">
-              Share
-            </button>
           </div>
         </div>
       </div>
