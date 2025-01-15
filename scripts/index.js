@@ -13,6 +13,25 @@ let cryptoRates = {
   BTC: 0,
   ETH: 0
 };
+async function ensureGuestSession() {
+  try {
+    const response = await fetch('https://backend-3mvr.onrender.com/api/guest-login', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        username: 'guest_user',
+        password: 'guest_password'
+      })
+    });
+    return response.ok;
+  } catch (error) {
+    console.error('Error ensuring guest session:', error);
+    return false;
+  }
+};
 const fetchConfig = {
   credentials: 'include',
   headers: {
@@ -203,6 +222,7 @@ const cartManager = {
   // },
 
   async updateQuantity(productId, quantity) {
+
     if (!currentUser) {
     await ensureGuestSession();
   }try {
