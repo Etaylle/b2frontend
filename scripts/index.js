@@ -1735,13 +1735,13 @@ openProductPage(product) {
             </span>
           </div>
           <div class="product-stock">Stock: ${product.stock}</div>
-          <div class="product-rating">
-            ${ratingManager.createProductRating(
-              product.product_id,
-              product.average_rating || 0,
-              product.total_ratings || 0
-            )}
-          </div>
+          // <div class="product-rating">
+          //   ${ratingManager.createProductRating(
+          //     product.product_id,
+          //     product.average_rating || 0,
+          //     product.total_ratings || 0
+          //   )}
+          // </div>
           <div class="product-actions">
             <button class="add-to-cart-btn" onclick="cartManager.addItem('${product.product_id}')">
               Add to Cart
