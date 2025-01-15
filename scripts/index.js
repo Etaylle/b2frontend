@@ -31,8 +31,10 @@ const createPostConfig = (data) => ({
 const cartManager = {
   isLoggedIn: false,
   async initialize() {
-    // Check if user is logged in (you'll need to implement this based on your auth system)
-    this.isLoggedIn = fetchCurrentUser().isLoggedIn;
+    
+    const currentUser = await fetchCurrentUser();
+    this.isLoggedIn = !!currentUser; // gives boolean
+    
     if (!this.isLoggedIn) {
       // Initialize local storage cart if it doesn't exist
       if (!localStorage.getItem('guestCart')) {
@@ -1931,6 +1933,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       productPageManager.initialize(),
       paymentManager.initialize('your-stripe-key'),
       recommendationManager.initialize(),
+      cartManager.initialize(),
     ]);
 
     // Initialize category manager last since it loads products
