@@ -2106,7 +2106,7 @@ async fetchProducts(categoryId = null) {
       imageSlider += '</div>';
 
       const ratingHTML = ratingManager.createProductRating(
-        product.product_id,
+        product.product_id.toString(), 
         product.average_rating || 0,
         product.total_ratings || 0
       );
