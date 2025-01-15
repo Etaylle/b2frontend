@@ -1703,9 +1703,73 @@ const productPageManager = {
       this.closeProductPage();
     }
   },
+openProductPage(product) {
+    this.state.currentProduct = product;
+    
+    // Update URL
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.set('product', product.product_id);
+    window.history.pushState({}, '', newUrl.toString());
+    
+    // Create image slider HTML
+    let imageSliderHtml = '<div class="product-image-slider">';
+    if (product.images?.length > 0) {
+      product.images.forEach((img, index) => {
+        imageSliderHtml += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
+      });
+    } else if (product.image_url) {
+      imageSliderHtml += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
+    }
+    imageSliderHtml += '</div>';
 
+    // Create modal content
+    this.state.modalContainer.innerHTML = `
+      <div class="modal-content">
+        <button class="close-btn" onclick="productPageManager.closeProductPage()">&times;</button>
+        <div class="product-page-content">
+          ${imageSliderHtml}
+          <h1>${product.name}</h1>
+          <div class="product-price">
+            Price: <span class="price-span" data-usd-price="${product.price}">
+              ${cryptoManager.formatCryptoPrice(product.price)}
+            </span>
+          </div>
+          <div class="product-stock">Stock: ${product.stock}</div>
+          <div class="product-rating">
+            ${ratingManager.createProductRating(
+              product.product_id,
+              product.average_rating || 0,
+              product.total_ratings || 0
+            )}
+          </div>
+          <div class="product-actions">
+            <button class="add-to-cart-btn" onclick="cartManager.addItem('${product.product_id}')">
+              Add to Cart
+            </button>
+            <button class="share-btn" onclick="socialSharingManager.showShareOptions(${JSON.stringify(product)})">
+              Share
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.state.modalContainer.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  },closeProductPage() {
+    if (this.state.modalContainer) {
+      this.state.modalContainer.style.display = 'none';
+      document.body.style.overflow = '';
+      this.state.currentProduct = null;
+      
+      // Update URL
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('product');
+      window.history.pushState({}, '', newUrl.toString());
+    }
+  },
   initialize() {
-    // Create modal container if it doesn't exist
+    // Create modal container
     if (!this.state.modalContainer) {
       this.state.modalContainer = document.createElement('div');
       this.state.modalContainer.id = 'product-page-modal';
@@ -1714,7 +1778,7 @@ const productPageManager = {
       document.body.appendChild(this.state.modalContainer);
     }
 
-    // Store the initial product ID from URL if present
+    // Store initial product ID
     const initialProductId = this.getProductIdFromUrl();
     if (initialProductId) {
       this.state.pendingProductId = initialProductId;
@@ -1725,7 +1789,7 @@ const productPageManager = {
       this.handleNavigation();
     });
 
-    // Add styles if not already present
+    // Add styles
     if (!document.getElementById('product-modal-styles')) {
       const styles = document.createElement('style');
       styles.id = 'product-modal-styles';
@@ -1752,12 +1816,49 @@ const productPageManager = {
           overflow-y: auto;
           position: relative;
         }
+        
+        .close-btn {
+          position: absolute;
+          right: 10px;
+          top: 10px;
+          font-size: 24px;
+          cursor: pointer;
+          border: none;
+          background: none;
+        }
+        
+        .product-image-slider {
+          width: 100%;
+          max-width: 500px;
+          margin: 0 auto;
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .product-image-slider img {
+          width: 100%;
+          height: auto;
+          display: none;
+        }
+        
+        .product-image-slider img.active {
+          display: block;
+        }
+        
+        .product-page-content {
+          padding: 20px;
+        }
+        
+        .product-actions {
+          margin-top: 20px;
+          display: flex;
+          gap: 10px;
+        }
       `;
       document.head.appendChild(styles);
     }
   }
 };
-
 // Update the main initialization sequence
 document.addEventListener("DOMContentLoaded", async () => {
   try {
