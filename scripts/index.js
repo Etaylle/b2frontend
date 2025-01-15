@@ -32,7 +32,7 @@ const cartManager = {
   isLoggedIn: false,
   async initialize() {
     // Check if user is logged in (you'll need to implement this based on your auth system)
-    this.isLoggedIn = /* your auth check logic */;
+    this.isLoggedIn = fetchCurrentUser().isLoggedIn;
     if (!this.isLoggedIn) {
       // Initialize local storage cart if it doesn't exist
       if (!localStorage.getItem('guestCart')) {
