@@ -37,7 +37,7 @@ async function ensureGuestSession() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        username: 'guest_user',
+        email: 'guest@example.com',
         password: 'not_accessible'
       })
     });
