@@ -32,7 +32,7 @@ const cartManager = {
   isLoggedIn: false,
   async initialize() {
     
-    const currentUser = await fetchCurrentUser();
+    const currentUser = await this.fetchCurrentUser();
     this.isLoggedIn = !!currentUser; // gives boolean
     
     if (!this.isLoggedIn) {
