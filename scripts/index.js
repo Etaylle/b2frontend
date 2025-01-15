@@ -1659,14 +1659,51 @@ const productPageManager = {
   state: {
     products: [],
     currentProduct: null,
-    modalContainer: null
+    modalContainer: null,
+    pendingProductId: null 
   },
 
   updateProducts(products) {
     this.state.products = products;
+    // Check if we have a pending product to display
+    if (this.state.pendingProductId) {
+      const product = products.find(p => p.product_id.toString() === this.state.pendingProductId.toString());
+      if (product) {
+        this.openProductPage(product);
+        this.state.pendingProductId = null;
+      }
+    }
   },
 
-  // Initialize the modal container
+  getProductIdFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('product');
+    if (productId) return productId;
+    
+    const hashMatch = window.location.hash.match(/product-(\d+)/);
+    if (hashMatch) return hashMatch[1];
+    
+    return null;
+  },
+
+  handleNavigation() {
+    const productId = this.getProductIdFromUrl();
+    if (productId) {
+      // If we already have products loaded
+      if (this.state.products.length > 0) {
+        const product = this.state.products.find(p => p.product_id.toString() === productId.toString());
+        if (product) {
+          this.openProductPage(product);
+        }
+      } else {
+        // Store the product ID to show after products are loaded
+        this.state.pendingProductId = productId;
+      }
+    } else {
+      this.closeProductPage();
+    }
+  },
+
   initialize() {
     // Create modal container if it doesn't exist
     if (!this.state.modalContainer) {
@@ -1677,13 +1714,16 @@ const productPageManager = {
       document.body.appendChild(this.state.modalContainer);
     }
 
+    // Store the initial product ID from URL if present
+    const initialProductId = this.getProductIdFromUrl();
+    if (initialProductId) {
+      this.state.pendingProductId = initialProductId;
+    }
+
     // Handle browser navigation
     window.addEventListener('popstate', () => {
       this.handleNavigation();
     });
-
-    // Handle initial load
-    this.handleNavigation();
 
     // Add styles if not already present
     if (!document.getElementById('product-modal-styles')) {
@@ -1712,144 +1752,43 @@ const productPageManager = {
           overflow-y: auto;
           position: relative;
         }
-        
-        .close-btn {
-          position: absolute;
-          right: 10px;
-          top: 10px;
-          font-size: 24px;
-          cursor: pointer;
-          border: none;
-          background: none;
-        }
-        
-        .product-image-slider {
-          width: 100%;
-          max-width: 500px;
-          margin: 0 auto;
-          position: relative;
-          overflow: hidden;
-        }
-        
-        .product-image-slider img {
-          width: 100%;
-          height: auto;
-          display: none;
-        }
-        
-        .product-image-slider img.active {
-          display: block;
-        }
-        
-        .product-page-content {
-          padding: 20px;
-        }
-        
-        .product-actions {
-          margin-top: 20px;
-          display: flex;
-          gap: 10px;
-        }
       `;
       document.head.appendChild(styles);
     }
-
-    // Handle initial load
-    this.handleNavigation();
-  },
-
- getProductIdFromUrl() {
-    // Check URL parameters first
-    const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get('product');
-    if (productId) return productId;
-    
-    // Check hash as fallback
-    const hashMatch = window.location.hash.match(/product-(\d+)/);
-    if (hashMatch) return hashMatch[1];
-    
-    return null;
-  },
-
-  handleNavigation() {
-    const productId = this.getProductIdFromUrl();
-    if (productId) {
-      const product = this.state.products.find(p => p.product_id.toString() === productId.toString());
-      if (product) {
-        this.openProductPage(product);
-      }
-    } else {
-      this.closeProductPage();
-    }
-  },
-
-  openProductPage(product) {
-    this.state.currentProduct = product;
-    
-    // Update URL without reloading page
-    const newUrl = new URL(window.location.href);
-    newUrl.searchParams.set('product', product.product_id);
-    window.history.pushState({}, '', newUrl.toString());
-
-    // Create image slider HTML
-    let imageSliderHtml = '<div class="product-image-slider">';
-    if (product.images?.length > 0) {
-      product.images.forEach((img, index) => {
-        imageSliderHtml += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
-      });
-    } else if (product.image_url) {
-      imageSliderHtml += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
-    }
-    imageSliderHtml += '</div>';
-
-    this.state.modalContainer.innerHTML = `
-      <div class="modal-content">
-        <button class="close-btn" onclick="productPageManager.closeProductPage()">&times;</button>
-        <div class="product-page-content">
-          ${imageSliderHtml}
-          <h1>${product.name}</h1>
-          <div class="product-price">
-            Price: <span class="price-span" data-usd-price="${product.price}">
-              ${cryptoManager.formatCryptoPrice(product.price)}
-            </span>
-          </div>
-          <div class="product-stock">Stock: ${product.stock}</div>
-          <div class="product-rating">
-            ${ratingManager.createProductRating(
-              product.product_id,
-              product.average_rating || 0,
-              product.total_ratings || 0
-            )}
-          </div>
-          <div class="product-actions">
-            <button class="add-to-cart-btn" onclick="cartManager.addItem('${product.product_id}')">
-              Add to Cart
-            </button>
-            <button class="share-btn" onclick="socialSharingManager.showShareOptions(${JSON.stringify(product)})">
-              Share
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
-
-    this.state.modalContainer.style.display = 'block';
-    document.body.style.overflow = 'hidden';
-  },
-
-  closeProductPage() {
-    if (this.state.modalContainer) {
-      this.state.modalContainer.style.display = 'none';
-      document.body.style.overflow = '';
-      this.state.currentProduct = null;
-      
-      // Remove product parameter from URL
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.delete('product');
-      window.history.pushState({}, '', newUrl.toString());
-    }
-  },
+  }
 };
+
+// Update the main initialization sequence
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    // Initialize all managers
+    await Promise.allSettled([
+      cryptoManager.initialize(),
+      ratingManager.initialize(),
+      productPageManager.initialize(),
+      paymentManager.initialize('your-stripe-key'),
+      recommendationManager.initialize(),
+    ]);
+
+    // Initialize category manager last since it loads products
+    await categoryManager.initialize();
+
+    // Fetch user data and update UI
+    currentUser = await authManager.fetchCurrentUser();
+    
+    // Initialize UI components
+    authManager.displayUserInfo();
+    authManager.displayUserAvatar();
+    cartManager.updateDisplay();
+    
+    setupEventListeners();
+    uiManager.updateButtonVisibility(currentUser);
+    
+  } catch (error) {
+    console.error("Error during initialization:", error);
+    showNotification("Error initializing application", "error");
+  }
+});
 const socialSharingManager = {
   getBaseUrl() {
     // Use your custom domain or the render.com frontend URL
@@ -2134,7 +2073,6 @@ async fetchProducts(categoryId = null) {
       gridContainer.appendChild(gridItem);
     });
 
-    // Add CSS for buttons if not already present
     if (!document.querySelector('#product-buttons-styles')) {
       const style = document.createElement('style');
       style.id = 'product-buttons-styles';
@@ -2161,7 +2099,7 @@ async fetchProducts(categoryId = null) {
       `;
       document.head.appendChild(style);
     }
-
+  productPageManager.updateProducts(this.state.products);
     if (!window.ratingManagerInitialized) {
       ratingManager.initialize();
       window.ratingManagerInitialized = true;
@@ -2325,8 +2263,8 @@ async function fetchProducts(categoryId = null) {
     
     // Check if the response has the new format with success property
     if (data.success) {
-      this.state.products = data.products; // Access products array from the response
-    } else {
+      this.state.products = data.products ? data.products : data; 
+    } else {productPageManager.updateProducts(this.state.products);
       this.state.products = data; // Fallback for old format
     }
     
