@@ -30,6 +30,20 @@ const createPostConfig = (data) => ({
 
 // Cart state management
 const cartManager = {
+  async  ensureGuestSession() {
+  const response = await fetch('https://backend-3mvr.onrender.com/api/guest-login', {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      username: 'guest_user',
+      password: 'not_accessible'  
+    })
+  });
+  return response.ok;
+},
   async fetchCart() {
     try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/cart', {
@@ -53,7 +67,9 @@ const cartManager = {
   },
 
   async addItem(productId) {
-    try {
+    if (!currentUser) {
+    await ensureGuestSession();
+  }try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
         method: 'POST',
         credentials: 'include',
