@@ -2123,7 +2123,7 @@ async fetchProducts(categoryId = null) {
 
       // Add to cart button
       const addToCartButton = document.createElement("button");
-      addToCartButton.textContent = "+";
+      addToCartButton.textContent = "💰";
       addToCartButton.className = "add-to-cart-btn";
       addToCartButton.addEventListener("click", (e) => {
         e.stopPropagation(); // Prevent event from bubbling up
