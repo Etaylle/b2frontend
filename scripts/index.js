@@ -2024,7 +2024,7 @@ async fetchProducts(categoryId = null) {
     this.highlightSelectedCategory();
   },
 
-   async renderProducts() {
+  async renderProducts() {
     const gridContainer = document.querySelector(".grid-container");
     if (!gridContainer) return;
     
@@ -2054,20 +2054,25 @@ async fetchProducts(categoryId = null) {
         product.total_ratings || 0
       );
 
-      gridItem.innerHTML = `
-        <div class="product-content">
-          ${imageSlider}
-          
-          <div class="overlay">
-            ${product.name} | <span class="price-span" data-usd-price="${product.price}">
-              ${cryptoManager.formatCryptoPrice(product.price)}
-            </span>
-            | Stock: ${product.stock}
-          </div>
+      // Create product content container
+      const productContent = document.createElement("div");
+      productContent.className = "product-content";
+      productContent.innerHTML = `
+        ${imageSlider}
+        <div class="overlay">
+          ${product.name} | <span class="price-span" data-usd-price="${product.price}">
+            ${cryptoManager.formatCryptoPrice(product.price)}
+          </span>
+          | Stock: ${product.stock}
         </div>
       `;
+
+      // Add click handler to product content for opening product page
+      productContent.addEventListener("click", () => {
+        productPageManager.openProductPage(product);
+      });
       
-      productPageManager.updateProducts(this.state.products);
+      gridItem.appendChild(productContent);
       
       // Create buttons container
       const buttonsContainer = document.createElement("div");
@@ -2078,7 +2083,7 @@ async fetchProducts(categoryId = null) {
       addToCartButton.textContent = "+";
       addToCartButton.className = "add-to-cart-btn";
       addToCartButton.addEventListener("click", (e) => {
-        e.stopPropagation();
+        e.stopPropagation(); // Prevent event from bubbling up
         cartManager.addItem(product.product_id);
       });
 
@@ -2087,7 +2092,8 @@ async fetchProducts(categoryId = null) {
       shareButton.textContent = "🚀";
       shareButton.className = "share-btn";
       shareButton.addEventListener("click", (e) => {
-        e.stopPropagation();
+        e.preventDefault(); // Prevent default behavior
+        e.stopPropagation(); // Stop event from bubbling up
         socialSharingManager.showShareOptions(product);
       });
 
@@ -2096,41 +2102,43 @@ async fetchProducts(categoryId = null) {
       rateButton.textContent = "⭐";
       rateButton.className = "rate-btn";
       rateButton.addEventListener("click", (e) => {
-        ratingManager.openRatingModal(product.product_id, e); 
+        e.preventDefault(); // Prevent default behavior
+        e.stopPropagation(); // Stop event from bubbling up
+        ratingManager.openRatingModal(product.product_id, e);
       });
 
+      // Add buttons to container
       buttonsContainer.appendChild(addToCartButton);
       buttonsContainer.appendChild(shareButton);
       buttonsContainer.appendChild(rateButton);
-      gridItem.appendChild(buttonsContainer);
-
-      gridContainer.appendChild(gridItem);
       
-      gridItem.addEventListener("click", (e) => {
-  // Don't open product modal if clicking buttons or controls
-  if (e.target.closest('.rate-btn') || 
-      e.target.closest('.add-to-cart-btn') || 
-      e.target.closest('.share-btn')) {
-    return;
-  }
-  productPageManager.openProductPage(product);
-});
+      // Add buttons container to grid item
+      gridItem.appendChild(buttonsContainer);
+      gridContainer.appendChild(gridItem);
     });
 
-    // Add CSS for the rating button
-    if (!document.querySelector('#rating-button-styles')) {
+    // Add CSS for buttons if not already present
+    if (!document.querySelector('#product-buttons-styles')) {
       const style = document.createElement('style');
-      style.id = 'rating-button-styles';
+      style.id = 'product-buttons-styles';
       style.textContent = `
-        .rate-btn {
-          background: none;
-          border: none;
+        .product-buttons {
+          position: absolute;
+          bottom: 10px;
+          right: 10px;
+          display: flex;
+          gap: 5px;
+          z-index: 10;
+        }
+        .product-buttons button {
+          padding: 5px 10px;
+          border-radius: 4px;
           cursor: pointer;
-          font-size: 1.2rem;
-          padding: 0.25rem 0.5rem;
+          background: rgba(255, 255, 255, 0.9);
+          border: 1px solid #ddd;
           transition: transform 0.2s;
         }
-        .rate-btn:hover {
+        .product-buttons button:hover {
           transform: scale(1.1);
         }
       `;
@@ -2144,7 +2152,7 @@ async fetchProducts(categoryId = null) {
 
     await ratingManager.fetchUserRatings();
     this.initializeImageSliders();
-  },
+},
     async initialize() {
     await this.fetchCategories();
     await this.setupSearch();
