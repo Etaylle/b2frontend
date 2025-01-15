@@ -869,10 +869,9 @@ const paymentManager = {
   initialize(publicKey) {
     this.stripe = Stripe(publicKey);
   },
-
-  async initiateCheckout() {
+async initiateCheckout() {
     try {
-      if (!currentUser) {
+      if (!this.currentUser) {
         await this.setupGuestSession();
       }
 
@@ -881,19 +880,37 @@ const paymentManager = {
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'X-Guest-User': !currentUser ? '999999' : undefined
+          'X-Guest-User': !this.currentUser ? '999999' : undefined
         }
       });
-      
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create checkout session');
+      }
+
       const data = await response.json();
-      const result = await this.stripe.redirectToCheckout({ sessionId: data.id });
       
-      if (result.error) {
-        showNotification(result.error.message, 'error');
+      // If we have a sessionId, use it with Stripe
+      if (data.sessionId) {
+        const result = await this.stripe.redirectToCheckout({
+          sessionId: data.sessionId
+        });
+
+        if (result.error) {
+          throw new Error(result.error.message);
+        }
+      } else {
+        throw new Error('No session ID received from server');
       }
     } catch (error) {
       console.error('Error:', error);
-      showNotification('Failed to start checkout process', 'error');
+      // Assuming you have a notification function
+      if (typeof showNotification === 'function') {
+        showNotification('Failed to start checkout process', 'error');
+      } else {
+        alert('Failed to start checkout process');
+      }
     }
   },
 
@@ -910,14 +927,44 @@ const paymentManager = {
           password: 'not_accessible'
         })
       });
-      
-      return response.ok;
+
+      if (!response.ok) {
+        throw new Error('Failed to setup guest session');
+      }
+
+      return true;
     } catch (error) {
       console.error('Guest session setup failed:', error);
       return false;
     }
   }
 };
+  // async initiateCheckout() {
+  //   try {
+  //     if (!currentUser) {
+  //       await this.setupGuestSession();
+  //     }
+
+  //     const response = await fetch('https://backend-3mvr.onrender.com/api/create-checkout-session', {
+  //       method: 'POST',
+  //       credentials: 'include',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'X-Guest-User': !currentUser ? '999999' : undefined
+  //       }
+  //     });
+      
+  //     const data = await response.json();
+  //     const result = await this.stripe.redirectToCheckout({ sessionId: data.id });
+      
+  //     if (result.error) {
+  //       showNotification(result.error.message, 'error');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //     showNotification('Failed to start checkout process', 'error');
+  //   }
+  // };
 // RATING MANAGER
 const ratingManager = {
   state: {
