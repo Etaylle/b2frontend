@@ -29,26 +29,41 @@ const createPostConfig = (data) => ({
 
 // Cart state management
 const cartManager = {
-async fetchCart() {
-    try {
-      const response = await fetch('https://backend-3mvr.onrender.com/api/cart',  {
-        ...fetchConfig,
-        
-        credentials: 'include'
-      });
-      
-      if (!response.ok) {
+  isLoggedIn: false,
+  async initialize() {
+    // Check if user is logged in (you'll need to implement this based on your auth system)
+    this.isLoggedIn = /* your auth check logic */;
+    if (!this.isLoggedIn) {
+      // Initialize local storage cart if it doesn't exist
+      if (!localStorage.getItem('guestCart')) {
+        localStorage.setItem('guestCart', JSON.stringify({ items: [], total: 0 }));
+      }
+    }
+  },
+ async fetchCart() {
+    if (this.isLoggedIn) {
+      // for logged in users
+      try {
+        const response = await fetch('https://backend-3mvr.onrender.com/api/cart', {
+          credentials: 'include'
+        });
+        if (!response.ok) {
+          return { items: [], total: 0 };
+        }
+        const data = await response.json();
+        return data.cart;
+      } catch (error) {
+        console.error('Error fetching cart:', error);
         return { items: [], total: 0 };
       }
-      const data = await response.json();
-      return data.cart;
-    } catch (error) {
-      console.error('Error fetching cart:', error);
-      return { items: [], total: 0 };
+    } else {
+      // Return cart from localStorage for guest users
+      return JSON.parse(localStorage.getItem('guestCart'));
     }
   },
 
   async addItem(productId) {
+    if (this.isLoggedIn) {
     try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
         method: 'POST',
@@ -65,9 +80,40 @@ async fetchCart() {
       
       showNotification('Out of stock!', 'error');
     }
+  } else {
+      try {
+        const cart = JSON.parse(localStorage.getItem('guestCart'));
+        const existingItem = cart.items.find(item => item.product_id === productId);
+        
+        if (existingItem) {
+          existingItem.quantity += 1;
+        } else {
+          // You'll need to fetch product details from your products API
+          const product = await this.fetchProductDetails(productId);
+          cart.items.push({
+            product_id: productId,
+            quantity: 1,
+            name: product.name,
+            price: product.price,
+            images: product.images
+          });
+        }
+        
+        localStorage.setItem('guestCart', JSON.stringify(cart));
+        await this.updateDisplay();
+        showNotification('Added to cart!', 'success');
+      } catch (error) {
+        console.error('Error:', error);
+        showNotification('Failed to add item', 'error');
+      }
+    }
   },
-
+async fetchProductDetails(productId) {
+    const response = await fetch(`https://backend-3mvr.onrender.com/api/products/${productId}`);
+    return await response.json();
+  },
   async removeItem(productId) {
+    if (this.isLoggedIn) {
     if (!productId) {
       console.error('Invalid product ID');
       return;}
@@ -86,10 +132,18 @@ async fetchCart() {
       console.error('Error:', error);
       showNotification('Failed to remove item', 'error');
     }
+  }else {
+      const cart = JSON.parse(localStorage.getItem('guestCart'));
+      cart.items = cart.items.filter(item => item.product_id !== productId);
+      localStorage.setItem('guestCart', JSON.stringify(cart));
+      await this.updateDisplay();
+      showNotification('Item removed from cart', 'success');
+    }
   },
 
   async updateQuantity(productId, quantity) {
-    try {
+     if (this.isLoggedIn) {
+      try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/update', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -102,6 +156,15 @@ async fetchCart() {
     } catch (error) {
       console.error('Error updating quantity:', error);
       showNotification('Failed to update quantity', 'error');
+    }
+  }else {
+      const cart = JSON.parse(localStorage.getItem('guestCart'));
+      const item = cart.items.find(item => item.product_id === productId);
+      if (item) {
+        item.quantity = quantity;
+        localStorage.setItem('guestCart', JSON.stringify(cart));
+        await this.updateDisplay();
+      }
     }
   },
     async clearCart(afterPurchase = false) {
@@ -142,6 +205,7 @@ async fetchCart() {
       }
     },
     async completePurchase() {
+      if (this.isLoggedIn) {
       console.log('OVO JE NASTAVAK');
       try {
         const response = await fetch('https://backend-3mvr.onrender.com/api/cart/complete-purchase', {
@@ -164,11 +228,23 @@ async fetchCart() {
         showNotification(error.message || 'Failed to complete purchase', 'error');
         return false;
       }
+    } else {
+      // Simple guest checkout
+      try {
+        // Here you could add a simple form to collect shipping info
+        // For demo purposes, just clear the cart
+        localStorage.setItem('guestCart', JSON.stringify({ items: [], total: 0 }));
+        await this.updateDisplay();
+        showNotification('Purchase completed successfully!', 'success');
+        return true;
+      } catch (error) {
+        console.error('Error completing purchase:', error);
+        showNotification('Failed to complete purchase', 'error');
+        return false;
+      }
     }
+  }
   ,
-  
-
-
   async updateDisplay() {
     const cart = await this.fetchCart();
     const cartContainer = document.getElementById('cart-items');
