@@ -47,6 +47,9 @@ async function ensureGuestSession() {
     return false;
   }
 };
+// Frontend modifications
+// Add this to your existing cartManager
+
 const CartEnhancements = {
   initializeGuestMode() {
     // Set guest user ID in localStorage for persistence
@@ -145,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
-// CART
+// Cart state management
 const cartManager = {
 
   async fetchCart() {
@@ -1985,7 +1988,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       paymentManager.initialize('your-stripe-key'),
       recommendationManager.initialize(),
     ]);
-    CartEnhancements.initializeGuestMode();
+
     // Initialize category manager last since it loads products
     await categoryManager.initialize();
 
@@ -2486,8 +2489,6 @@ window.ratingManager = ratingManager;
 window.recommendationManager = recommendationManager;
 window.socialSharingManager = socialSharingManager;
 window.productPageManager = productPageManager;
-window.enhancedPaymentManager = enhancedPaymentManager; 
-window.CartEnhancements = cartEnchantments;
 async function fetchProducts(categoryId = null) {
   try {
     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
