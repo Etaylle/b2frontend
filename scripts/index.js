@@ -177,9 +177,23 @@ async addItem(productId) {
   //   }
   // },
 async fetchProductDetails(productId) {
-    const response = await fetch(`https://backend-3mvr.onrender.com/api/products/${productId}`);
-    return await response.json();
-  },
+    try {
+        const response = await fetch('https://backend-3mvr.onrender.com/api/products');
+        const products = await response.json();
+        
+        // Find the specific product from the array
+        const product = products.find(p => p._id === productId || p.id === productId);
+        
+        if (!product) {
+            throw new Error('Product not found');
+        }
+        
+        return product;
+    } catch (error) {
+        console.error('Error fetching product details:', error);
+        throw error;
+    }
+},
   async removeItem(productId) {
     if (this.isLoggedIn) {
     if (!productId) {
