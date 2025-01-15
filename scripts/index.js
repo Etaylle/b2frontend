@@ -23,7 +23,7 @@ async function ensureGuestSession() {
       },
       body: JSON.stringify({
         username: 'guest_user',
-        password: 'guest_password'
+        password: 'not_accessible'
       })
     });
     return response.ok;
