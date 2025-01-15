@@ -45,6 +45,9 @@ const cartManager = {
   return response.ok;
 },
   async fetchCart() {
+    if (!currentUser) {
+    await ensureGuestSession();
+  }
     try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/cart', {
         ...fetchConfig,
@@ -90,7 +93,9 @@ const cartManager = {
   },
 
   async removeItem(productId) {
-    try {
+    if (!currentUser) {
+    await ensureGuestSession();
+  }try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/remove', {
         method: 'DELETE',
         headers: { 
@@ -111,7 +116,9 @@ const cartManager = {
   },
 
   async completePurchase() {
-    try {
+    if (!currentUser) {
+    await ensureGuestSession();
+  }try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/complete-purchase', {
         method: 'POST',
         credentials: 'include',
@@ -196,7 +203,9 @@ const cartManager = {
   // },
 
   async updateQuantity(productId, quantity) {
-    try {
+    if (!currentUser) {
+    await ensureGuestSession();
+  }try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/update', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -212,7 +221,9 @@ const cartManager = {
     }
   },
     async clearCart(afterPurchase = false) {
-      try {
+      if (!currentUser) {
+    await ensureGuestSession();
+  }try {
         const response = await fetch('https://backend-3mvr.onrender.com/api/cart/clear', {
           method: 'DELETE',
           credentials: 'include',
