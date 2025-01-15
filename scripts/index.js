@@ -2205,7 +2205,10 @@ async fetchProducts(categoryId = null) {
       ratingManager.initialize();
       window.ratingManagerInitialized = true;
     }
-
+if (!window.ratingManagerInitialized) {
+    ratingManager.initialize();
+    window.ratingManagerInitialized = true;
+  }
     await ratingManager.fetchUserRatings();
     this.initializeImageSliders();
 },
