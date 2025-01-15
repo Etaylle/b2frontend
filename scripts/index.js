@@ -30,15 +30,18 @@ const createPostConfig = (data) => ({
 // Cart state management
 const cartManager = {
   isLoggedIn: false,
-  async initialize() {
-    
+async initialize() {
     const currentUser = await this.fetchCurrentUser();
-    this.isLoggedIn = !!currentUser; // gives boolean
+    this.isLoggedIn = !!currentUser;
     
+    // Always ensure a valid cart structure exists in localStorage for guest users
     if (!this.isLoggedIn) {
-      // Initialize local storage cart if it doesn't exist
-      if (!localStorage.getItem('guestCart')) {
-        localStorage.setItem('guestCart', JSON.stringify({ items: [], total: 0 }));
+      const existingCart = localStorage.getItem('guestCart');
+      if (!existingCart || !JSON.parse(existingCart).items) {
+        localStorage.setItem('guestCart', JSON.stringify({
+          items: [],
+          total: 0
+        }));
       }
     }
   },
@@ -63,33 +66,36 @@ const cartManager = {
       return JSON.parse(localStorage.getItem('guestCart'));
     }
   },
- async addItem(productId) {
+async addItem(productId) {
     if (this.isLoggedIn) {
-    try {
-      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
-        method: 'POST',
-        credentials: 'include',
-        headers: fetchConfig.headers,
-        body: JSON.stringify({ productId, quantity: 1 })
-      });
-
-      if (!response.ok) throw new Error('Failed to add to cart');
-      await this.updateDisplay();
-      showNotification('Added to cart!', 'success');
-    } catch (error) {
-      console.error('Error:', error);
-      
-      showNotification('Out of stock!', 'error');
-    }
-  } else {
       try {
-        const cart = JSON.parse(localStorage.getItem('guestCart'));
+        const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
+          method: 'POST',
+          credentials: 'include',
+          headers: fetchConfig.headers,
+          body: JSON.stringify({ productId, quantity: 1 })
+        });
+
+        if (!response.ok) throw new Error('Failed to add to cart');
+        await this.updateDisplay();
+        showNotification('Added to cart!', 'success');
+      } catch (error) {
+        console.error('Error:', error);
+        showNotification('Out of stock!', 'error');
+      }
+    } else {
+      try {
+        // Ensure we have a valid cart structure
+        let cart = JSON.parse(localStorage.getItem('guestCart'));
+        if (!cart || !cart.items) {
+          cart = { items: [], total: 0 };
+        }
+
         const existingItem = cart.items.find(item => item.product_id === productId);
         
         if (existingItem) {
           existingItem.quantity += 1;
         } else {
-          // You'll need to fetch product details from your products API
           const product = await this.fetchProductDetails(productId);
           cart.items.push({
             product_id: productId,
