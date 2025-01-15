@@ -76,59 +76,46 @@ async initialize() {
   }
 },
 async addItem(productId) {
-  if (!productId) {
-    showNotification('Invalid product ID', 'error');
-    return;
-  }
+    if (this.isLoggedIn) {
+        try {
+            const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
+                method: 'POST',
+                credentials: 'include',
+                headers: fetchConfig.headers,
+                body: JSON.stringify({ productId, quantity: 1 })
+            });
 
-  if (this.isLoggedIn) {
-    try {
-      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
-        method: 'POST',
-        credentials: 'include',
-        headers: fetchConfig.headers,
-        body: JSON.stringify({ productId, quantity: 1 })
-      });
+            if (!response.ok) throw new Error('Failed to add to cart');
+            await this.updateDisplay();
+            showNotification('Added to cart!', 'success');
+        } catch (error) {
+            console.error('Error:', error);
+            showNotification('Out of stock!', 'error');
+        }
+    } else {
+        try {
+            // Get current cart or initialize empty one
+            let cart = JSON.parse(localStorage.getItem('guestCart')) || { items: [], total: 0 };
+            const existingItem = cart.items.find(item => item.product_id === productId);
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to add to cart');
-      }
-      
-      await this.updateDisplay();
-      showNotification('Added to cart!', 'success');
-    } catch (error) {
-      console.error('Error:', error);
-      showNotification(error.message || 'Failed to add item', 'error');
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                // Add new item with minimal information
+                cart.items.push({
+                    product_id: productId,
+                    quantity: 1
+                });
+            }
+            
+            localStorage.setItem('guestCart', JSON.stringify(cart));
+            await this.updateDisplay();
+            showNotification('Added to cart!', 'success');
+        } catch (error) {
+            console.error('Error:', error);
+            showNotification('Failed to add item', 'error');
+        }
     }
-  } else {
-    try {
-      let cart = JSON.parse(localStorage.getItem('guestCart')) || { items: [], total: 0 };
-      const existingItem = cart.items.find(item => item.product_id === productId);
-      
-      if (existingItem) {
-        existingItem.quantity += 1;
-      } else {
-        const product = await this.fetchProductDetails(productId);
-        if (!product) throw new Error('Product not found');
-        
-        cart.items.push({
-          product_id: productId,
-          quantity: 1,
-          name: product.name,
-          price: product.price,
-          images: product.images
-        });
-      }
-      
-      localStorage.setItem('guestCart', JSON.stringify(cart));
-      await this.updateDisplay();
-      showNotification('Added to cart!', 'success');
-    } catch (error) {
-      console.error('Error:', error);
-      showNotification(error.message || 'Failed to add item', 'error');
-    }
-  }
 },
   // async addItem(productId) {
   //   if (this.isLoggedIn) {
@@ -376,68 +363,83 @@ async fetchProductDetails(productId) {
   // },
 async updateDisplay() {
     try {
-      let cart;
-      if (this.isLoggedIn) {
-        const response = await this.fetchCart();
-        cart = response;
-      } else {
-        cart = JSON.parse(localStorage.getItem('guestCart')) || { items: [], total: 0 };
-      }
+        let cart;
+        if (this.isLoggedIn) {
+            const response = await this.fetchCart();
+            cart = response;
+        } else {
+            cart = JSON.parse(localStorage.getItem('guestCart')) || { items: [], total: 0 };
+            
+            // If it's a guest cart, fetch all products to get details
+            const productsResponse = await fetch('https://backend-3mvr.onrender.com/api/products');
+            const products = await productsResponse.json();
+            
+            // Enhance cart items with product details
+            cart.items = cart.items.map(item => {
+                const product = products.find(p => Number(p.id) === Number(item.product_id));
+                return {
+                    ...item,
+                    name: product ? product.name : 'Unknown Product',
+                    price: product ? product.price : 0,
+                    images: product ? product.images : ['/images/1.jpg']
+                };
+            });
+        }
 
-      const cartContainer = document.getElementById('cart-items');
-      const cartTotal = document.getElementById('cart-total');
-      
-      if (!cartContainer || !cartTotal) {
-        console.error('Cart elements not found in DOM');
-        return;
-      }
-      
-      cartContainer.innerHTML = '';
+        const cartContainer = document.getElementById('cart-items');
+        const cartTotal = document.getElementById('cart-total');
+        
+        if (!cartContainer || !cartTotal) {
+            console.error('Cart elements not found in DOM');
+            return;
+        }
+        
+        cartContainer.innerHTML = '';
 
-      if (!cart?.items || cart.items.length === 0) {
-        cartContainer.innerHTML = '<li>Your cart is empty</li>';
-        cartTotal.textContent = 'Total: 0';
-        cartContainer.classList.add('hidden');
-        return;
-      }
+        if (!cart?.items || cart.items.length === 0) {
+            cartContainer.innerHTML = '<li>Your cart is empty</li>';
+            cartTotal.textContent = 'Total: 0';
+            cartContainer.classList.add('hidden');
+            return;
+        }
 
-      cartContainer.classList.remove('hidden');
-      let total = 0;
+        cartContainer.classList.remove('hidden');
+        let total = 0;
 
-      cart.items.forEach(item => {
-        const listItem = document.createElement('li');
-        listItem.className = 'cart-item';
+        cart.items.forEach(item => {
+            const listItem = document.createElement('li');
+            listItem.className = 'cart-item';
 
-        const imageUrl = item.images?.[0] || item.image_url || '/images/1.jpg';
-        const productName = item.name || 'Unknown Product';
-        const productPrice = item.price || 0;
-        const productId = item.product_id;
+            const imageUrl = item.images?.[0] || '/images/1.jpg';
+            const productName = item.name || 'Unknown Product';
+            const productPrice = item.price || 0;
+            const productId = item.product_id;
 
-        listItem.innerHTML = `
-          <img src="${imageUrl}" alt="${productName}" class="cart-item-image">
-          <div class="cart-item-details">
-            <span class="item-name">${productName} | </span>
-            <span class="item-price"> ${parseFloat(productPrice).toFixed(2)} $ |</span>
-            <span class="item-quantity">Quantity: ${item.quantity}</span>
-          </div>
-          <div class="cart-item-controls">
-            <button class="quantity-btn minus" data-id="${productId}">-</button>
-            <button class="quantity-btn plus" data-id="${productId}">+</button>
-            <button class="remove-btn" data-id="${productId}">Remove</button>
-          </div>
-        `;
+            listItem.innerHTML = `
+                <img src="${imageUrl}" alt="${productName}" class="cart-item-image">
+                <div class="cart-item-details">
+                    <span class="item-name">${productName} | </span>
+                    <span class="item-price"> ${parseFloat(productPrice).toFixed(2)} $ |</span>
+                    <span class="item-quantity">Quantity: ${item.quantity}</span>
+                </div>
+                <div class="cart-item-controls">
+                    <button class="quantity-btn minus" data-id="${productId}">-</button>
+                    <button class="quantity-btn plus" data-id="${productId}">+</button>
+                    <button class="remove-btn" data-id="${productId}">Remove</button>
+                </div>
+            `;
 
-        cartContainer.appendChild(listItem);
-        total += productPrice * item.quantity;
-      });
+            cartContainer.appendChild(listItem);
+            total += productPrice * item.quantity;
+        });
 
-      cartTotal.textContent = `Total: ${total.toFixed(2)}`;
-      this.attachEventListeners();
+        cartTotal.textContent = `Total: ${total.toFixed(2)}`;
+        this.attachEventListeners();
     } catch (error) {
-      console.error('Error updating display:', error);
-      showNotification('Error updating cart display', 'error');
+        console.error('Error updating display:', error);
+        showNotification('Error updating cart display', 'error');
     }
-  },
+},
   attachEventListeners() {
   // ISSUE: Event listeners are added multiple times
   // FIX: Remove old listeners before adding new ones
