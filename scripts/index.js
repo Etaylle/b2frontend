@@ -1682,6 +1682,9 @@ const productPageManager = {
       this.handleNavigation();
     });
 
+    // Handle initial load
+    this.handleNavigation();
+
     // Add styles if not already present
     if (!document.getElementById('product-modal-styles')) {
       const styles = document.createElement('style');
@@ -1755,10 +1758,23 @@ const productPageManager = {
     this.handleNavigation();
   },
 
+ getProductIdFromUrl() {
+    // Check URL parameters first
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('product');
+    if (productId) return productId;
+    
+    // Check hash as fallback
+    const hashMatch = window.location.hash.match(/product-(\d+)/);
+    if (hashMatch) return hashMatch[1];
+    
+    return null;
+  },
+
   handleNavigation() {
     const productId = this.getProductIdFromUrl();
     if (productId) {
-      const product = this.state.products.find(p => p.product_id === productId);
+      const product = this.state.products.find(p => p.product_id.toString() === productId.toString());
       if (product) {
         this.openProductPage(product);
       }
@@ -1767,20 +1783,14 @@ const productPageManager = {
     }
   },
 
-  getProductIdFromUrl() {
-    const hashMatch = window.location.hash.match(/product-(\d+)/);
-    if (hashMatch) return hashMatch[1];
-    
-    const pathMatch = window.location.pathname.match(/\/product\/(\d+)/);
-    if (pathMatch) return pathMatch[1];
-    
-    return null;
-  },
-
   openProductPage(product) {
     this.state.currentProduct = product;
-    window.location.hash = `product-${product.product_id}`;
     
+    // Update URL without reloading page
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.set('product', product.product_id);
+    window.history.pushState({}, '', newUrl.toString());
+
     // Create image slider HTML
     let imageSliderHtml = '<div class="product-image-slider">';
     if (product.images?.length > 0) {
@@ -1832,19 +1842,27 @@ const productPageManager = {
       this.state.modalContainer.style.display = 'none';
       document.body.style.overflow = '';
       this.state.currentProduct = null;
-      window.location.hash = '';
+      
+      // Remove product parameter from URL
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('product');
+      window.history.pushState({}, '', newUrl.toString());
     }
-  }
+  },
 };
 const socialSharingManager = {
   getBaseUrl() {
+    // Use your custom domain or the render.com frontend URL
     return window.location.origin;
   },
 
   getSharingUrls(product) {
-    // Always use the permanent URL format for sharing
-    const productUrl = `${this.getBaseUrl()}/product/${product.product_id}`;
-    const text = `Schau dir ${product.name} an! Preis: ${cryptoManager.formatCryptoPrice(product.price)}`;
+    // Create a full URL that includes the product parameter
+    const url = new URL(this.getBaseUrl());
+    url.searchParams.set('product', product.product_id);
+    const productUrl = url.toString();
+    
+    const text = `Check out ${product.name}! Price: ${cryptoManager.formatCryptoPrice(product.price)}`;
     
     return {
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productUrl)}`,
@@ -1856,8 +1874,8 @@ const socialSharingManager = {
   showShareOptions(product) {
     const shareData = {
       title: product.name,
-      text: `Schau dir ${product.name} an! Preis: ${cryptoManager.formatCryptoPrice(product.price)}`,
-      url: `${this.getBaseUrl()}/product/${product.product_id}`
+      text: `Check out ${product.name}! Price: ${cryptoManager.formatCryptoPrice(product.price)}`,
+      url: `${this.getBaseUrl()}?product=${product.product_id}`
     };
 
     if (navigator.share) {
@@ -1896,7 +1914,6 @@ const socialSharingManager = {
     });
   }
 };
-
 const categoryManager = {
   state: {
     categories: [],
