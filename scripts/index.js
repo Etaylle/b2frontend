@@ -1,4 +1,5 @@
 // Global state
+const DEFAULT_USER_ID = 'default_user';
 const BACKEND_URL = '';
 let currentUser;
 let cart = {};
@@ -29,13 +30,15 @@ const createPostConfig = (data) => ({
 
 // Cart state management
 const cartManager = {
-  
-async fetchCart() {
+  async fetchCart() {
     try {
-      const response = await fetch('https://backend-3mvr.onrender.com/api/cart',  {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/cart', {
         ...fetchConfig,
-        
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          ...fetchConfig.headers,
+          'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
+        }
       });
       
       if (!response.ok) {
@@ -54,7 +57,10 @@ async fetchCart() {
       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
         method: 'POST',
         credentials: 'include',
-        headers: fetchConfig.headers,
+        headers: {
+          ...fetchConfig.headers,
+          'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
+        },
         body: JSON.stringify({ productId, quantity: 1 })
       });
 
@@ -63,19 +69,19 @@ async fetchCart() {
       showNotification('Added to cart!', 'success');
     } catch (error) {
       console.error('Error:', error);
-      
       showNotification('Out of stock!', 'error');
     }
   },
 
+  // Add the X-Guest-User header to all other cart methods
   async removeItem(productId) {
-    if (!productId) {
-      console.error('Invalid product ID');
-      return;}
     try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/remove', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
+        },
         body: JSON.stringify({ productId }),
         credentials: 'include',
       });
@@ -88,6 +94,91 @@ async fetchCart() {
       showNotification('Failed to remove item', 'error');
     }
   },
+
+  // Update the payment manager as well
+  async completePurchase() {
+    try {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/complete-purchase', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message);
+      }
+
+      await this.clearCart(true);
+      return true;
+    } catch (error) {
+      console.error('Error completing purchase:', error);
+      showNotification(error.message || 'Failed to complete purchase', 'error');
+      return false;
+    }
+  },
+  
+// async fetchCart() {
+//     try {
+//       const response = await fetch('https://backend-3mvr.onrender.com/api/cart',  {
+//         ...fetchConfig,
+        
+//         credentials: 'include'
+//       });
+      
+//       if (!response.ok) {
+//         return { items: [], total: 0 };
+//       }
+//       const data = await response.json();
+//       return data.cart;
+//     } catch (error) {
+//       console.error('Error fetching cart:', error);
+//       return { items: [], total: 0 };
+//     }
+//   },
+
+//   async addItem(productId) {
+//     try {
+//       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
+//         method: 'POST',
+//         credentials: 'include',
+//         headers: fetchConfig.headers,
+//         body: JSON.stringify({ productId, quantity: 1 })
+//       });
+
+//       if (!response.ok) throw new Error('Failed to add to cart');
+//       await this.updateDisplay();
+//       showNotification('Added to cart!', 'success');
+//     } catch (error) {
+//       console.error('Error:', error);
+      
+//       showNotification('Out of stock!', 'error');
+//     }
+//   },
+
+  // async removeItem(productId) {
+  //   if (!productId) {
+  //     console.error('Invalid product ID');
+  //     return;}
+  //   try {
+  //     const response = await fetch('https://backend-3mvr.onrender.com/api/cart/remove', {
+  //       method: 'DELETE',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ productId }),
+  //       credentials: 'include',
+  //     });
+
+  //     if (!response.ok) throw new Error('Failed to remove item');
+  //     await this.updateDisplay();
+  //     showNotification('Item removed from cart', 'success');
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //     showNotification('Failed to remove item', 'error');
+  //   }
+  // },
 
   async updateQuantity(productId, quantity) {
     try {
@@ -142,31 +233,31 @@ async fetchCart() {
         showNotification(error.message || 'Failed to clear cart', 'error');
       }
     },
-    async completePurchase() {
-      console.log('OVO JE NASTAVAK');
-      try {
-        const response = await fetch('https://backend-3mvr.onrender.com/api/cart/complete-purchase', {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
+  //   async completePurchase() {
+  //     console.log('OVO JE NASTAVAK');
+  //     try {
+  //       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/complete-purchase', {
+  //         method: 'POST',
+  //         credentials: 'include',
+  //         headers: {
+  //           'Content-Type': 'application/json'
+  //         }
+  //       });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message);
-        }
+  //       if (!response.ok) {
+  //         const errorData = await response.json();
+  //         throw new Error(errorData.message);
+  //       }
 
-        await this.clearCart(true);
-        return true;
-      } catch (error) {
-        console.error('Error completing purchase:', error);
-        showNotification(error.message || 'Failed to complete purchase', 'error');
-        return false;
-      }
-    }
-  ,
+  //       await this.clearCart(true);
+  //       return true;
+  //     } catch (error) {
+  //       console.error('Error completing purchase:', error);
+  //       showNotification(error.message || 'Failed to complete purchase', 'error');
+  //       return false;
+  //     }
+  //   }
+  // ,
   
 
 
