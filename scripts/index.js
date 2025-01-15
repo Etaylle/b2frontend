@@ -13,6 +13,21 @@ let cryptoRates = {
   BTC: 0,
   ETH: 0
 };
+
+const fetchConfig = {
+  credentials: 'include',
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
+  },
+  mode: 'cors' 
+};
+// Updated post config
+const createPostConfig = (data) => ({
+  ...fetchConfig,
+  method: 'POST',
+  body: JSON.stringify(data)
+});
 async function ensureGuestSession() {
   try {
     const response = await fetch('https://backend-3mvr.onrender.com/api/guest-login', {
@@ -32,37 +47,9 @@ async function ensureGuestSession() {
     return false;
   }
 };
-const fetchConfig = {
-  credentials: 'include',
-  headers: {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json'
-  },
-  mode: 'cors' 
-};
-// Updated post config
-const createPostConfig = (data) => ({
-  ...fetchConfig,
-  method: 'POST',
-  body: JSON.stringify(data)
-});
-
 // Cart state management
 const cartManager = {
-  async  ensureGuestSession() {
-  const response = await fetch('https://backend-3mvr.onrender.com/api/guest-login', {
-    method: 'POST',
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      username: 'guest_user',
-      password: 'not_accessible'  
-    })
-  });
-  return response.ok;
-},
+
   async fetchCart() {
     if (!currentUser) {
     await ensureGuestSession();
