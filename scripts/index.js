@@ -2161,7 +2161,7 @@ async fetchProducts(categoryId = null) {
       rateButton.addEventListener("click", (e) => {
         e.preventDefault(); // Prevent default behavior
         e.stopPropagation(); // Stop event from bubbling up
-        ratingManager.openRatingModal(product.product_id, e);
+        ratingManager.openRatingModal(product.product_id.toString(), e);
       });
 
       // Add buttons to container
