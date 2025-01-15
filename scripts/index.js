@@ -98,39 +98,6 @@ const CartEnhancements = {
   }
 };
 
-// Modified payment flow for guests
-const enhancedPaymentManager = {
-  ...paymentManager,
-  
-  async initiateGuestCheckout() {
-    if (!localStorage.getItem('isGuest')) {
-      await CartEnhancements.setupGuestSession();
-    }
-    
-    try {
-      const response = await fetch('https://backend-3mvr.onrender.com/api/create-checkout-session', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Guest-User': localStorage.getItem('guestId')
-        }
-      });
-      
-      const data = await response.json();
-      if (data.id) {
-        const result = await this.stripe.redirectToCheckout({ sessionId: data.id });
-        if (result.error) {
-          showNotification(result.error.message, 'error');
-        }
-      }
-    } catch (error) {
-      console.error('Checkout failed:', error);
-      showNotification('Failed to start checkout process', 'error');
-    }
-  }
-};
-
 // Initialize guest mode
 document.addEventListener('DOMContentLoaded', () => {
   CartEnhancements.initializeGuestMode();
@@ -824,6 +791,34 @@ document.addEventListener('DOMContentLoaded', () => {
     AuthModal.init();
 });
 // Payment Management
+// const paymentManager = {
+//   stripe: null,
+
+//   initialize(publicKey) {
+//     this.stripe = Stripe(publicKey);
+//   },
+
+//   async initiateCheckout() {
+//     try {
+//       const response = await fetch('https://backend-3mvr.onrender.com/api/create-checkout-session', {
+//         method: 'POST',
+//         credentials: 'include'
+//       });
+//       //await cartManager.clearCart();
+//       showNotification('Order placed successfully!', 'success');
+//       const data = await response.json();
+//       const result = await this.stripe.redirectToCheckout({ sessionId: data.id });
+      
+    
+//       if (result.error) {
+//         showNotification(result.error.message, 'error');
+//       }
+//     } catch (error) {
+//       console.error('Error:', error);
+//       showNotification('Failed to start checkout process', 'error');
+//     }
+//   }
+// };
 const paymentManager = {
   stripe: null,
 
@@ -833,22 +828,49 @@ const paymentManager = {
 
   async initiateCheckout() {
     try {
+      if (!currentUser) {
+        await this.setupGuestSession();
+      }
+
       const response = await fetch('https://backend-3mvr.onrender.com/api/create-checkout-session', {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Guest-User': !currentUser ? '999999' : undefined
+        }
       });
-      //await cartManager.clearCart();
-      showNotification('Order placed successfully!', 'success');
+      
       const data = await response.json();
       const result = await this.stripe.redirectToCheckout({ sessionId: data.id });
       
-    
       if (result.error) {
         showNotification(result.error.message, 'error');
       }
     } catch (error) {
       console.error('Error:', error);
       showNotification('Failed to start checkout process', 'error');
+    }
+  },
+
+  async setupGuestSession() {
+    try {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/guest-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          username: 'guest_user',
+          password: 'not_accessible'
+        })
+      });
+      
+      return response.ok;
+    } catch (error) {
+      console.error('Guest session setup failed:', error);
+      return false;
     }
   }
 };
