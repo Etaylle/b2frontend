@@ -2105,11 +2105,11 @@ async fetchProducts(categoryId = null) {
       }
       imageSlider += '</div>';
 
-      const ratingHTML = ratingManager.createProductRating(
-        product.product_id.toString(), 
-        product.average_rating || 0,
-        product.total_ratings || 0
-      );
+     const ratingHTML = ratingManager.createProductRating(
+      product.product_id,
+      product.average_rating || 0,
+      product.total_ratings || 0
+    );
 
       // Create product content container
       const productContent = document.createElement("div");
