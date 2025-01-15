@@ -31,90 +31,105 @@ const createPostConfig = (data) => ({
 const cartManager = {
   isLoggedIn: false,
 async initialize() {
-    const currentUser = await this.fetchCurrentUser();
+    // ISSUE: currentUser is fetched but never stored
+    const currentUser = await this.authManager.fetchCurrentUser(); // This method doesn't exist in cartManager
     this.isLoggedIn = !!currentUser;
     
-    // Always ensure a valid cart structure exists in localStorage for guest users
-    if (!this.isLoggedIn) {
-      const existingCart = localStorage.getItem('guestCart');
-      if (!existingCart || !JSON.parse(existingCart).items) {
-        localStorage.setItem('guestCart', JSON.stringify({
-          items: [],
-          total: 0
-        }));
-      }
-    }
+    // FIX: Store the user and add fetchCurrentUser method
+    this.currentUser = currentUser;
   },
  async fetchCart() {
-    if (this.isLoggedIn) {
-      // for logged in users
-      try {
-        const response = await fetch('https://backend-3mvr.onrender.com/api/cart', {
-          credentials: 'include'
-        });
-        if (!response.ok) {
-          return { items: [], total: 0 };
-        }
-        const data = await response.json();
-        return data.cart;
-      } catch (error) {
-        console.error('Error fetching cart:', error);
+  if (this.isLoggedIn) {
+    try {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/cart', {
+        credentials: 'include'
+      });
+      // ISSUE: Doesn't handle invalid JSON
+      // FIX: Add validation
+      if (!response.ok) {
+        console.error('Cart fetch failed:', response.status);
         return { items: [], total: 0 };
       }
-    } else {
-      // Return cart from localStorage for guest users
-      return JSON.parse(localStorage.getItem('guestCart'));
+      const data = await response.json();
+      if (!data.cart || !Array.isArray(data.cart.items)) {
+        console.error('Invalid cart data received');
+        return { items: [], total: 0 };
+      }
+      return data.cart;
+    } catch (error) {
+      console.error('Error fetching cart:', error);
+      return { items: [], total: 0 };
     }
-  },
+  } else {
+    // ISSUE: No error handling for invalid localStorage data
+    // FIX: Add validation
+    try {
+      const cartData = localStorage.getItem('guestCart');
+      const cart = JSON.parse(cartData);
+      if (!cart || !Array.isArray(cart.items)) {
+        return { items: [], total: 0 };
+      }
+      return cart;
+    } catch {
+      return { items: [], total: 0 };
+    }
+  }
+},
 async addItem(productId) {
-    if (this.isLoggedIn) {
-      try {
-        const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
-          method: 'POST',
-          credentials: 'include',
-          headers: fetchConfig.headers,
-          body: JSON.stringify({ productId, quantity: 1 })
-        });
+  if (!productId) {
+    showNotification('Invalid product ID', 'error');
+    return;
+  }
 
-        if (!response.ok) throw new Error('Failed to add to cart');
-        await this.updateDisplay();
-        showNotification('Added to cart!', 'success');
-      } catch (error) {
-        console.error('Error:', error);
-        showNotification('Out of stock!', 'error');
-      }
-    } else {
-      try {
-        // Ensure we have a valid cart structure
-        let cart = JSON.parse(localStorage.getItem('guestCart'));
-        if (!cart || !cart.items) {
-          cart = { items: [], total: 0 };
-        }
+  if (this.isLoggedIn) {
+    try {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
+        method: 'POST',
+        credentials: 'include',
+        headers: fetchConfig.headers,
+        body: JSON.stringify({ productId, quantity: 1 })
+      });
 
-        const existingItem = cart.items.find(item => item.product_id === productId);
-        
-        if (existingItem) {
-          existingItem.quantity += 1;
-        } else {
-          const product = await this.fetchProductDetails(productId);
-          cart.items.push({
-            product_id: productId,
-            quantity: 1,
-            name: product.name,
-            price: product.price,
-            images: product.images
-          });
-        }
-        
-        localStorage.setItem('guestCart', JSON.stringify(cart));
-        await this.updateDisplay();
-        showNotification('Added to cart!', 'success');
-      } catch (error) {
-        console.error('Error:', error);
-        showNotification('Failed to add item', 'error');
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to add to cart');
       }
+      
+      await this.updateDisplay();
+      showNotification('Added to cart!', 'success');
+    } catch (error) {
+      console.error('Error:', error);
+      showNotification(error.message || 'Failed to add item', 'error');
     }
-  },
+  } else {
+    try {
+      let cart = JSON.parse(localStorage.getItem('guestCart')) || { items: [], total: 0 };
+      const existingItem = cart.items.find(item => item.product_id === productId);
+      
+      if (existingItem) {
+        existingItem.quantity += 1;
+      } else {
+        const product = await this.fetchProductDetails(productId);
+        if (!product) throw new Error('Product not found');
+        
+        cart.items.push({
+          product_id: productId,
+          quantity: 1,
+          name: product.name,
+          price: product.price,
+          images: product.images
+        });
+      }
+      
+      localStorage.setItem('guestCart', JSON.stringify(cart));
+      await this.updateDisplay();
+      showNotification('Added to cart!', 'success');
+    } catch (error) {
+      console.error('Error:', error);
+      showNotification(error.message || 'Failed to add item', 'error');
+    }
+  }
+},
   // async addItem(productId) {
   //   if (this.isLoggedIn) {
   //   try {
@@ -410,31 +425,68 @@ async updateDisplay() {
     }
   },
   attachEventListeners() {
-    document.querySelectorAll('.quantity-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const productId = e.target.getAttribute('data-id');
-        const listItem = e.target.closest('.cart-item');
-        const quantityElement = listItem.querySelector('.item-quantity');
-        let currentQuantity = parseInt(quantityElement.textContent.replace('Quantity: ', ''));
-        
-        if (e.target.classList.contains('plus')) {
-          currentQuantity += 1;
-        } else {
-          currentQuantity = Math.max(1, currentQuantity - 1);
-        }
-        
-        this.updateQuantity(productId, currentQuantity);
-      });
+  // ISSUE: Event listeners are added multiple times
+  // FIX: Remove old listeners before adding new ones
+  const removeOldListeners = (selector, event) => {
+    document.querySelectorAll(selector).forEach(element => {
+      const clone = element.cloneNode(true);
+      element.parentNode.replaceChild(clone, element);
     });
+  };
 
-    document.querySelectorAll('.remove-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const productId = e.target.getAttribute('data-id');
-        this.removeItem(productId);
-      });
+  removeOldListeners('.quantity-btn', 'click');
+  removeOldListeners('.remove-btn', 'click');
+
+  document.querySelectorAll('.quantity-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const productId = e.target.getAttribute('data-id');
+      const listItem = e.target.closest('.cart-item');
+      const quantityElement = listItem.querySelector('.item-quantity');
+      let currentQuantity = parseInt(quantityElement.textContent.replace('Quantity: ', ''));
+      
+      if (e.target.classList.contains('plus')) {
+        currentQuantity += 1;
+      } else {
+        currentQuantity = Math.max(1, currentQuantity - 1);
+      }
+      
+      this.updateQuantity(productId, currentQuantity);
     });
-  }
-};
+  });
+
+  document.querySelectorAll('.remove-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const productId = e.target.getAttribute('data-id');
+      this.removeItem(productId);
+    });
+  });
+}};
+//   attachEventListeners() {
+//     document.querySelectorAll('.quantity-btn').forEach(btn => {
+//       btn.addEventListener('click', (e) => {
+//         const productId = e.target.getAttribute('data-id');
+//         const listItem = e.target.closest('.cart-item');
+//         const quantityElement = listItem.querySelector('.item-quantity');
+//         let currentQuantity = parseInt(quantityElement.textContent.replace('Quantity: ', ''));
+        
+//         if (e.target.classList.contains('plus')) {
+//           currentQuantity += 1;
+//         } else {
+//           currentQuantity = Math.max(1, currentQuantity - 1);
+//         }
+        
+//         this.updateQuantity(productId, currentQuantity);
+//       });
+//     });
+
+//     document.querySelectorAll('.remove-btn').forEach(btn => {
+//       btn.addEventListener('click', (e) => {
+//         const productId = e.target.getAttribute('data-id');
+//         this.removeItem(productId);
+//       });
+//     });
+//   }
+// };
 
 // UI Management
 const uiManager = {
@@ -511,101 +563,8 @@ const uiManager = {
 
 // Auth Management
 const authManager = {
-  // async fetchCurrentUser() {
-  //   try {
-  //     const response = await fetch('https://backend-3mvr.onrender.com/api/users/current', {
-  //       ...fetchConfig,
-  //       credentials: 'include'
-  //     });
-  //     if (!response.ok) throw new Error('Auth failed');
-  //     return await response.json();
-  //   } catch (error) {
-  //     console.error(error);
-  //     return null;
-  //   }
-  // },
 
- 
-  
-//   async login(event) {
-//     event.preventDefault();
-
-//     const email = document.getElementById("email").value;
-//     const password = document.getElementById("password").value;
-
-//     try {
-//       const response = await fetch("https://backend-3mvr.onrender.com/api/auth/login", {
-//         ...fetchConfig,  // Use the base config
-//       method: "POST",
-//       body: JSON.stringify({ email, password })
-//       });
-
-//       const data = await response.json();
-      
-//       if (response.ok) {
-//         showNotification('Login successful!', 'success');
-//         uiManager.closeLogin();
-//         window.location.reload();
-//       } else {
-//         showNotification(data.message, 'error');
-//       }
-//     } catch (error) {
-//       showNotification(error.message, 'error');
-//     }
-//   },
-
-//   async logout() {
-//     try {
-//       const response = await fetch('https://backend-3mvr.onrender.com/api/auth/logout', {
-//         method: "POST",
-//         credentials: 'include',
-//         headers: fetchConfig.headers
-//       });
-
-//       if (response.ok) {
-//         // Clear any local storage if you're using it
-//         localStorage.clear();
-//         window.location.reload();
-//       } else {
-//         showNotification('Failed to log out', 'error');
-//       }
-//     } catch (error) {
-//       showNotification('Error logging out', 'error');
-//     }
-//   }
-// ,
-// async register(event) {
-//     event.preventDefault();
-
-//     const username = document.getElementById("username").value;
-//     const firstname = document.getElementById("firstname").value;
-//     const lastname = document.getElementById("lastname").value;
-//     const email = document.getElementById("reg-email").value;
-//     const password = document.getElementById("reg-password").value;
-
-//     try {
-//       const response = await fetch('https://backend-3mvr.onrender.com/api/auth/register', {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({ username, firstname, lastname, email, password }),
-//       });
-
-//       if (response.ok) {
-//         showNotification('Registration successful!', 'success');
-//         uiManager.closeRegister();
-//         window.location.href = "index.html";
-//       } else {
-//         const data = await response.json();
-//         showNotification(data.message, 'error');
-//       }
-//     } catch (error) {
-//       showNotification(error.message, 'error');
-//     }
-//   },
-
-async fetchCurrentUser() {
+  async fetchCurrentUser() {
     try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/users/current', {
         ...fetchConfig,
