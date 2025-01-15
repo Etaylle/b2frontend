@@ -1,5 +1,5 @@
 // Global state
-const DEFAULT_USER_ID = 'default_user';
+const DEFAULT_USER_ID = '999999';
 const BACKEND_URL = '';
 let currentUser;
 let cart = {};
@@ -73,7 +73,6 @@ const cartManager = {
     }
   },
 
-  // Add the X-Guest-User header to all other cart methods
   async removeItem(productId) {
     try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/remove', {
@@ -95,7 +94,6 @@ const cartManager = {
     }
   },
 
-  // Update the payment manager as well
   async completePurchase() {
     try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/complete-purchase', {
@@ -119,6 +117,7 @@ const cartManager = {
       showNotification(error.message || 'Failed to complete purchase', 'error');
       return false;
     }
+  
   },
   
 // async fetchCart() {
