@@ -2160,32 +2160,47 @@ async fetchProducts(categoryId = null) {
       gridContainer.appendChild(gridItem);
     });
 
-    if (!document.querySelector('#product-buttons-styles')) {
-      const style = document.createElement('style');
-      style.id = 'product-buttons-styles';
-      style.textContent = `
+   if (!document.querySelector('#product-buttons-styles')) {
+    const style = document.createElement('style');
+    style.id = 'product-buttons-styles';
+    style.textContent = `
         .product-buttons {
-          position: absolute;
-          bottom: 10px;
-          right: 10px;
-          display: flex;
-          gap: 5px;
-          z-index: 10;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 10;
         }
+
         .product-buttons button {
-          padding: 5px 10px;
-          border-radius: 4px;
-          cursor: pointer;
-          background: rgba(255, 255, 255, 0.9);
-          border: 1px solid #ddd;
-          transition: transform 0.2s;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
         }
+
         .product-buttons button:hover {
-          transform: scale(1.1);
+            transform: scale(1.1);
+            background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
-      `;
-      document.head.appendChild(style);
-    }
+
+        .product-buttons button:active {
+            transform: scale(0.95);
+        }
+    `;
+    document.head.appendChild(style);
+}
   productPageManager.updateProducts(this.state.products);
     if (!window.ratingManagerInitialized) {
       ratingManager.initialize();
