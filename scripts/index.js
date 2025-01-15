@@ -143,29 +143,73 @@ const cartManager = {
     }
   },
 
-  async addItem(productId) {
+  // async addItem(productId) {
+  //   if (!currentUser) {
+  //   await ensureGuestSession();
+  // }try {
+  //     const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
+  //       method: 'POST',
+  //       credentials: 'include',
+  //       headers: {
+  //         ...fetchConfig.headers,
+  //         'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
+  //       },
+  //       body: JSON.stringify({ productId, quantity: 1 })
+  //     });
+
+  //     if (!response.ok) throw new Error('Failed to add to cart');
+  //     await this.updateDisplay();
+  //     showNotification('Added to cart!', 'success');
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //     showNotification('Out of stock!', 'error');
+  //   }
+  // },
+async addItem(productId) {
+  try {
+    // First ensure guest session
     if (!currentUser) {
-    await ensureGuestSession();
-  }try {
-      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
+      const guestLoginResponse = await fetch('https://backend-3mvr.onrender.com/api/guest-login', {
         method: 'POST',
         credentials: 'include',
         headers: {
-          ...fetchConfig.headers,
-          'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ productId, quantity: 1 })
+        body: JSON.stringify({
+          email: 'guest@example.com',
+          password: 'not_accessible'
+        })
+        
       });
-
-      if (!response.ok) throw new Error('Failed to add to cart');
-      await this.updateDisplay();
-      showNotification('Added to cart!', 'success');
-    } catch (error) {
-      console.error('Error:', error);
-      showNotification('Out of stock!', 'error');
+      
+      if (!guestLoginResponse.ok) {
+        throw new Error('Guest login failed');
+      }
     }
-  },
 
+    // Then try to add to cart
+    const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Guest-User': !currentUser ? '999999' : undefined
+      },
+      body: JSON.stringify({ productId, quantity: 1 })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to add to cart');
+    }
+
+    await this.updateDisplay();
+    showNotification('Added to cart!', 'success');
+  } catch (error) {
+    console.error('Error:', error);
+    showNotification(error.message || 'Out of stock!', 'error');
+  }
+},
   async removeItem(productId) {
     if (!currentUser) {
     await ensureGuestSession();
@@ -862,7 +906,7 @@ const paymentManager = {
         },
         credentials: 'include',
         body: JSON.stringify({
-          username: 'guest_user',
+          email: 'guest@example.com',
           password: 'not_accessible'
         })
       });
