@@ -2138,6 +2138,61 @@ const socialSharingManager = {
     });
   }
 };
+// const categoryManager = {
+//   state: {
+//     categories: [],
+//     selectedCategory: null,
+//     products: [],
+//     searchTerm: ''
+//   },
+//   async searchProducts(searchTerm) {
+//     this.state.searchTerm = searchTerm.toLowerCase();
+    
+//     try {
+//       // If search is cleared (empty), fetch all products or category products
+//       if (!searchTerm.trim()) {
+//         if (this.state.selectedCategory) {
+//           await this.fetchProducts(this.state.selectedCategory);
+//         } else {
+//           await this.fetchProducts();
+//         }
+//         return;
+//       }
+
+//       let filteredProducts;
+      
+//       if (this.state.selectedCategory) {
+//         // If a category is selected, search within that category
+//         const response = await fetch(`https://backend-3mvr.onrender.com/api/products/category/${this.state.selectedCategory}`);
+//         if (!response.ok) throw new Error("Failed to fetch category products");
+//         filteredProducts = await response.json();
+//       } else {
+//         // If no category is selected, search all products
+//         const response = await fetch('https://backend-3mvr.onrender.com/api/products');
+//         if (!response.ok) throw new Error("Failed to fetch products");
+//         filteredProducts = await response.json();
+//       }
+
+//       // Filter products based on search term
+//       filteredProducts = filteredProducts.filter(product => 
+//         product.name.toLowerCase().includes(this.state.searchTerm) ||
+//         //product.description?.toLowerCase().includes(this.state.searchTerm) ||
+//         product.price.toString().includes(this.state.searchTerm)
+//       );
+
+//       // Update the products display with filtered results
+//       this.state.products = filteredProducts;
+//       await this.renderProducts();
+      
+//       // Show a message if no results found
+//       if (filteredProducts.length === 0) {
+//         showNotification('No products found matching your search', 'info');
+//       }
+//     } catch (error) {
+//       console.error("Error searching products:", error);
+//       showNotification(error.message, "error");
+//     }
+//   },
 const categoryManager = {
   state: {
     categories: [],
@@ -2145,10 +2200,21 @@ const categoryManager = {
     products: [],
     searchTerm: ''
   },
+
   async searchProducts(searchTerm) {
     this.state.searchTerm = searchTerm.toLowerCase();
     
     try {
+      // Store search term in localStorage if not empty
+      if (searchTerm.trim()) {
+        const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+        if (!searches.includes(searchTerm)) {
+          searches.unshift(searchTerm); // Add to beginning of array
+          if (searches.length > 5) searches.pop(); // Keep only last 5 searches
+          localStorage.setItem('searchHistory', JSON.stringify(searches));
+        }
+      }
+
       // If search is cleared (empty), fetch all products or category products
       if (!searchTerm.trim()) {
         if (this.state.selectedCategory) {
@@ -2176,7 +2242,6 @@ const categoryManager = {
       // Filter products based on search term
       filteredProducts = filteredProducts.filter(product => 
         product.name.toLowerCase().includes(this.state.searchTerm) ||
-        //product.description?.toLowerCase().includes(this.state.searchTerm) ||
         product.price.toString().includes(this.state.searchTerm)
       );
 
@@ -2191,6 +2256,145 @@ const categoryManager = {
     } catch (error) {
       console.error("Error searching products:", error);
       showNotification(error.message, "error");
+    }
+  },
+
+  setupSearch() {
+    const searchInput = document.getElementById('product-search');
+    if (!searchInput) return;
+
+    // Create search history dropdown
+    const searchHistoryDropdown = document.createElement('div');
+    searchHistoryDropdown.className = 'search-history-dropdown';
+    searchInput.parentNode.appendChild(searchHistoryDropdown);
+
+    let debounceTimeout;
+
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(debounceTimeout);
+      debounceTimeout = setTimeout(() => {
+        this.searchProducts(e.target.value);
+      }, 300);
+    });
+
+    searchInput.addEventListener('focus', () => {
+      const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+      if (searches.length > 0) {
+        searchHistoryDropdown.innerHTML = searches
+          .map(term => `
+            <div class="search-history-item">
+              <i class="fas fa-history"></i>
+              <span>${term}</span>
+              <button class="remove-search">×</button>
+            </div>
+          `)
+          .join('');
+        searchHistoryDropdown.style.display = 'block';
+
+        // Add event listeners to search history items
+        searchHistoryDropdown.querySelectorAll('.search-history-item').forEach((item, index) => {
+          const term = searches[index];
+          item.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('remove-search')) {
+              searchInput.value = term;
+              this.searchProducts(term);
+              searchHistoryDropdown.style.display = 'none';
+            }
+          });
+
+          item.querySelector('.remove-search').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const filtered = searches.filter(t => t !== term);
+            localStorage.setItem('searchHistory', JSON.stringify(filtered));
+            if (filtered.length === 0) {
+              searchHistoryDropdown.style.display = 'none';
+            } else {
+              this.setupSearch(); // Refresh the dropdown
+            }
+          });
+        });
+      }
+    });
+
+    // Add clear search functionality
+    const clearSearch = document.createElement('button');
+    clearSearch.innerHTML = '×';
+    clearSearch.className = 'clear-search';
+    clearSearch.onclick = () => {
+      searchInput.value = '';
+      this.searchProducts('');
+    };
+    searchInput.parentNode.appendChild(clearSearch);
+
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!searchInput.contains(e.target) && !searchHistoryDropdown.contains(e.target)) {
+        searchHistoryDropdown.style.display = 'none';
+      }
+    });
+
+    // Add styles if not already added
+    if (!document.querySelector('#search-history-styles')) {
+      const style = document.createElement('style');
+      style.id = 'search-history-styles';
+      style.textContent = `
+        .search-history-dropdown {
+          display: none;
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background: white;
+          border: 1px solid #ddd;
+          border-top: none;
+          border-radius: 0 0 4px 4px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          z-index: 1000;
+        }
+
+        .search-history-item {
+          padding: 8px 12px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+        }
+
+        .search-history-item:hover {
+          background: #f5f5f5;
+        }
+
+        .search-history-item button {
+          margin-left: auto;
+          border: none;
+          background: none;
+          color: #999;
+          cursor: pointer;
+          padding: 4px 8px;
+        }
+
+        .search-history-item button:hover {
+          color: #666;
+        }
+
+        .clear-search {
+          position: absolute;
+          right: 10px;
+          top: 50%;
+          transform: translateY(-50%);
+          border: none;
+          background: none;
+          color: #999;
+          cursor: pointer;
+          padding: 4px 8px;
+          display: none;
+        }
+
+        #product-search:not(:placeholder-shown) + .clear-search {
+          display: block;
+        }
+      `;
+      document.head.appendChild(style);
     }
   },
   async fetchCategories() {
