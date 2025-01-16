@@ -2150,9 +2150,29 @@ const socialSharingManager = {
 const i18nManager = {
   state: {
     currentLanguage: 'en', // Default language
-    translations: {},
-    supportedLanguages: ['en', 'srb', 'de'], // Add your supported languages here
+    translations: { en: {
+    buttons: {
+      addToCart: "Add to Cart",
+      login: "Login",
+      register: "Register"
+    },
+    labels: {
+      price: "Price",
+      stock: "Stock"
+    }
   },
+  srb: {
+    buttons: {
+      addToCart: "Додај у корпу",
+      login: "Пријава",
+      register: "Регистрација"
+    },
+    labels: {
+      price: "Цена",
+      stock: "Стање"
+    }
+  }},
+    supportedLanguages: ['en', 'srb', 'de'], 
 
   async initialize() {
     try {
@@ -2294,7 +2314,7 @@ const i18nManager = {
     const langKey = this.state.currentLanguage === 'en' ? 'name' : `name_${this.state.currentLanguage}`;
     return product[langKey] || product.name; // Fallback to default name if translation doesn't exist
   }
-};
+  }};
 const categoryManager = {
   state: {
     categories: [],
@@ -2621,7 +2641,153 @@ async fetchProducts(categoryId = null) {
     this.highlightSelectedCategory();
   },
 
-  async renderProducts() {
+//   async renderProducts() {
+//     const gridContainer = document.querySelector(".grid-container");
+//     if (!gridContainer) return;
+    
+//     ratingManager.setProductData(this.state.products);
+//     gridContainer.innerHTML = "";
+
+//     this.state.products.forEach((product) => {
+//       const gridItem = document.createElement("div");
+//       gridItem.classList.add("grid-item", "grid-item-xl");
+//       gridItem.setAttribute("data-product-id", product.product_id);
+
+//       let imageSlider = '<div class="image-slider">';
+//       if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+//         product.images.forEach((img, index) => {
+//           imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
+//         });
+//       } else if (product.image_url) {
+//         imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
+//       } else {
+//         imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
+//       }
+//       imageSlider += '</div>';
+
+//      const ratingHTML = ratingManager.createProductRating(
+//       product.product_id,
+//       product.average_rating || 0,
+//       product.total_ratings || 0
+//     );
+
+//       // Create product content container
+//       const productContent = document.createElement("div");
+//       productContent.className = "product-content";
+//       productContent.innerHTML = `
+//         ${imageSlider}
+//         <div class="overlay">
+//           ${product.name} | <span class="price-span" data-usd-price="${product.price}">
+//             ${cryptoManager.formatCryptoPrice(product.price)}
+//           </span>
+//           | Stock: ${product.stock}
+//         </div>
+//       `;
+
+//       // Add click handler to product content for opening product page
+//       productContent.addEventListener("click", () => {
+//         productPageManager.openProductPage(product);
+//       });
+      
+//       gridItem.appendChild(productContent);
+      
+//       // Create buttons container
+//       const buttonsContainer = document.createElement("div");
+//       buttonsContainer.className = "product-buttons";
+
+//       // Add to cart button
+//       const addToCartButton = document.createElement("button");
+//       addToCartButton.textContent = "💰";
+//       addToCartButton.className = "add-to-cart-btn";
+//       addToCartButton.addEventListener("click", (e) => {
+//         e.stopPropagation(); // Prevent event from bubbling up
+//         cartManager.addItem(product.product_id);
+//       });
+
+//       // Share button
+//       const shareButton = document.createElement("button");
+//       shareButton.textContent = "🚀";
+//       shareButton.className = "share-btn";
+//       shareButton.addEventListener("click", (e) => {
+//         e.preventDefault(); // Prevent default behavior
+//         e.stopPropagation(); // Stop event from bubbling up
+//         socialSharingManager.showShareOptions(product);
+//       });
+
+//       // Rate button
+//       const rateButton = document.createElement("button");
+//       rateButton.textContent = "⭐";
+//       rateButton.className = "rate-btn";
+//       rateButton.addEventListener("click", (e) => {
+//         e.preventDefault(); // Prevent default behavior
+//         e.stopPropagation(); // Stop event from bubbling up
+//         ratingManager.openRatingModal(product.product_id.toString(), e);
+//       });
+
+//       // Add buttons to container
+//       buttonsContainer.appendChild(addToCartButton);
+//       buttonsContainer.appendChild(shareButton);
+//       buttonsContainer.appendChild(rateButton);
+      
+//       // Add buttons container to grid item
+//       gridItem.appendChild(buttonsContainer);
+//       gridContainer.appendChild(gridItem);
+//     });
+
+//    if (!document.querySelector('#product-buttons-styles')) {
+//     const style = document.createElement('style');
+//     style.id = 'product-buttons-styles';
+//     style.textContent = `
+//         .product-buttons {
+//             position: absolute;
+//             top: 10px;
+//             right: 10px;
+//             display: flex;
+//             flex-direction: column;
+//             gap: 8px;
+//             z-index: 10;
+//         }
+
+//         .product-buttons button {
+//             width: 32px;
+//             height: 32px;
+//             border-radius: 50%;
+//             cursor: pointer;
+//             background: rgba(255, 255, 255, 0.95);
+//             border: 1px solid #ddd;
+//             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+//             transition: all 0.2s ease;
+//             display: flex;
+//             align-items: center;
+//             justify-content: center;
+//             padding: 0;
+//         }
+
+//         .product-buttons button:hover {
+//             transform: scale(1.1);
+//             background: white;
+//             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+//         }
+
+//         .product-buttons button:active {
+//             transform: scale(0.95);
+//         }
+//     `;
+//     document.head.appendChild(style);
+// }
+//   productPageManager.updateProducts(this.state.products);
+//     if (!window.ratingManagerInitialized) {
+//       ratingManager.initialize();
+//       window.ratingManagerInitialized = true;
+//     }
+// if (!window.ratingManagerInitialized) {
+//     ratingManager.initialize();
+//     window.ratingManagerInitialized = true;
+//   }
+//     await ratingManager.fetchUserRatings();
+//     this.initializeImageSliders();
+// },
+async renderProducts() {
     const gridContainer = document.querySelector(".grid-container");
     if (!gridContainer) return;
     
@@ -2633,6 +2799,7 @@ async fetchProducts(categoryId = null) {
       gridItem.classList.add("grid-item", "grid-item-xl");
       gridItem.setAttribute("data-product-id", product.product_id);
 
+      // Image slider code remains the same
       let imageSlider = '<div class="image-slider">';
       if (product.images && Array.isArray(product.images) && product.images.length > 0) {
         product.images.forEach((img, index) => {
@@ -2645,26 +2812,30 @@ async fetchProducts(categoryId = null) {
       }
       imageSlider += '</div>';
 
-     const ratingHTML = ratingManager.createProductRating(
-      product.product_id,
-      product.average_rating || 0,
-      product.total_ratings || 0
-    );
+      const ratingHTML = ratingManager.createProductRating(
+        product.product_id,
+        product.average_rating || 0,
+        product.total_ratings || 0
+      );
 
-      // Create product content container
+      // Get product name in current language
+      const productName = i18n.currentLang === 'en' ? product.name : 
+                         product[`name_${i18n.currentLang}`] || product.name;
+
+      // Create product content container with translations
       const productContent = document.createElement("div");
       productContent.className = "product-content";
       productContent.innerHTML = `
         ${imageSlider}
         <div class="overlay">
-          ${product.name} | <span class="price-span" data-usd-price="${product.price}">
+          ${productName} | <span class="price-span" data-usd-price="${product.price}">
             ${cryptoManager.formatCryptoPrice(product.price)}
           </span>
-          | Stock: ${product.stock}
+          | ${i18n.translate('labels.stock')}: ${product.stock}
         </div>
       `;
 
-      // Add click handler to product content for opening product page
+      // Product click handler remains the same
       productContent.addEventListener("click", () => {
         productPageManager.openProductPage(product);
       });
@@ -2675,32 +2846,30 @@ async fetchProducts(categoryId = null) {
       const buttonsContainer = document.createElement("div");
       buttonsContainer.className = "product-buttons";
 
-      // Add to cart button
+      // Create buttons with translations
       const addToCartButton = document.createElement("button");
-      addToCartButton.textContent = "💰";
+      addToCartButton.textContent = i18n.translate('buttons.addToCart');
       addToCartButton.className = "add-to-cart-btn";
       addToCartButton.addEventListener("click", (e) => {
-        e.stopPropagation(); // Prevent event from bubbling up
+        e.stopPropagation();
         cartManager.addItem(product.product_id);
       });
 
-      // Share button
       const shareButton = document.createElement("button");
-      shareButton.textContent = "🚀";
+      shareButton.textContent = i18n.translate('buttons.share');
       shareButton.className = "share-btn";
       shareButton.addEventListener("click", (e) => {
-        e.preventDefault(); // Prevent default behavior
-        e.stopPropagation(); // Stop event from bubbling up
+        e.preventDefault();
+        e.stopPropagation();
         socialSharingManager.showShareOptions(product);
       });
 
-      // Rate button
       const rateButton = document.createElement("button");
-      rateButton.textContent = "⭐";
+      rateButton.textContent = i18n.translate('buttons.rate');
       rateButton.className = "rate-btn";
       rateButton.addEventListener("click", (e) => {
-        e.preventDefault(); // Prevent default behavior
-        e.stopPropagation(); // Stop event from bubbling up
+        e.preventDefault();
+        e.stopPropagation();
         ratingManager.openRatingModal(product.product_id.toString(), e);
       });
 
@@ -2709,65 +2878,24 @@ async fetchProducts(categoryId = null) {
       buttonsContainer.appendChild(shareButton);
       buttonsContainer.appendChild(rateButton);
       
-      // Add buttons container to grid item
       gridItem.appendChild(buttonsContainer);
       gridContainer.appendChild(gridItem);
     });
 
-   if (!document.querySelector('#product-buttons-styles')) {
-    const style = document.createElement('style');
-    style.id = 'product-buttons-styles';
-    style.textContent = `
-        .product-buttons {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            z-index: 10;
-        }
-
-        .product-buttons button {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            cursor: pointer;
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid #ddd;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
-        }
-
-        .product-buttons button:hover {
-            transform: scale(1.1);
-            background: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        .product-buttons button:active {
-            transform: scale(0.95);
-        }
-    `;
-    document.head.appendChild(style);
-}
-  productPageManager.updateProducts(this.state.products);
+    // Rest of the code remains the same
+    if (!document.querySelector('#product-buttons-styles')) {
+      // ... styles remain the same
+    }
+    
+    productPageManager.updateProducts(this.state.products);
     if (!window.ratingManagerInitialized) {
       ratingManager.initialize();
       window.ratingManagerInitialized = true;
     }
-if (!window.ratingManagerInitialized) {
-    ratingManager.initialize();
-    window.ratingManagerInitialized = true;
-  }
     await ratingManager.fetchUserRatings();
     this.initializeImageSliders();
-},
-    async initialize() {
+},   
+async initialize() {
     await this.fetchCategories();
     await this.setupSearch();
   },
@@ -2810,6 +2938,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl'),
       recommendationManager.initialize(),
       productPageManager.initialize(),
+      i18nManager.initialize(),
      
     ]).then(results => {
       // Log any failures during initialization
