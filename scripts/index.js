@@ -2534,7 +2534,7 @@ if (!window.ratingManagerInitialized) {
 //       }
 //     }
 // 
-setupSearch() {
+async setupSearch() {
     const searchInput = document.getElementById('product-search');
     if (!searchInput) return;
 
