@@ -2259,7 +2259,10 @@ const categoryManager = {
     }
   },
 async setupSearch() {
-     // Remove any existing dropdowns first
+    const searchInput = document.getElementById('product-search');
+    if (!searchInput) return;
+
+    // Remove any existing dropdowns first
     const existingDropdown = document.querySelector('.search-history-dropdown');
     if (existingDropdown) {
       existingDropdown.remove();
@@ -2268,7 +2271,7 @@ async setupSearch() {
     // Create search history dropdown
     const searchHistoryDropdown = document.createElement('div');
     searchHistoryDropdown.className = 'search-history-dropdown';
-    searchHistoryDropdown.id = 'search-history-dropdown'; // Add unique ID
+    searchHistoryDropdown.id = 'search-history-dropdown';
     searchInput.parentNode.appendChild(searchHistoryDropdown);
 
     let debounceTimeout;
@@ -2330,8 +2333,7 @@ async setupSearch() {
       searchHistoryDropdown.style.display = 'block';
     };
 
-
-  searchInput.addEventListener('input', (e) => {
+    searchInput.addEventListener('input', (e) => {
       clearTimeout(debounceTimeout);
       debounceTimeout = setTimeout(() => {
         this.searchProducts(e.target.value);
@@ -2443,7 +2445,7 @@ async setupSearch() {
       `;
       document.head.appendChild(style);
     }
-  },
+},
   
   async fetchCategories() {
     try {
