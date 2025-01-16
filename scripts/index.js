@@ -2316,15 +2316,24 @@ const categoryManager = {
       }
     });
 
+    // // Add clear search functionality
+    // const clearSearch = document.createElement('button');
+    // clearSearch.innerHTML = '×';
+    // clearSearch.className = 'clear-search';
+    // clearSearch.onclick = () => {
+    //   searchInput.value = '';
+    //   this.searchProducts('');
+    // };
     // Add clear search functionality
-    const clearSearch = document.createElement('button');
-    clearSearch.innerHTML = '×';
-    clearSearch.className = 'clear-search';
-    clearSearch.onclick = () => {
-      searchInput.value = '';
-      this.searchProducts('');
-    };
-    searchInput.parentNode.appendChild(clearSearch);
+        const clearSearch = document.createElement('button');
+        clearSearch.innerHTML = '×';
+        clearSearch.className = 'clear-search';
+        clearSearch.onclick = () => {
+          searchInput.value = '';
+          this.searchProducts(''); 
+        };
+        searchInput.parentNode.appendChild(clearSearch);
+      
 
     // Hide dropdown when clicking outside
     document.addEventListener('click', (e) => {
