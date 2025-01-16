@@ -2647,29 +2647,30 @@ if (!window.ratingManagerInitialized) {
         if (activeButton) activeButton.classList.add("active");
     }
 },
-    setupSearch() {
-      const searchInput = document.getElementById('product-search');
-      let debounceTimeout;
+//     setupSearch() {
+//       const searchInput = document.getElementById('product-search');
+//       let debounceTimeout;
   
-      if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-          clearTimeout(debounceTimeout);
-          debounceTimeout = setTimeout(() => {
-            this.searchProducts(e.target.value);
-          }, 300);
-        });
+//       if (searchInput) {
+//         searchInput.addEventListener('input', (e) => {
+//           clearTimeout(debounceTimeout);
+//           debounceTimeout = setTimeout(() => {
+//             this.searchProducts(e.target.value);
+//           }, 300);
+//         });
   
-        // Add clear search functionality
-        const clearSearch = document.createElement('button');
-        clearSearch.innerHTML = '×';
-        clearSearch.className = 'clear-search';
-        clearSearch.onclick = () => {
-          searchInput.value = '';
-          this.searchProducts(''); 
-        };
-        searchInput.parentNode.appendChild(clearSearch);
-      }
-    }
+//         // Add clear search functionality
+//         const clearSearch = document.createElement('button');
+//         clearSearch.innerHTML = '×';
+//         clearSearch.className = 'clear-search';
+//         clearSearch.onclick = () => {
+//           searchInput.value = '';
+//           this.searchProducts(''); 
+//         };
+//         searchInput.parentNode.appendChild(clearSearch);
+//       }
+//     }
+// 
 };
 
 // Initialize everything when the page loads
