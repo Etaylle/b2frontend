@@ -2206,13 +2206,6 @@ const categoryManager = {
   //   res.status(500).json({ message: error.message });
   // }
   // },
-  const categoryManager = {
-  state: {
-    categories: [],
-    selectedCategory: null,
-    products: [],
-    searchTerm: ''
-  },
 
   async searchProducts(searchTerm) {
     this.state.searchTerm = searchTerm.toLowerCase();
