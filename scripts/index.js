@@ -2653,22 +2653,7 @@ async setupSearch() {
           color: #666;
         }
 
-        .clear-search {
-          position: absolute;
-          right: 10px;
-          top: 50%;
-          transform: translateY(-50%);
-          border: none;
-          background: none;
-          color: #999;
-          cursor: pointer;
-          padding: 4px 8px;
-          display: none;
-        }
 
-        #product-search:not(:placeholder-shown) + .clear-search {
-          display: block;
-        }
       `;
       document.head.appendChild(style);
     }
@@ -2685,7 +2670,22 @@ async setupSearch() {
 //       paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl'),
 //       recommendationManager.initialize(),
       
-      
+         // .clear-search {
+        //   position: absolute;
+        //   right: 10px;
+        //   top: 50%;
+        //   transform: translateY(-50%);
+        //   border: none;
+        //   background: none;
+        //   color: #999;
+        //   cursor: pointer;
+        //   padding: 4px 8px;
+        //   display: none;
+        // }
+
+        // #product-search:not(:placeholder-shown) + .clear-search {
+        //   display: block;
+        // }     
       
 //     ]);
 //     productPageManager.initialize();
