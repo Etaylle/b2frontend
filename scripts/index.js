@@ -2268,58 +2268,68 @@ async setupSearch() {
     searchInput.parentNode.appendChild(searchHistoryDropdown);
 
     let debounceTimeout;
+    let isUpdating = false; // Flag to prevent concurrent updates
 
     // Function to update dropdown content
     const updateDropdownContent = () => {
-      const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-      searchHistoryDropdown.style.display = searches.length > 0 ? 'block' : 'none';
-      
-      if (searches.length > 0) {
-        searchHistoryDropdown.innerHTML = searches
-          .map(term => `
-            <div class="search-history-item">
-              <i class="fas fa-history"></i>
-              <span>${term}</span>
-              <button class="remove-search" aria-label="Remove search term">×</button>
-            </div>
-          `)
-          .join('');
-        
-        // Add event listeners to new items
-        searchHistoryDropdown.querySelectorAll('.search-history-item').forEach((item, index) => {
-          const term = searches[index];
-          item.addEventListener('click', (e) => {
-            if (!e.target.classList.contains('remove-search')) {
-              searchInput.value = term;
-              this.searchProducts(term);
-              searchHistoryDropdown.style.display = 'none';
-              
-              // Update clear button visibility
-              const clearButton = searchInput.parentNode.querySelector('.clear-input');
-              if (clearButton) {
-                clearButton.style.display = 'block';
-              }
-            }
-          });
+      if (isUpdating) return; // Prevent concurrent updates
+      isUpdating = true;
 
-          item.querySelector('.remove-search').addEventListener('click', async (e) => {
-            e.stopPropagation();
-            const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-            const filtered = searches.filter(t => t !== term);
-            localStorage.setItem('searchHistory', JSON.stringify(filtered));
-            
-            // Hide dropdown before updating content
+      const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+      
+      // If no searches, hide dropdown and reset
+      if (searches.length === 0) {
+        searchHistoryDropdown.style.display = 'none';
+        searchHistoryDropdown.innerHTML = '';
+        isUpdating = false;
+        return;
+      }
+
+      searchHistoryDropdown.innerHTML = searches
+        .map(term => `
+          <div class="search-history-item">
+            <i class="fas fa-history"></i>
+            <span>${term}</span>
+            <button class="remove-search" aria-label="Remove search term">×</button>
+          </div>
+        `)
+        .join('');
+      
+      // Add event listeners to new items
+      searchHistoryDropdown.querySelectorAll('.search-history-item').forEach((item, index) => {
+        const term = searches[index];
+        item.addEventListener('click', (e) => {
+          if (!e.target.classList.contains('remove-search')) {
+            searchInput.value = term;
+            this.searchProducts(term);
             searchHistoryDropdown.style.display = 'none';
             
-            // Use setTimeout to ensure proper rendering
-            setTimeout(() => {
-              if (filtered.length > 0) {
-                updateDropdownContent();
-              }
-            }, 50);
-          });
+            // Update clear button visibility
+            const clearButton = searchInput.parentNode.querySelector('.clear-input');
+            if (clearButton) {
+              clearButton.style.display = 'block';
+            }
+          }
         });
-      }
+
+        item.querySelector('.remove-search').addEventListener('click', (e) => {
+          e.stopPropagation();
+          // Immediately remove the item from DOM
+          item.remove();
+          
+          // Update localStorage
+          const currentSearches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+          const filtered = currentSearches.filter(t => t !== term);
+          localStorage.setItem('searchHistory', JSON.stringify(filtered));
+          
+          // If no items left, hide dropdown
+          if (filtered.length === 0) {
+            searchHistoryDropdown.style.display = 'none';
+          }
+        });
+      });
+      
+      isUpdating = false;
     };
 
     searchInput.addEventListener('input', (e) => {
@@ -2328,7 +2338,6 @@ async setupSearch() {
         this.searchProducts(e.target.value);
       }, 300);
 
-      // Show/hide clear button based on input value
       const clearButton = searchInput.parentNode.querySelector('.clear-input');
       if (clearButton) {
         clearButton.style.display = e.target.value ? 'block' : 'none';
@@ -2338,6 +2347,7 @@ async setupSearch() {
     searchInput.addEventListener('focus', () => {
       const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
       if (searches.length > 0) {
+        searchHistoryDropdown.style.display = 'block';
         updateDropdownContent();
       }
     });
@@ -2351,7 +2361,7 @@ async setupSearch() {
       searchInput.value = '';
       this.searchProducts('');
       clearButton.style.display = 'none';
-      searchHistoryDropdown.style.display = 'none';  // Hide dropdown when clearing
+      searchHistoryDropdown.style.display = 'none';
     };
     searchInput.parentNode.appendChild(clearButton);
 
