@@ -2138,6 +2138,61 @@ const socialSharingManager = {
     });
   }
 };
+// const categoryManager = {
+//   state: {
+//     categories: [],
+//     selectedCategory: null,
+//     products: [],
+//     searchTerm: ''
+//   },
+//   async searchProducts(searchTerm) {
+//     this.state.searchTerm = searchTerm.toLowerCase();
+    
+//     try {
+//       // If search is cleared (empty), fetch all products or category products
+//       if (!searchTerm.trim()) {
+//         if (this.state.selectedCategory) {
+//           await this.fetchProducts(this.state.selectedCategory);
+//         } else {
+//           await this.fetchProducts();
+//         }
+//         return;
+//       }
+
+//       let filteredProducts;
+      
+//       if (this.state.selectedCategory) {
+//         // If a category is selected, search within that category
+//         const response = await fetch(`https://backend-3mvr.onrender.com/api/products/category/${this.state.selectedCategory}`);
+//         if (!response.ok) throw new Error("Failed to fetch category products");
+//         filteredProducts = await response.json();
+//       } else {
+//         // If no category is selected, search all products
+//         const response = await fetch('https://backend-3mvr.onrender.com/api/products');
+//         if (!response.ok) throw new Error("Failed to fetch products");
+//         filteredProducts = await response.json();
+//       }
+
+//       // Filter products based on search term
+//       filteredProducts = filteredProducts.filter(product => 
+//         product.name.toLowerCase().includes(this.state.searchTerm) ||
+//         //product.description?.toLowerCase().includes(this.state.searchTerm) ||
+//         product.price.toString().includes(this.state.searchTerm)
+//       );
+
+//       // Update the products display with filtered results
+//       this.state.products = filteredProducts;
+//       await this.renderProducts();
+      
+//       // Show a message if no results found
+//       if (filteredProducts.length === 0) {
+//         showNotification('No products found matching your search', 'info');
+//       }
+//     } catch (error) {
+//       console.error("Error searching products:", error);
+//       showNotification(error.message, "error");
+//     }
+//   },
 const categoryManager = {
   state: {
     categories: [],
@@ -2145,67 +2200,6 @@ const categoryManager = {
     products: [],
     searchTerm: ''
   },
-  // async searchProducts(searchTerm) {
-  //   this.state.searchTerm = searchTerm.toLowerCase();
-  //   const { name } = req.query;
-  
-  // try {
-  //   // Store search term in localStorage
-  //   if (name) {
-  //     const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-  //     if (!searches.includes(name)) {
-  //       searches.unshift(name); // Add to beginning of array
-  //       if (searches.length > 5) searches.pop(); // Keep only last 5 searches
-  //       localStorage.setItem('searchHistory', JSON.stringify(searches));
-  //     }
-  //   }
-  //   try {
-  //     // If search is cleared (empty), fetch all products or category products
-  //     if (!searchTerm.trim()) {
-  //       if (this.state.selectedCategory) {
-  //         await this.fetchProducts(this.state.selectedCategory);
-  //       } else {
-  //         await this.fetchProducts();
-  //       }
-  //       return;
-  //     }
-
-  //     let filteredProducts;
-      
-  //     if (this.state.selectedCategory) {
-  //       // If a category is selected, search within that category
-  //       const response = await fetch(`https://backend-3mvr.onrender.com/api/products/category/${this.state.selectedCategory}`);
-  //       if (!response.ok) throw new Error("Failed to fetch category products");
-  //       filteredProducts = await response.json();
-  //     } else {
-  //       // If no category is selected, search all products
-  //       const response = await fetch('https://backend-3mvr.onrender.com/api/products');
-  //       if (!response.ok) throw new Error("Failed to fetch products");
-  //       filteredProducts = await response.json();
-  //     }
-
-  //     // Filter products based on search term
-  //     filteredProducts = filteredProducts.filter(product => 
-  //       product.name.toLowerCase().includes(this.state.searchTerm) ||
-  //       //product.description?.toLowerCase().includes(this.state.searchTerm) ||
-  //       product.price.toString().includes(this.state.searchTerm)
-  //     );
-
-  //     // Update the products display with filtered results
-  //     this.state.products = filteredProducts;
-  //     await this.renderProducts();
-      
-  //     // Show a message if no results found
-  //     if (filteredProducts.length === 0) {
-  //       showNotification('No products found matching your search', 'info');
-  //     }
-  //   } catch (error) {
-  //     console.error("Error searching products:", error);
-  //     showNotification(error.message, "error");
-  //   }} catch (error) {
-  //   res.status(500).json({ message: error.message });
-  // }
-  // },
 
   async searchProducts(searchTerm) {
     this.state.searchTerm = searchTerm.toLowerCase();
@@ -2413,7 +2407,7 @@ const categoryManager = {
 
       this.state.categories = categories;
       await this.renderCategories();
-      await this.fetchProducts(); 
+      await this.fetchProducts(); // Fetch initial products
     } catch (error) {
       console.error("Error fetching categories:", error);
       showNotification(error.message, "error");
@@ -2676,7 +2670,6 @@ if (!window.ratingManagerInitialized) {
     //     searchInput.parentNode.appendChild(clearSearch);
     //   }
     // }
-    
 };
 
 // Initialize everything when the page loads
