@@ -2258,7 +2258,167 @@ const categoryManager = {
       showNotification(error.message, "error");
     }
   },
+async setupSearch() {
+    const searchInput = document.getElementById('product-search');
+    if (!searchInput) return;
 
+    // Create search history dropdown
+    const searchHistoryDropdown = document.createElement('div');
+    searchHistoryDropdown.className = 'search-history-dropdown';
+    searchInput.parentNode.appendChild(searchHistoryDropdown);
+
+    let debounceTimeout;
+
+    // Function to update dropdown content
+    const updateDropdownContent = () => {
+      const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+      if (searches.length > 0) {
+        searchHistoryDropdown.innerHTML = searches
+          .map(term => `
+            <div class="search-history-item">
+              <i class="fas fa-history"></i>
+              <span>${term}</span>
+              <button class="remove-search" aria-label="Remove search term">×</button>
+            </div>
+          `)
+          .join('');
+        
+        // Add event listeners to new items
+        searchHistoryDropdown.querySelectorAll('.search-history-item').forEach((item, index) => {
+          const term = searches[index];
+          item.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('remove-search')) {
+              searchInput.value = term;
+              this.searchProducts(term);
+              searchHistoryDropdown.style.display = 'none';
+            }
+          });
+
+          item.querySelector('.remove-search').addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+            const filtered = searches.filter(t => t !== term);
+            localStorage.setItem('searchHistory', JSON.stringify(filtered));
+            
+            // Immediately update dropdown content
+            if (filtered.length === 0) {
+              searchHistoryDropdown.style.display = 'none';
+            } else {
+              updateDropdownContent();
+            }
+          });
+        });
+      } else {
+        searchHistoryDropdown.style.display = 'none';
+      }
+    };
+
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(debounceTimeout);
+      debounceTimeout = setTimeout(() => {
+        this.searchProducts(e.target.value);
+      }, 300);
+
+      // Show/hide clear button based on input value
+      const clearButton = searchInput.parentNode.querySelector('.clear-input');
+      if (clearButton) {
+        clearButton.style.display = e.target.value ? 'block' : 'none';
+      }
+    });
+
+    searchInput.addEventListener('focus', () => {
+      updateDropdownContent();
+      searchHistoryDropdown.style.display = 'block';
+    });
+
+    // Add clear input button (renamed from clear-search to clear-input)
+    const clearButton = document.createElement('button');
+    clearButton.innerHTML = '×';
+    clearButton.className = 'clear-input';
+    clearButton.setAttribute('aria-label', 'Clear search input');
+    clearButton.onclick = () => {
+      searchInput.value = '';
+      this.searchProducts('');
+      clearButton.style.display = 'none';
+    };
+    searchInput.parentNode.appendChild(clearButton);
+
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!searchInput.contains(e.target) && !searchHistoryDropdown.contains(e.target)) {
+        searchHistoryDropdown.style.display = 'none';
+      }
+    });
+
+    // Update styles
+    if (!document.querySelector('#search-history-styles')) {
+      const style = document.createElement('style');
+      style.id = 'search-history-styles';
+      style.textContent = `
+        .search-history-dropdown {
+          display: none;
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background: white;
+          border: 1px solid #ddd;
+          border-top: none;
+          border-radius: 0 0 4px 4px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          z-index: 1000;
+        }
+
+        .search-history-item {
+          padding: 8px 12px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+        }
+
+        .search-history-item:hover {
+          background: #f5f5f5;
+        }
+
+        .search-history-item button.remove-search {
+          margin-left: auto;
+          border: none;
+          background: none;
+          color: #999;
+          cursor: pointer;
+          padding: 4px 8px;
+        }
+
+        .search-history-item button.remove-search:hover {
+          color: #666;
+        }
+
+        .clear-input {
+          position: absolute;
+          right: 10px;
+          top: 50%;
+          transform: translateY(-50%);
+          border: none;
+          background: none;
+          color: #999;
+          cursor: pointer;
+          padding: 4px 8px;
+          display: none;
+          z-index: 2;
+        }
+
+        .clear-input:hover {
+          color: #666;
+        }
+
+        .search-container {
+          position: relative;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+},
   
   async fetchCategories() {
     try {
@@ -2534,130 +2694,146 @@ if (!window.ratingManagerInitialized) {
 //       }
 //     }
 // 
-async setupSearch() {
-    const searchInput = document.getElementById('product-search');
-    if (!searchInput) return;
+// async setupSearch() {
+//     const searchInput = document.getElementById('product-search');
+//     if (!searchInput) return;
 
-    // Create search history dropdown
-    const searchHistoryDropdown = document.createElement('div');
-    searchHistoryDropdown.className = 'search-history-dropdown';
-    searchInput.parentNode.appendChild(searchHistoryDropdown);
+//     // Create search history dropdown
+//     const searchHistoryDropdown = document.createElement('div');
+//     searchHistoryDropdown.className = 'search-history-dropdown';
+//     searchInput.parentNode.appendChild(searchHistoryDropdown);
 
-    let debounceTimeout;
+//     let debounceTimeout;
 
-    searchInput.addEventListener('input', (e) => {
-      clearTimeout(debounceTimeout);
-      debounceTimeout = setTimeout(() => {
-        this.searchProducts(e.target.value);
-      }, 300);
-    });
+//     searchInput.addEventListener('input', (e) => {
+//       clearTimeout(debounceTimeout);
+//       debounceTimeout = setTimeout(() => {
+//         this.searchProducts(e.target.value);
+//       }, 300);
+//     });
 
-    searchInput.addEventListener('focus', () => {
-      const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-      if (searches.length > 0) {
-        searchHistoryDropdown.innerHTML = searches
-          .map(term => `
-            <div class="search-history-item">
-              <i class="fas fa-history"></i>
-              <span>${term}</span>
-              <button class="remove-search">×</button>
-            </div>
-          `)
-          .join('');
-        searchHistoryDropdown.style.display = 'block';
+//     searchInput.addEventListener('focus', () => {
+//       const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+//       if (searches.length > 0) {
+//         searchHistoryDropdown.innerHTML = searches
+//           .map(term => `
+//             <div class="search-history-item">
+//               <i class="fas fa-history"></i>
+//               <span>${term}</span>
+//               <button class="remove-search">×</button>
+//             </div>
+//           `)
+//           .join('');
+//         searchHistoryDropdown.style.display = 'block';
 
-        // Add event listeners to search history items
-        searchHistoryDropdown.querySelectorAll('.search-history-item').forEach((item, index) => {
-          const term = searches[index];
-          item.addEventListener('click', (e) => {
-            if (!e.target.classList.contains('remove-search')) {
-              searchInput.value = term;
-              this.searchProducts(term);
-              searchHistoryDropdown.style.display = 'none';
-            }
-          });
+//         // Add event listeners to search history items
+//         searchHistoryDropdown.querySelectorAll('.search-history-item').forEach((item, index) => {
+//           const term = searches[index];
+//           item.addEventListener('click', (e) => {
+//             if (!e.target.classList.contains('remove-search')) {
+//               searchInput.value = term;
+//               this.searchProducts(term);
+//               searchHistoryDropdown.style.display = 'none';
+//             }
+//           });
 
-          item.querySelector('.remove-search').addEventListener('click', (e) => {
-            e.stopPropagation();
-            const filtered = searches.filter(t => t !== term);
-            localStorage.setItem('searchHistory', JSON.stringify(filtered));
-            if (filtered.length === 0) {
-              searchHistoryDropdown.style.display = 'none';
-            } else {
-              this.setupSearch(); // Refresh the dropdown
-            }
-          });
-        });
-      }
-    });
+//           item.querySelector('.remove-search').addEventListener('click', (e) => {
+//             e.stopPropagation();
+//             const filtered = searches.filter(t => t !== term);
+//             localStorage.setItem('searchHistory', JSON.stringify(filtered));
+//             if (filtered.length === 0) {
+//               searchHistoryDropdown.style.display = 'none';
+//             } else {
+//               this.setupSearch(); // Refresh the dropdown
+//             }
+//           });
+//         });
+//       }
+//     });
 
-    // Add clear search functionality
-    const clearSearch = document.createElement('button');
-    clearSearch.innerHTML = '×';
-    clearSearch.className = 'clear-search';
-    clearSearch.onclick = () => {
-      searchInput.value = '';
-      this.searchProducts('');
-    };
+//     // Add clear search functionality
+//     const clearSearch = document.createElement('button');
+//     clearSearch.innerHTML = '×';
+//     clearSearch.className = 'clear-search';
+//     clearSearch.onclick = () => {
+//       searchInput.value = '';
+//       this.searchProducts('');
+//     };
     
-    searchInput.parentNode.appendChild(clearSearch);
+//     searchInput.parentNode.appendChild(clearSearch);
 
-    // Hide dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!searchInput.contains(e.target) && !searchHistoryDropdown.contains(e.target)) {
-        searchHistoryDropdown.style.display = 'none';
-      }
-    });
+//     // Hide dropdown when clicking outside
+//     document.addEventListener('click', (e) => {
+//       if (!searchInput.contains(e.target) && !searchHistoryDropdown.contains(e.target)) {
+//         searchHistoryDropdown.style.display = 'none';
+//       }
+//     });
 
-    // Add styles if not already added
-    if (!document.querySelector('#search-history-styles')) {
-      const style = document.createElement('style');
-      style.id = 'search-history-styles';
-      style.textContent = `
-        .search-history-dropdown {
-          display: none;
-          position: absolute;
-          top: 100%;
-          left: 0;
-          right: 0;
-          background: white;
-          border: 1px solid #ddd;
-          border-top: none;
-          border-radius: 0 0 4px 4px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-          z-index: 1000;
-        }
+//     // Add styles if not already added
+//     if (!document.querySelector('#search-history-styles')) {
+//       const style = document.createElement('style');
+//       style.id = 'search-history-styles';
+//       style.textContent = `
+//         .search-history-dropdown {
+//           display: none;
+//           position: absolute;
+//           top: 100%;
+//           left: 0;
+//           right: 0;
+//           background: white;
+//           border: 1px solid #ddd;
+//           border-top: none;
+//           border-radius: 0 0 4px 4px;
+//           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+//           z-index: 1000;
+//         }
 
-        .search-history-item {
-          padding: 8px 12px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          cursor: pointer;
-        }
+//         .search-history-item {
+//           padding: 8px 12px;
+//           display: flex;
+//           align-items: center;
+//           gap: 8px;
+//           cursor: pointer;
+//         }
 
-        .search-history-item:hover {
-          background: #f5f5f5;
-        }
+//         .search-history-item:hover {
+//           background: #f5f5f5;
+//         }
 
-        .search-history-item button {
-          margin-left: auto;
-          border: none;
-          background: none;
-          color: #999;
-          cursor: pointer;
-          padding: 4px 8px;
-        }
+//         .search-history-item button {
+//           margin-left: auto;
+//           border: none;
+//           background: none;
+//           color: #999;
+//           cursor: pointer;
+//           padding: 4px 8px;
+//         }
 
-        .search-history-item button:hover {
-          color: #666;
-        }
+//         .search-history-item button:hover {
+//           color: #666;
+//         }
 
+//         .clear-search {
+//           position: absolute;
+//           right: 10px;
+//           top: 50%;
+//           transform: translateY(-50%);
+//           border: none;
+//           background: none;
+//           color: #999;
+//           cursor: pointer;
+//           padding: 4px 8px;
+//           display: none;
+//         }
 
-      `;
-      document.head.appendChild(style);
-    }
-  },};
+//         #product-search:not(:placeholder-shown) + .clear-search {
+//           display: block;
+//         }
+//       `;
+//       document.head.appendChild(style);
+//     }
+//   },
+};
 
 // Initialize everything when the page loads
 // document.addEventListener("DOMContentLoaded", async () => {
@@ -2670,22 +2846,7 @@ async setupSearch() {
 //       paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl'),
 //       recommendationManager.initialize(),
       
-         // .clear-search {
-        //   position: absolute;
-        //   right: 10px;
-        //   top: 50%;
-        //   transform: translateY(-50%);
-        //   border: none;
-        //   background: none;
-        //   color: #999;
-        //   cursor: pointer;
-        //   padding: 4px 8px;
-        //   display: none;
-        // }
-
-        // #product-search:not(:placeholder-shown) + .clear-search {
-        //   display: block;
-        // }     
+      
       
 //     ]);
 //     productPageManager.initialize();
