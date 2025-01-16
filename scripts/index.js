@@ -2272,6 +2272,8 @@ async setupSearch() {
     // Function to update dropdown content
     const updateDropdownContent = () => {
       const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+      searchHistoryDropdown.style.display = searches.length > 0 ? 'block' : 'none';
+      
       if (searches.length > 0) {
         searchHistoryDropdown.innerHTML = searches
           .map(term => `
@@ -2291,6 +2293,12 @@ async setupSearch() {
               searchInput.value = term;
               this.searchProducts(term);
               searchHistoryDropdown.style.display = 'none';
+              
+              // Update clear button visibility
+              const clearButton = searchInput.parentNode.querySelector('.clear-input');
+              if (clearButton) {
+                clearButton.style.display = 'block';
+              }
             }
           });
 
@@ -2300,16 +2308,17 @@ async setupSearch() {
             const filtered = searches.filter(t => t !== term);
             localStorage.setItem('searchHistory', JSON.stringify(filtered));
             
-            // Immediately update dropdown content
-            if (filtered.length === 0) {
-              searchHistoryDropdown.style.display = 'none';
-            } else {
-              updateDropdownContent();
-            }
+            // Hide dropdown before updating content
+            searchHistoryDropdown.style.display = 'none';
+            
+            // Use setTimeout to ensure proper rendering
+            setTimeout(() => {
+              if (filtered.length > 0) {
+                updateDropdownContent();
+              }
+            }, 50);
           });
         });
-      } else {
-        searchHistoryDropdown.style.display = 'none';
       }
     };
 
@@ -2327,11 +2336,13 @@ async setupSearch() {
     });
 
     searchInput.addEventListener('focus', () => {
-      updateDropdownContent();
-      searchHistoryDropdown.style.display = 'block';
+      const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+      if (searches.length > 0) {
+        updateDropdownContent();
+      }
     });
 
-    // Add clear input button (renamed from clear-search to clear-input)
+    // Add clear input button
     const clearButton = document.createElement('button');
     clearButton.innerHTML = '×';
     clearButton.className = 'clear-input';
@@ -2340,6 +2351,7 @@ async setupSearch() {
       searchInput.value = '';
       this.searchProducts('');
       clearButton.style.display = 'none';
+      searchHistoryDropdown.style.display = 'none';  // Hide dropdown when clearing
     };
     searchInput.parentNode.appendChild(clearButton);
 
@@ -2418,7 +2430,7 @@ async setupSearch() {
       `;
       document.head.appendChild(style);
     }
-},
+  },
   
   async fetchCategories() {
     try {
