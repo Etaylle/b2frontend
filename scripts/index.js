@@ -50,44 +50,37 @@ async function ensureGuestSession() {
 const languageManager = {
   state: {
     currentLanguage: 'en',
-    supportedLanguages: ['en', 'es', 'srb', 'de']
-  },
-
-  async initialize() {
-    const savedLang = localStorage.getItem('preferredLanguage') || 'en';
-    await this.setLanguage(savedLang);
-  },
-
-  async setLanguage(lang) {
-    if (this.state.supportedLanguages.includes(lang)) {
-      this.state.currentLanguage = lang;
-      localStorage.setItem('preferredLanguage', lang);
-      await this.refreshProducts();
-    }
-  },
-
-  async refreshProducts() {
-    // Modify your existing fetchProducts function to include language
-    const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-    const url = new URL(baseUrl);
-    url.searchParams.append('lang', this.state.currentLanguage);
-    
-    try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Failed to fetch products");
-      const data = await response.json();
-      
-      // Update products in your existing state management
-      if (data.success) {
-        categoryManager.state.products = data.products;
-        await categoryManager.renderProducts();
+    translations: {
+      en: {
+        // Categories
+        'all': 'All',
+        // Product related
+        'stock': 'Stock',
+        // Buttons
+        'addToCart': 'Add to Cart',
+        'share': 'Share',
+        'rate': 'Rate',
+        // Search
+        'clearSearch': 'Clear search input',
+        // Notifications
+        'errorFetchingCategories': 'Failed to fetch categories',
+        'errorFetchingProducts': 'Failed to fetch products',
+        'errorInitializing': 'Error initializing application'
+      },
+      es: {
+        'all': 'Todos',
+        'stock': 'Existencias',
+        'addToCart': 'Añadir al carrito',
+        'share': 'Compartir',
+        'rate': 'Calificar',
+        'clearSearch': 'Limpiar búsqueda',
+        'errorFetchingCategories': 'Error al obtener categorías',
+        'errorFetchingProducts': 'Error al obtener productos',
+        'errorInitializing': 'Error al inicializar la aplicación'
       }
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      showNotification(error.message, "error");
+      // Add more languages as needed
     }
-  }
-,
+  },
 
   initialize() {
     // Try to load language preference from localStorage
@@ -2069,7 +2062,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       productPageManager.initialize(),
       paymentManager.initialize('your-stripe-key'),
       recommendationManager.initialize(),
-      languageManager.initialize(),
     ]);
 
     // Initialize category manager last since it loads products
@@ -2430,11 +2422,8 @@ async fetchProducts(categoryId = null) {
   try {
     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
     const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
-    
-    // Add language parameter
-    url.searchParams.append('lang', languageManager.state.currentLanguage);
-    
     const response = await fetch(url);
+    
     if (!response.ok) throw new Error("Failed to fetch products");
     const data = await response.json();
     
@@ -2464,7 +2453,7 @@ async fetchProducts(categoryId = null) {
     // Create "All" button
     const allButton = document.createElement("button");
     allButton.className = `category-btn ${this.state.selectedCategory === null ? "active" : ""}`;
-    allButton.textContent = languageManager.translate("all");
+    allButton.textContent = "All";
     allButton.onclick = () => this.selectCategory(null);
     container.appendChild(allButton);
 
@@ -2518,24 +2507,16 @@ async fetchProducts(categoryId = null) {
       // Create product content container
       const productContent = document.createElement("div");
       productContent.className = "product-content";
-      // productContent.innerHTML = `
-      //   ${imageSlider}
-      //   <div class="overlay">
-      //     ${product.name} | <span class="price-span" data-usd-price="${product.price}">
-      //       ${cryptoManager.formatCryptoPrice(product.price)}
-      //     </span>
-      //     | Stock: ${product.stock}
-      //   </div>
-      // `;
- productContent.innerHTML = `
-    ${imageSlider}
-    <div class="overlay">
-      ${product.name} | <span class="price-span" data-usd-price="${product.price}">
-        ${cryptoManager.formatCryptoPrice(product.price)}
-      </span>
-      | ${languageManager.translate('stock')}: ${product.stock}
-    </div>
-  `;
+      productContent.innerHTML = `
+        ${imageSlider}
+        <div class="overlay">
+          ${product.name} | <span class="price-span" data-usd-price="${product.price}">
+            ${cryptoManager.formatCryptoPrice(product.price)}
+          </span>
+          | Stock: ${product.stock}
+        </div>
+      `;
+
       // Add click handler to product content for opening product page
       productContent.addEventListener("click", () => {
         productPageManager.openProductPage(product);
@@ -2722,7 +2703,6 @@ window.ratingManager = ratingManager;
 window.recommendationManager = recommendationManager;
 window.socialSharingManager = socialSharingManager;
 window.productPageManager = productPageManager;
-window.languageManager = languageManager;
 async function fetchProducts(categoryId = null) {
   try {
     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
