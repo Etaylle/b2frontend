@@ -13,7 +13,6 @@ let cryptoRates = {
   BTC: 0,
   ETH: 0
 };
-
 const fetchConfig = {
   credentials: 'include',
   headers: {
@@ -47,9 +46,142 @@ async function ensureGuestSession() {
     return false;
   }
 };
-// Frontend modifications
-// Add this to your existing cartManager
+// Language manager implementation
+const languageManager = {
+  state: {
+    currentLanguage: 'en',
+    supportedLanguages: ['en', 'es', 'srb', 'de']
+  },
 
+  async initialize() {
+    const savedLang = localStorage.getItem('preferredLanguage') || 'en';
+    await this.setLanguage(savedLang);
+  },
+
+  async setLanguage(lang) {
+    if (this.state.supportedLanguages.includes(lang)) {
+      this.state.currentLanguage = lang;
+      localStorage.setItem('preferredLanguage', lang);
+      await this.refreshProducts();
+    }
+  },
+
+  async refreshProducts() {
+    // Modify your existing fetchProducts function to include language
+    const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+    const url = new URL(baseUrl);
+    url.searchParams.append('lang', this.state.currentLanguage);
+    
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Failed to fetch products");
+      const data = await response.json();
+      
+      // Update products in your existing state management
+      if (data.success) {
+        categoryManager.state.products = data.products;
+        await categoryManager.renderProducts();
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      showNotification(error.message, "error");
+    }
+  }
+,
+
+  initialize() {
+    // Try to load language preference from localStorage
+    const savedLanguage = localStorage.getItem('preferredLanguage');
+    if (savedLanguage && this.state.translations[savedLanguage]) {
+      this.state.currentLanguage = savedLanguage;
+    } else {
+      // Default to browser language if available
+      const browserLang = navigator.language.split('-')[0];
+      if (this.state.translations[browserLang]) {
+        this.state.currentLanguage = browserLang;
+      }
+    }
+    
+    this.createLanguageSelector();
+    this.updatePageContent();
+  },
+
+  createLanguageSelector() {
+    const header = document.querySelector('header'); // Adjust selector as needed
+    if (!header) return;
+
+    const selector = document.createElement('select');
+    selector.className = 'language-selector';
+    
+    Object.keys(this.state.translations).forEach(lang => {
+      const option = document.createElement('option');
+      option.value = lang;
+      option.textContent = lang.toUpperCase();
+      option.selected = lang === this.state.currentLanguage;
+      selector.appendChild(option);
+    });
+
+    selector.addEventListener('change', (e) => {
+      this.changeLanguage(e.target.value);
+    });
+
+    header.appendChild(selector);
+  },
+
+  changeLanguage(lang) {
+    if (this.state.translations[lang]) {
+      this.state.currentLanguage = lang;
+      localStorage.setItem('preferredLanguage', lang);
+      this.updatePageContent();
+    }
+  },
+
+  translate(key) {
+    return this.state.translations[this.state.currentLanguage]?.[key] || 
+           this.state.translations['en'][key] || 
+           key;
+  },
+
+  updatePageContent() {
+    // Update category buttons
+    document.querySelectorAll('.category-btn').forEach(btn => {
+      if (btn.textContent === 'All') {
+        btn.textContent = this.translate('all');
+      }
+    });
+
+    // Update product overlays
+    document.querySelectorAll('.overlay').forEach(overlay => {
+      const stockText = overlay.textContent.split('Stock:');
+      if (stockText.length > 1) {
+        overlay.innerHTML = overlay.innerHTML.replace(
+          'Stock:', 
+          `${this.translate('stock')}:`
+        );
+      }
+    });
+
+    // Update buttons
+    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+      btn.title = this.translate('addToCart');
+    });
+
+    document.querySelectorAll('.share-btn').forEach(btn => {
+      btn.title = this.translate('share');
+    });
+
+    document.querySelectorAll('.rate-btn').forEach(btn => {
+      btn.title = this.translate('rate');
+    });
+
+    // Update clear search button
+    const clearButton = document.querySelector('.clear-input');
+    if (clearButton) {
+      clearButton.setAttribute('aria-label', this.translate('clearSearch'));
+    }
+  }
+};
+//CartManager
 const CartEnhancements = {
   initializeGuestMode() {
     // Set guest user ID in localStorage for persistence
@@ -260,66 +392,6 @@ async addItem(productId) {
     }
   
   },
-  
-// async fetchCart() {
-//     try {
-//       const response = await fetch('https://backend-3mvr.onrender.com/api/cart',  {
-//         ...fetchConfig,
-        
-//         credentials: 'include'
-//       });
-      
-//       if (!response.ok) {
-//         return { items: [], total: 0 };
-//       }
-//       const data = await response.json();
-//       return data.cart;
-//     } catch (error) {
-//       console.error('Error fetching cart:', error);
-//       return { items: [], total: 0 };
-//     }
-//   },
-
-//   async addItem(productId) {
-//     try {
-//       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
-//         method: 'POST',
-//         credentials: 'include',
-//         headers: fetchConfig.headers,
-//         body: JSON.stringify({ productId, quantity: 1 })
-//       });
-
-//       if (!response.ok) throw new Error('Failed to add to cart');
-//       await this.updateDisplay();
-//       showNotification('Added to cart!', 'success');
-//     } catch (error) {
-//       console.error('Error:', error);
-      
-//       showNotification('Out of stock!', 'error');
-//     }
-//   },
-
-  // async removeItem(productId) {
-  //   if (!productId) {
-  //     console.error('Invalid product ID');
-  //     return;}
-  //   try {
-  //     const response = await fetch('https://backend-3mvr.onrender.com/api/cart/remove', {
-  //       method: 'DELETE',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify({ productId }),
-  //       credentials: 'include',
-  //     });
-
-  //     if (!response.ok) throw new Error('Failed to remove item');
-  //     await this.updateDisplay();
-  //     showNotification('Item removed from cart', 'success');
-  //   } catch (error) {
-  //     console.error('Error:', error);
-  //     showNotification('Failed to remove item', 'error');
-  //   }
-  // },
-
   async updateQuantity(productId, quantity) {
 
     if (!currentUser) {
@@ -378,35 +450,7 @@ async addItem(productId) {
         showNotification(error.message || 'Failed to clear cart', 'error');
       }
     },
-  //   async completePurchase() {
-  //     console.log('OVO JE NASTAVAK');
-  //     try {
-  //       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/complete-purchase', {
-  //         method: 'POST',
-  //         credentials: 'include',
-  //         headers: {
-  //           'Content-Type': 'application/json'
-  //         }
-  //       });
-
-  //       if (!response.ok) {
-  //         const errorData = await response.json();
-  //         throw new Error(errorData.message);
-  //       }
-
-  //       await this.clearCart(true);
-  //       return true;
-  //     } catch (error) {
-  //       console.error('Error completing purchase:', error);
-  //       showNotification(error.message || 'Failed to complete purchase', 'error');
-  //       return false;
-  //     }
-  //   }
-  // ,
-  
-
-
-  async updateDisplay() {
+    async updateDisplay() {
     const cart = await this.fetchCart();
     const cartContainer = document.getElementById('cart-items');
     const cartTotal = document.getElementById('cart-total');
@@ -834,35 +878,7 @@ const AuthModal = {
 document.addEventListener('DOMContentLoaded', () => {
     AuthModal.init();
 });
-// Payment Management
-// const paymentManager = {
-//   stripe: null,
 
-//   initialize(publicKey) {
-//     this.stripe = Stripe(publicKey);
-//   },
-
-//   async initiateCheckout() {
-//     try {
-//       const response = await fetch('https://backend-3mvr.onrender.com/api/create-checkout-session', {
-//         method: 'POST',
-//         credentials: 'include'
-//       });
-//       //await cartManager.clearCart();
-//       showNotification('Order placed successfully!', 'success');
-//       const data = await response.json();
-//       const result = await this.stripe.redirectToCheckout({ sessionId: data.id });
-      
-    
-//       if (result.error) {
-//         showNotification(result.error.message, 'error');
-//       }
-//     } catch (error) {
-//       console.error('Error:', error);
-//       showNotification('Failed to start checkout process', 'error');
-//     }
-//   }
-// };
 const paymentManager = {
   stripe: null,
 
@@ -2053,6 +2069,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       productPageManager.initialize(),
       paymentManager.initialize('your-stripe-key'),
       recommendationManager.initialize(),
+      languageManager.initialize(),
     ]);
 
     // Initialize category manager last since it loads products
@@ -2138,61 +2155,7 @@ const socialSharingManager = {
     });
   }
 };
-// const categoryManager = {
-//   state: {
-//     categories: [],
-//     selectedCategory: null,
-//     products: [],
-//     searchTerm: ''
-//   },
-//   async searchProducts(searchTerm) {
-//     this.state.searchTerm = searchTerm.toLowerCase();
-    
-//     try {
-//       // If search is cleared (empty), fetch all products or category products
-//       if (!searchTerm.trim()) {
-//         if (this.state.selectedCategory) {
-//           await this.fetchProducts(this.state.selectedCategory);
-//         } else {
-//           await this.fetchProducts();
-//         }
-//         return;
-//       }
 
-//       let filteredProducts;
-      
-//       if (this.state.selectedCategory) {
-//         // If a category is selected, search within that category
-//         const response = await fetch(`https://backend-3mvr.onrender.com/api/products/category/${this.state.selectedCategory}`);
-//         if (!response.ok) throw new Error("Failed to fetch category products");
-//         filteredProducts = await response.json();
-//       } else {
-//         // If no category is selected, search all products
-//         const response = await fetch('https://backend-3mvr.onrender.com/api/products');
-//         if (!response.ok) throw new Error("Failed to fetch products");
-//         filteredProducts = await response.json();
-//       }
-
-//       // Filter products based on search term
-//       filteredProducts = filteredProducts.filter(product => 
-//         product.name.toLowerCase().includes(this.state.searchTerm) ||
-//         //product.description?.toLowerCase().includes(this.state.searchTerm) ||
-//         product.price.toString().includes(this.state.searchTerm)
-//       );
-
-//       // Update the products display with filtered results
-//       this.state.products = filteredProducts;
-//       await this.renderProducts();
-      
-//       // Show a message if no results found
-//       if (filteredProducts.length === 0) {
-//         showNotification('No products found matching your search', 'info');
-//       }
-//     } catch (error) {
-//       console.error("Error searching products:", error);
-//       showNotification(error.message, "error");
-//     }
-//   },
 const categoryManager = {
   state: {
     categories: [],
@@ -2467,8 +2430,11 @@ async fetchProducts(categoryId = null) {
   try {
     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
     const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
-    const response = await fetch(url);
     
+    // Add language parameter
+    url.searchParams.append('lang', languageManager.state.currentLanguage);
+    
+    const response = await fetch(url);
     if (!response.ok) throw new Error("Failed to fetch products");
     const data = await response.json();
     
@@ -2498,7 +2464,7 @@ async fetchProducts(categoryId = null) {
     // Create "All" button
     const allButton = document.createElement("button");
     allButton.className = `category-btn ${this.state.selectedCategory === null ? "active" : ""}`;
-    allButton.textContent = "All";
+    allButton.textContent = languageManager.translate("all");
     allButton.onclick = () => this.selectCategory(null);
     container.appendChild(allButton);
 
@@ -2552,16 +2518,24 @@ async fetchProducts(categoryId = null) {
       // Create product content container
       const productContent = document.createElement("div");
       productContent.className = "product-content";
-      productContent.innerHTML = `
-        ${imageSlider}
-        <div class="overlay">
-          ${product.name} | <span class="price-span" data-usd-price="${product.price}">
-            ${cryptoManager.formatCryptoPrice(product.price)}
-          </span>
-          | Stock: ${product.stock}
-        </div>
-      `;
-
+      // productContent.innerHTML = `
+      //   ${imageSlider}
+      //   <div class="overlay">
+      //     ${product.name} | <span class="price-span" data-usd-price="${product.price}">
+      //       ${cryptoManager.formatCryptoPrice(product.price)}
+      //     </span>
+      //     | Stock: ${product.stock}
+      //   </div>
+      // `;
+ productContent.innerHTML = `
+    ${imageSlider}
+    <div class="overlay">
+      ${product.name} | <span class="price-span" data-usd-price="${product.price}">
+        ${cryptoManager.formatCryptoPrice(product.price)}
+      </span>
+      | ${languageManager.translate('stock')}: ${product.stock}
+    </div>
+  `;
       // Add click handler to product content for opening product page
       productContent.addEventListener("click", () => {
         productPageManager.openProductPage(product);
@@ -2697,208 +2671,7 @@ if (!window.ratingManagerInitialized) {
         if (activeButton) activeButton.classList.add("active");
     }
 },
-//     setupSearch() {
-//       const searchInput = document.getElementById('product-search');
-//       let debounceTimeout;
-  
-//       if (searchInput) {
-//         searchInput.addEventListener('input', (e) => {
-//           clearTimeout(debounceTimeout);
-//           debounceTimeout = setTimeout(() => {
-//             this.searchProducts(e.target.value);
-//           }, 300);
-//         });
-  
-//         // Add clear search functionality
-//         const clearSearch = document.createElement('button');
-//         clearSearch.innerHTML = '×';
-//         clearSearch.className = 'clear-search';
-//         clearSearch.onclick = () => {
-//           searchInput.value = '';
-//           this.searchProducts(''); 
-//         };
-//         searchInput.parentNode.appendChild(clearSearch);
-//       }
-//     }
-// 
-// async setupSearch() {
-//     const searchInput = document.getElementById('product-search');
-//     if (!searchInput) return;
-
-//     // Create search history dropdown
-//     const searchHistoryDropdown = document.createElement('div');
-//     searchHistoryDropdown.className = 'search-history-dropdown';
-//     searchInput.parentNode.appendChild(searchHistoryDropdown);
-
-//     let debounceTimeout;
-
-//     searchInput.addEventListener('input', (e) => {
-//       clearTimeout(debounceTimeout);
-//       debounceTimeout = setTimeout(() => {
-//         this.searchProducts(e.target.value);
-//       }, 300);
-//     });
-
-//     searchInput.addEventListener('focus', () => {
-//       const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-//       if (searches.length > 0) {
-//         searchHistoryDropdown.innerHTML = searches
-//           .map(term => `
-//             <div class="search-history-item">
-//               <i class="fas fa-history"></i>
-//               <span>${term}</span>
-//               <button class="remove-search">×</button>
-//             </div>
-//           `)
-//           .join('');
-//         searchHistoryDropdown.style.display = 'block';
-
-//         // Add event listeners to search history items
-//         searchHistoryDropdown.querySelectorAll('.search-history-item').forEach((item, index) => {
-//           const term = searches[index];
-//           item.addEventListener('click', (e) => {
-//             if (!e.target.classList.contains('remove-search')) {
-//               searchInput.value = term;
-//               this.searchProducts(term);
-//               searchHistoryDropdown.style.display = 'none';
-//             }
-//           });
-
-//           item.querySelector('.remove-search').addEventListener('click', (e) => {
-//             e.stopPropagation();
-//             const filtered = searches.filter(t => t !== term);
-//             localStorage.setItem('searchHistory', JSON.stringify(filtered));
-//             if (filtered.length === 0) {
-//               searchHistoryDropdown.style.display = 'none';
-//             } else {
-//               this.setupSearch(); // Refresh the dropdown
-//             }
-//           });
-//         });
-//       }
-//     });
-
-//     // Add clear search functionality
-//     const clearSearch = document.createElement('button');
-//     clearSearch.innerHTML = '×';
-//     clearSearch.className = 'clear-search';
-//     clearSearch.onclick = () => {
-//       searchInput.value = '';
-//       this.searchProducts('');
-//     };
-    
-//     searchInput.parentNode.appendChild(clearSearch);
-
-//     // Hide dropdown when clicking outside
-//     document.addEventListener('click', (e) => {
-//       if (!searchInput.contains(e.target) && !searchHistoryDropdown.contains(e.target)) {
-//         searchHistoryDropdown.style.display = 'none';
-//       }
-//     });
-
-//     // Add styles if not already added
-//     if (!document.querySelector('#search-history-styles')) {
-//       const style = document.createElement('style');
-//       style.id = 'search-history-styles';
-//       style.textContent = `
-//         .search-history-dropdown {
-//           display: none;
-//           position: absolute;
-//           top: 100%;
-//           left: 0;
-//           right: 0;
-//           background: white;
-//           border: 1px solid #ddd;
-//           border-top: none;
-//           border-radius: 0 0 4px 4px;
-//           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-//           z-index: 1000;
-//         }
-
-//         .search-history-item {
-//           padding: 8px 12px;
-//           display: flex;
-//           align-items: center;
-//           gap: 8px;
-//           cursor: pointer;
-//         }
-
-//         .search-history-item:hover {
-//           background: #f5f5f5;
-//         }
-
-//         .search-history-item button {
-//           margin-left: auto;
-//           border: none;
-//           background: none;
-//           color: #999;
-//           cursor: pointer;
-//           padding: 4px 8px;
-//         }
-
-//         .search-history-item button:hover {
-//           color: #666;
-//         }
-
-//         .clear-search {
-//           position: absolute;
-//           right: 10px;
-//           top: 50%;
-//           transform: translateY(-50%);
-//           border: none;
-//           background: none;
-//           color: #999;
-//           cursor: pointer;
-//           padding: 4px 8px;
-//           display: none;
-//         }
-
-//         #product-search:not(:placeholder-shown) + .clear-search {
-//           display: block;
-//         }
-//       `;
-//       document.head.appendChild(style);
-//     }
-//   },
 };
-
-// Initialize everything when the page loads
-// document.addEventListener("DOMContentLoaded", async () => {
-//   try {
-    
-//     await Promise.all([
-//       cryptoManager.initialize(),
-//       ratingManager.initialize(),
-//       categoryManager.initialize(),
-//       paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl'),
-//       recommendationManager.initialize(),
-      
-      
-      
-//     ]);
-//     productPageManager.initialize();
-//     socialSharingManager.initialize(),
-
-//     // Fetch initial data
-//     currentUser = await authManager.fetchCurrentUser();
-    
-//     // Initialize displays
-//     authManager.displayUserInfo();
-//     authManager.displayUserAvatar();
-//     cartManager.updateDisplay();
-
-//     // Set up UI event listeners
-//     setupEventListeners();
-    
-//     // Update UI based on user state
-//     uiManager.updateButtonVisibility(currentUser);
-//     productPageManager.handleDirectNavigation();
-    
-//   } catch (error) {
-//     console.error("Error during initialization:", error);
-//     showNotification("Error initializing application", "error");
-//   }
-// });
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     // Initialize all managers in parallel with proper error handling
@@ -2949,6 +2722,7 @@ window.ratingManager = ratingManager;
 window.recommendationManager = recommendationManager;
 window.socialSharingManager = socialSharingManager;
 window.productPageManager = productPageManager;
+window.languageManager = languageManager;
 async function fetchProducts(categoryId = null) {
   try {
     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
@@ -3035,14 +2809,6 @@ function setupEventListeners() {
   if (elements.emptyCartButton) {
     elements.emptyCartButton.addEventListener("click", () => cartManager.clearCart());
   }
-  // if (elements.loginForm) {
-  //   elements.loginForm.addEventListener("submit", (e) => authManager.login(e));
-  // }
-  // if (elements.registerForm) {
-  //   elements.registerForm.addEventListener("submit", (e) => authManager.register(e));
-  // }
-
-  // Update UI based on user state
   uiManager.updateButtonVisibility(currentUser);
 };
 
@@ -3056,65 +2822,6 @@ window.ratingManager = ratingManager;
 window.socialSharingManager =socialSharingManager;
 window.productPageManager = productPageManager;
 
-// function displayProducts(products) {
-//   console.log('Displaying products:', products);
-  
-//   const gridContainer = document.querySelector(".grid-container");
-//   gridContainer.innerHTML = "";
-
-//   products.forEach((product) => {
-//     const gridItem = document.createElement("div");
-//     gridItem.classList.add("grid-item", "grid-item-xl");
-//     gridItem.setAttribute("data-product-id", product.product_id);
-
-//     // Create image slider
-//     let imageSlider = '<div class="image-slider">';
-//     if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-//       product.images.forEach((img, index) => {
-//         imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
-//       });
-//     } else if (product.image_url) {
-//       imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
-//     } else {
-//       imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
-//     }
-//     imageSlider += '</div>';
-
-//     gridItem.innerHTML = `
-//     <div class="product-rating">
-//           ${ratingHTML}
-//         </div>
-//       ${imageSlider}
-//       <div class="overlay">
-//         ${product.name} | <span class="price-span" data-usd-price="${product.price}"> ${formatCryptoPrice(product.price)} | Stock: ${product.stock}</span>
-//       </div>
-//     `;
-//     const addToCartButton = document.createElement("button");
-//     addToCartButton.textContent = "+";
-//     gridItem.appendChild(addToCartButton);
-//     gridContainer.appendChild(gridItem);
-//   });
-
-//   // Add event listeners for image slider
-//   document.querySelectorAll('.image-slider').forEach(slider => {
-//     const images = slider.querySelectorAll('img');
-//     let currentIndex = 0;
-
-//     setInterval(() => {
-//       images[currentIndex].classList.remove('active');
-//       currentIndex = (currentIndex + 1) % images.length;
-//       images[currentIndex].classList.add('active');
-//     }, 3000);
-//   });
-
-//   // Add event listeners for add to cart buttons
-//   document.querySelectorAll(".grid-item button").forEach((button) => {
-//     button.addEventListener("click", () => {
-//       const productId = button.parentElement.getAttribute("data-product-id");
-//       cartManager.addItem(productId);
-//     });
-//   });
-// }
 function showNotification(message, type = 'success',) {
   const notification = document.createElement('div');
   notification.textContent = message;
