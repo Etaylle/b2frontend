@@ -2259,29 +2259,28 @@ const categoryManager = {
     }
   },
 async setupSearch() {
-    const searchInput = document.getElementById('product-search');
-    if (!searchInput) return;
+     // Remove any existing dropdowns first
+    const existingDropdown = document.querySelector('.search-history-dropdown');
+    if (existingDropdown) {
+      existingDropdown.remove();
+    }
 
     // Create search history dropdown
     const searchHistoryDropdown = document.createElement('div');
     searchHistoryDropdown.className = 'search-history-dropdown';
+    searchHistoryDropdown.id = 'search-history-dropdown'; // Add unique ID
     searchInput.parentNode.appendChild(searchHistoryDropdown);
 
     let debounceTimeout;
-    let isUpdating = false; // Flag to prevent concurrent updates
 
     // Function to update dropdown content
     const updateDropdownContent = () => {
-      if (isUpdating) return; // Prevent concurrent updates
-      isUpdating = true;
-
       const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
       
       // If no searches, hide dropdown and reset
       if (searches.length === 0) {
         searchHistoryDropdown.style.display = 'none';
         searchHistoryDropdown.innerHTML = '';
-        isUpdating = false;
         return;
       }
 
@@ -2312,27 +2311,27 @@ async setupSearch() {
           }
         });
 
-        item.querySelector('.remove-search').addEventListener('click', (e) => {
+        item.querySelector('.remove-search').addEventListener('click', async (e) => {
           e.stopPropagation();
-          // Immediately remove the item from DOM
-          item.remove();
-          
-          // Update localStorage
-          const currentSearches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-          const filtered = currentSearches.filter(t => t !== term);
+          const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+          const filtered = searches.filter(t => t !== term);
           localStorage.setItem('searchHistory', JSON.stringify(filtered));
           
-          // If no items left, hide dropdown
+          // Update the dropdown immediately
           if (filtered.length === 0) {
             searchHistoryDropdown.style.display = 'none';
+          } else {
+            // Just remove the clicked item from DOM
+            item.remove();
           }
         });
       });
-      
-      isUpdating = false;
+
+      searchHistoryDropdown.style.display = 'block';
     };
 
-    searchInput.addEventListener('input', (e) => {
+
+  searchInput.addEventListener('input', (e) => {
       clearTimeout(debounceTimeout);
       debounceTimeout = setTimeout(() => {
         this.searchProducts(e.target.value);
@@ -2347,12 +2346,16 @@ async setupSearch() {
     searchInput.addEventListener('focus', () => {
       const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
       if (searches.length > 0) {
-        searchHistoryDropdown.style.display = 'block';
         updateDropdownContent();
       }
     });
 
-    // Add clear input button
+    // Clear button setup
+    const existingClearButton = searchInput.parentNode.querySelector('.clear-input');
+    if (existingClearButton) {
+      existingClearButton.remove();
+    }
+
     const clearButton = document.createElement('button');
     clearButton.innerHTML = '×';
     clearButton.className = 'clear-input';
