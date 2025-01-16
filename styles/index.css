@@ -30,7 +30,7 @@ html {
               /* Ensure items wrap instead of overflowing */
               box-sizing: border-box;
               /* Include padding in width calculation */
-           background: rgba(108, 110, 238, 0.5);
+           background: rgba(1, 102, 255, 0.651);
            backdrop-filter: blur(4px);
            display: flex;
            justify-content: space-between;
