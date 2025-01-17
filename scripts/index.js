@@ -2973,7 +2973,7 @@ async renderProducts() {
     gridItem.dataset.productId = product.product_id;
 
     // Get translated product name using i18nManager
-    const productName = i18nManager.getProductName(product);
+    const productName = categoryManager.getProductName(product);
     
     const productContent = document.createElement("div");
     productContent.className = "product-content";
@@ -3032,7 +3032,7 @@ createImageSlider(product, productName) {
     `;
   }
   
-  // Add images
+  // Add images within slider track
   sliderHtml += '<div class="slider-track">';
   images.forEach((img, index) => {
     sliderHtml += `
@@ -3043,7 +3043,9 @@ createImageSlider(product, productName) {
   });
   
   return sliderHtml + '</div></div>';
-},
+}
+
+// Update the initializeImageSliders function to handle both manual and automatic sliding
 initializeImageSliders() {
   const sliders = document.querySelectorAll('.image-slider');
   
@@ -3056,6 +3058,7 @@ initializeImageSliders() {
 
     const dots = slider.querySelectorAll('.slider-dot');
     let currentIndex = 0;
+    let autoSlideInterval;
     
     // Function to update active slide and dot
     const updateSlider = (newIndex) => {
@@ -3069,25 +3072,46 @@ initializeImageSliders() {
       dots[currentIndex].classList.add('active');
     };
 
+    // Function to start auto-sliding
+    const startAutoSlide = () => {
+      autoSlideInterval = setInterval(() => {
+        const newIndex = (currentIndex + 1) % slides.length;
+        updateSlider(newIndex);
+      }, 5000); // Change slide every 5 seconds
+    };
+
+    // Function to stop auto-sliding
+    const stopAutoSlide = () => {
+      if (autoSlideInterval) {
+        clearInterval(autoSlideInterval);
+      }
+    };
+
     // Previous button click handler
     slider.querySelector('.prev')?.addEventListener('click', (e) => {
       e.stopPropagation(); // Prevent product click
+      stopAutoSlide();
       const newIndex = (currentIndex - 1 + slides.length) % slides.length;
       updateSlider(newIndex);
+      startAutoSlide();
     });
 
     // Next button click handler
     slider.querySelector('.next')?.addEventListener('click', (e) => {
       e.stopPropagation(); // Prevent product click
+      stopAutoSlide();
       const newIndex = (currentIndex + 1) % slides.length;
       updateSlider(newIndex);
+      startAutoSlide();
     });
 
     // Dot click handlers
     dots.forEach((dot, index) => {
       dot.addEventListener('click', (e) => {
         e.stopPropagation(); // Prevent product click
+        stopAutoSlide();
         updateSlider(index);
+        startAutoSlide();
       });
     });
 
@@ -3096,6 +3120,7 @@ initializeImageSliders() {
     let touchEndX = 0;
 
     slider.addEventListener('touchstart', (e) => {
+      stopAutoSlide();
       touchStartX = e.changedTouches[0].screenX;
     }, { passive: true });
 
@@ -3112,7 +3137,15 @@ initializeImageSliders() {
           updateSlider(newIndex);
         }
       }
+      startAutoSlide();
     }, { passive: true });
+
+    // Start auto-sliding
+    startAutoSlide();
+
+    // Pause auto-sliding when hovering over the slider
+    slider.addEventListener('mouseenter', stopAutoSlide);
+    slider.addEventListener('mouseleave', startAutoSlide);
   });
 },
 createButtonsContainer(product, translations, buttonTemplate) {
@@ -3150,23 +3183,6 @@ createButtonsContainer(product, translations, buttonTemplate) {
 
   container.append(addToCartButton, shareButton, rateButton);
   return container;
-},
-
-
-createImageSlider(product, productName) {
-  let sliderHtml = '<div class="image-slider">';
-  
-  if (product.images?.length) {
-    sliderHtml += product.images
-      .map((img, index) => `<img src="${img}" alt="${productName} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`)
-      .join('');
-  } else if (product.image_url) {
-    sliderHtml += `<img src="${product.image_url}" alt="${productName}" class="active">`;
-  } else {
-    sliderHtml += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
-  }
-  
-  return sliderHtml + '</div>';
 },
 
 createButtonsContainer(product, translations, buttonTemplate) {
@@ -3514,29 +3530,7 @@ window.recommendationManager = recommendationManager;
 window.socialSharingManager = socialSharingManager;
 window.productPageManager = productPageManager;
 window.i18nManager = i18nManager;
-// async function fetchProducts(categoryId = null) {
-//   try {
-//     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-//     const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
-//     const response = await fetch(url);
-    
-//     if (!response.ok) throw new Error("Failed to fetch products");
-//     const data = await response.json();
-    
-//     // Check if the response has the new format with success property
-//     if (data.success) {
-//       this.state.products = data.products ? data.products : data; 
-//     } else {productPageManager.updateProducts(this.state.products);
-//       this.state.products = data; // Fallback for old format
-//     }
-    
-//     await this.renderProducts();
-//   } catch (error) {
-//     console.error("Error fetching products:", error);
-//     showNotification(error.message, "error");
-//   }
 
-// }
 async function fetchProducts(categoryId = null) {
   try {
     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
