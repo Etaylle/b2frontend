@@ -46,144 +46,7 @@ async function ensureGuestSession() {
     return false;
   }
 };
-// Language manager implementation
-const languageManager = {
-  state: {
-    currentLanguage: 'en',
-    translations: {
-      en: {
-        // Categories
-        'all': 'All',
-        // Product related
-        'stock': 'Stock',
-        // Buttons
-        'addToCart': 'Add to Cart',
-        'share': 'Share',
-        'rate': 'Rate',
-        // Search
-        'clearSearch': 'Clear search input',
-        // Notifications
-        'errorFetchingCategories': 'Failed to fetch categories',
-        'errorFetchingProducts': 'Failed to fetch products',
-        'errorInitializing': 'Error initializing application'
-      },
-      es: {
-        'all': 'Todos',
-        'stock': 'Existencias',
-        'addToCart': 'Añadir al carrito',
-        'share': 'Compartir',
-        'rate': 'Calificar',
-        'clearSearch': 'Limpiar búsqueda',
-        'errorFetchingCategories': 'Error al obtener categorías',
-        'errorFetchingProducts': 'Error al obtener productos',
-        'errorInitializing': 'Error al inicializar la aplicación'
-      }
-      // Add more languages as needed
-    }
-  },
 
-  initialize() {
-    // Try to load language preference from localStorage
-    const savedLanguage = localStorage.getItem('preferredLanguage');
-    if (savedLanguage && this.state.translations[savedLanguage]) {
-      this.state.currentLanguage = savedLanguage;
-    } else {
-      // Default to browser language if available
-      const browserLang = navigator.language.split('-')[0];
-      if (this.state.translations[browserLang]) {
-        this.state.currentLanguage = browserLang;
-      }
-    }
-    
-    this.createLanguageSelector();
-    this.updatePageContent();
-  },
-
-  createLanguageSelector() {
-    const header = document.querySelector('header'); // Adjust selector as needed
-    if (!header) return;
-
-    const selector = document.createElement('select');
-    selector.className = 'language-selector';
-    
-    Object.keys(this.state.translations).forEach(lang => {
-      const option = document.createElement('option');
-      option.value = lang;
-      option.textContent = lang.toUpperCase();
-      option.selected = lang === this.state.currentLanguage;
-      selector.appendChild(option);
-    });
-
-    selector.addEventListener('change', (e) => {
-      this.changeLanguage(e.target.value);
-    });
-
-    header.appendChild(selector);
-  },
-
-  async changeLanguage(language) {
-  if (!this.state.supportedLanguages.includes(language)) {
-    console.error(`Language ${language} is not supported`);
-    return;
-  }
-
-  this.state.currentLanguage = language;
-  localStorage.setItem('preferred_language', language);
-  
-  // Reload categories and products with new language
-  if (categoryManager) {
-    await categoryManager.fetchCategories();
-    await categoryManager.fetchProducts(categoryManager.state.selectedCategory);
-  }
-  
-  this.updateUILanguage();
-},
-
-  translate(key) {
-    return this.state.translations[this.state.currentLanguage]?.[key] || 
-           this.state.translations['en'][key] || 
-           key;
-  },
-
-  updatePageContent() {
-    // Update category buttons
-    document.querySelectorAll('.category-btn').forEach(btn => {
-      if (btn.textContent === 'All') {
-        btn.textContent = this.translate('all');
-      }
-    });
-
-    // Update product overlays
-    document.querySelectorAll('.overlay').forEach(overlay => {
-      const stockText = overlay.textContent.split('Stock:');
-      if (stockText.length > 1) {
-        overlay.innerHTML = overlay.innerHTML.replace(
-          'Stock:', 
-          `${this.translate('stock')}:`
-        );
-      }
-    });
-
-    // Update buttons
-    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
-      btn.title = this.translate('addToCart');
-    });
-
-    document.querySelectorAll('.share-btn').forEach(btn => {
-      btn.title = this.translate('share');
-    });
-
-    document.querySelectorAll('.rate-btn').forEach(btn => {
-      btn.title = this.translate('rate');
-    });
-
-    // Update clear search button
-    const clearButton = document.querySelector('.clear-input');
-    if (clearButton) {
-      clearButton.setAttribute('aria-label', this.translate('clearSearch'));
-    }
-  }
-};
 //CartManager
 const CartEnhancements = {
   initializeGuestMode() {
@@ -2328,208 +2191,158 @@ const socialSharingManager = {
 const i18nManager = {
   state: {
     currentLanguage: 'en',
+    defaultLanguage: 'en',
+    supportedLanguages: ['en', 'srb', 'de'],
     translations: {
       en: {
-        buttons: {
-          addToCart: "Add to Cart",
-          login: "Login",
-          register: "Register",
-          logout: "Logout",
-          share: "Share",
-          rate: "Rate"
-        },
-        labels: {
-          price: "Price",
-          stock: "Stock",
-          total: "Total",
-          quantity: "Quantity",
-          search: "Search products...",
-          categories: "Categories",
-          all: "All"
-        },
-        messages: {
-          addedToCart: "Product added to cart",
-          removedFromCart: "Product removed from cart",
-          emptyCart: "Cart is empty",
-          loginRequired: "Please login first"
+        ui: {
+          buttons: {
+            addToCart: "Add to Cart",
+            share: "Share",
+            rate: "Rate"
+          },
+          labels: {
+            stock: "Stock",
+            price: "Price",
+            categories: "Categories",
+            search: "Search products..."
+          }
         }
       },
       srb: {
-        buttons: {
-          addToCart: "Додај у корпу",
-          login: "Пријава",
-          register: "Регистрација",
-          logout: "Одјава",
-          share: "Подели",
-          rate: "Оцени"
-        },
-        labels: {
-          price: "Цена",
-          stock: "Стање",
-          total: "Укупно",
-          quantity: "Количина",
-          search: "Претражи производе...",
-          categories: "Категорије",
-          all: "Све"
-        },
-        messages: {
-          addedToCart: "Производ додат у корпу",
-          removedFromCart: "Производ уклоњен из корпе",
-          emptyCart: "Корпа је празна",
-          loginRequired: "Молимо вас да се прво пријавите"
+        ui: {
+          buttons: {
+            addToCart: "Додај у корпу",
+            share: "Подели",
+            rate: "Оцени"
+          },
+          labels: {
+            stock: "Стање",
+            price: "Цена",
+            categories: "Категорије",
+            search: "Претражи производе..."
+          }
         }
       },
       de: {
-        buttons: {
-          addToCart: "In den Warenkorb",
-          login: "Anmelden",
-          register: "Registrieren",
-          logout: "Abmelden",
-          share: "Teilen",
-          rate: "Bewerten"
-        },
-        labels: {
-          price: "Preis",
-          stock: "Lagerbestand",
-          total: "Gesamt",
-          quantity: "Menge",
-          search: "Produkte suchen...",
-          categories: "Kategorien",
-          all: "Alle"
-        },
-        messages: {
-          addedToCart: "Produkt in den Warenkorb gelegt",
-          removedFromCart: "Produkt aus dem Warenkorb entfernt",
-          emptyCart: "Warenkorb ist leer",
-          loginRequired: "Bitte melden Sie sich zuerst an"
+        ui: {
+          buttons: {
+            addToCart: "In den Warenkorb",
+            share: "Teilen",
+            rate: "Bewerten"
+          },
+          labels: {
+            stock: "Lagerbestand",
+            price: "Preis",
+            categories: "Kategorien",
+            search: "Produkte suchen..."
+          }
         }
       }
-    },
-    supportedLanguages: ['en', 'srb', 'de']
+    }
   },
 
-  async initialize() {
-    try {
-      const savedLang = localStorage.getItem('preferred_language');
-      if (savedLang && this.state.supportedLanguages.includes(savedLang)) {
-        this.state.currentLanguage = savedLang;
+  initialize() {
+    // Try to load language from localStorage first
+    const savedLang = localStorage.getItem('preferred_language');
+    
+    // Then try browser language
+    const browserLang = navigator.language.split('-')[0];
+    
+    // Set language with fallback chain
+    this.setLanguage(
+      savedLang || 
+      (this.state.supportedLanguages.includes(browserLang) ? browserLang : this.state.defaultLanguage)
+    );
+    
+    this.createLanguageSwitcher();
+    return this.updateUI();
+  },
+
+  setLanguage(lang) {
+    if (!this.state.supportedLanguages.includes(lang)) {
+      console.warn(`Language ${lang} not supported, falling back to ${this.state.defaultLanguage}`);
+      lang = this.state.defaultLanguage;
+    }
+    
+    this.state.currentLanguage = lang;
+    localStorage.setItem('preferred_language', lang);
+    document.documentElement.lang = lang;
+  },
+
+  createLanguageSwitcher() {
+    const container = document.querySelector('.header-controls') || document.createElement('div');
+    container.innerHTML = `
+      <select class="language-switcher" aria-label="Select language">
+        ${this.state.supportedLanguages.map(lang => `
+          <option value="${lang}" ${lang === this.state.currentLanguage ? 'selected' : ''}>
+            ${lang.toUpperCase()}
+          </option>
+        `).join('')}
+      </select>
+    `;
+
+    container.querySelector('.language-switcher').addEventListener('change', (e) => {
+      this.setLanguage(e.target.value);
+      this.updateUI();
+      // Trigger page content refresh
+      if (categoryManager) {
+        categoryManager.fetchCategories();
       }
-      this.setupLanguageSwitcher();
-      this.updateUILanguage();
-    } catch (error) {
-      console.error('Error initializing i18nManager:', error);
-      showNotification('Error loading translations', 'error');
-    }
-  },
-
-  setupLanguageSwitcher() {
-    const container = document.querySelector('.header-controls') || document.body;
-    const existingSwitcher = container.querySelector('.language-switcher');
-    if (existingSwitcher) {
-      existingSwitcher.remove();
-    }
-    
-    const switcher = document.createElement('select');
-    switcher.className = 'language-switcher';
-    
-    this.state.supportedLanguages.forEach(lang => {
-      const option = document.createElement('option');
-      option.value = lang;
-      option.textContent = lang.toUpperCase();
-      option.selected = lang === this.state.currentLanguage;
-      switcher.appendChild(option);
     });
-
-    switcher.addEventListener('change', (e) => {
-      this.changeLanguage(e.target.value);
-    });
-
-    container.appendChild(switcher);
   },
 
-  async changeLanguage(language) {
-    if (!this.state.supportedLanguages.includes(language)) {
-      console.error(`Language ${language} is not supported`);
-      return;
-    }
-
-    this.state.currentLanguage = language;
-    localStorage.setItem('preferred_language', language);
+  // Get translated content with fallback chain
+  translate(key) {
+    const keys = key.split('.');
+    let result = this.state.translations[this.state.currentLanguage];
     
-    // Reload categories and products
-    if (categoryManager) {
-      await categoryManager.fetchCategories();
-      await categoryManager.fetchProducts(categoryManager.state.selectedCategory);
+    for (const k of keys) {
+      result = result?.[k];
+      if (!result) break;
     }
     
-    this.updateUILanguage();
+    if (!result && this.state.currentLanguage !== this.state.defaultLanguage) {
+      // Fallback to default language
+      result = this.state.translations[this.state.defaultLanguage];
+      for (const k of keys) {
+        result = result?.[k];
+        if (!result) break;
+      }
+    }
+    
+    return result || key;
   },
 
-  updateUILanguage() {
-    const translations = this.state.translations[this.state.currentLanguage];
-    if (!translations) return;
+  // Get localized field from database object
+  getLocalizedField(item, fieldName) {
+    if (!item) return '';
+    
+    const lang = this.state.currentLanguage;
+    if (lang === this.state.defaultLanguage) {
+      return item[fieldName];
+    }
+    
+    const localizedField = `${fieldName}_${lang}`;
+    return item[localizedField] || item[fieldName] || '';
+  },
 
-    // Update elements with data-i18n attribute
+  updateUI() {
+    // Update all elements with data-i18n attribute
     document.querySelectorAll('[data-i18n]').forEach(element => {
       const key = element.getAttribute('data-i18n');
-      const translation = this.getTranslation(key);
-      if (translation) {
-        if (element.tagName === 'INPUT' && element.type === 'button') {
+      const translation = this.translate(key);
+      
+      if (element.tagName === 'INPUT') {
+        if (element.type === 'button' || element.type === 'submit') {
           element.value = translation;
         } else {
-          element.textContent = translation;
+          element.placeholder = translation;
         }
+      } else {
+        element.textContent = translation;
       }
     });
-
-    // Update placeholders
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
-      const key = element.getAttribute('data-i18n-placeholder');
-      const translation = this.getTranslation(key);
-      if (translation) {
-        element.placeholder = translation;
-      }
-    });
-  },
-
-  getTranslation(key) {
-    try {
-      const keys = key.split('.');
-      let translation = this.state.translations[this.state.currentLanguage];
-      
-      for (const k of keys) {
-        if (!translation || !translation[k]) return key;
-        translation = translation[k];
-      }
-      
-      return translation;
-    } catch (error) {
-      console.error('Translation error:', error);
-      return key;
-    }
-  },
-
-  // Enhanced method to get localized content
-  getLocalizedContent(item, field) {
-  if (!item) return '';
-  
-  const currentLang = this.state.currentLanguage;
-  if (currentLang === 'en') {
-    return item[field] || '';
-  }
-  
-  const localizedField = `${field}_${currentLang}`;
-  return item[localizedField] || item[field] || ''; // Fallback to English if translation missing
-},
-
-  // Specific method for product names
-  getProductName(product) {
-    return this.getLocalizedContent(product, 'name');
-  },
-
-  // Specific method for category names
-  getCategoryName(category) {
-    return this.getLocalizedContent(category, 'name');
   }
 };
 const categoryManager = {
