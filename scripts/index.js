@@ -2973,7 +2973,7 @@ async renderProducts() {
     gridItem.dataset.productId = product.product_id;
 
     // Get translated product name using i18nManager
-    const productName = categoryManager.getProductName(product);
+    const productName = i18nManager.getProductName(product);
     
     const productContent = document.createElement("div");
     productContent.className = "product-content";
