@@ -2199,7 +2199,8 @@ const i18nManager = {
           buttons: {
             addToCart: "Add to Cart",
             share: "Share",
-            rate: "Rate"
+            rate: "Rate",
+            all: "All"
           },
           labels: {
             stock: "Stock",
@@ -2214,7 +2215,8 @@ const i18nManager = {
           buttons: {
             addToCart: "Додај у корпу",
             share: "Подели",
-            rate: "Оцени"
+            rate: "Оцени",
+            all: "Све"
           },
           labels: {
             stock: "Стање",
@@ -2229,7 +2231,8 @@ const i18nManager = {
           buttons: {
             addToCart: "In den Warenkorb",
             share: "Teilen",
-            rate: "Bewerten"
+            rate: "Bewerten",
+            all: "Alle"
           },
           labels: {
             stock: "Lagerbestand",
@@ -2664,23 +2667,7 @@ async setupSearch() {
       document.head.appendChild(style);
     }
 },
-  
-  // async fetchCategories() {
-  //   try {
-  //     const response = await fetch('https://backend-3mvr.onrender.com/api/categories');
-  //     if (!response.ok) throw new Error(`Failed to fetch categories: ${response.statusText}`);
 
-  //     const categories = await response.json();
-  //     if (!Array.isArray(categories)) throw new Error("Categories data is not an array");
-
-  //     this.state.categories = categories;
-  //     await this.renderCategories();
-  //     await this.fetchProducts(); // Fetch initial products
-  //   } catch (error) {
-  //     console.error("Error fetching categories:", error);
-  //     showNotification(error.message, "error");
-  //   }
-  // },
  async fetchCategories() {
     try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/categories');
@@ -2733,32 +2720,7 @@ async fetchProducts(categoryId = null) {
       showNotification(error.message, "error");
     }
   },
-  // renderCategories() {
-  //   const container = document.querySelector(".categories");
-  //   if (!container) {
-  //     console.error("Categories container not found");
-  //     return;
-  //   }
-
-  //   container.innerHTML = ""; // Clear existing categories
-
-  //   // Create "All" button
-  //   const allButton = document.createElement("button");
-  //   allButton.className = `category-btn ${this.state.selectedCategory === null ? "active" : ""}`;
-  //   allButton.textContent = "All";
-  //   allButton.onclick = () => this.selectCategory(null);
-  //   container.appendChild(allButton);
-
-  //   // Create category buttons
-  //   this.state.categories.forEach(category => {
-  //     const button = document.createElement("button");
-  //     button.className = `category-btn ${this.state.selectedCategory === category.id ? "active" : ""}`;
-  //     button.setAttribute("data-id", category.id);
-  //     button.textContent = category.name;
-  //     button.onclick = () => this.selectCategory(category.id);
-  //     container.appendChild(button);
-  //   });
-  // },
+ 
 renderCategories() {
     const container = document.querySelector(".categories");
     if (!container) {
@@ -2773,12 +2735,11 @@ renderCategories() {
     const fragment = document.createDocumentFragment();
 
     // Create "All" button
-    const allButton = document.createElement("button");
-    allButton.className = `category-btn ${this.state.selectedCategory === null ? "active" : ""}`;
-    allButton.textContent = i18nManager.translate('ui.categories.all');
-    allButton.onclick = () => this.selectCategory(null);
-    fragment.appendChild(allButton);
-
+const allButton = document.createElement("button");
+allButton.className = `category-btn ${this.state.selectedCategory === null ? "active" : ""}`;
+allButton.textContent = i18nManager.translate('ui.categories.all');
+allButton.onclick = () => this.selectCategory(null);
+fragment.appendChild(allButton);
     // Create category buttons
     this.state.categories.forEach(category => {
       const button = document.createElement("button");
