@@ -2253,8 +2253,9 @@ const i18nManager = {
     
     this.createLanguageSwitcher();
     return this.updateUI();
+    this.fetchProducts();
   },
-// Add this to your i18nManager to help with debugging
+
 
   getCurrentLanguage() {
     console.log('Current language:', i18nManager.state.currentLanguage);
@@ -2267,6 +2268,7 @@ const i18nManager = {
     i18nManager.updateUI();
     // Trigger a content refresh
     window.dispatchEvent(new CustomEvent('refreshContent'));
+    this.fetchProducts();
   }
 ,
   setLanguage(lang) {
@@ -2282,22 +2284,6 @@ const i18nManager = {
     // Dispatch a custom event when language changes
     window.dispatchEvent(new CustomEvent('languageChanged', { detail: { language: lang } }));
   },
-
-//  getProductName(product) {
-//     const currentLang = this.state.currentLanguage;
-    
-//     // Use displayName if available (from backend)
-//     if (product.displayName) {
-//       return product.displayName;
-//     }
-    
-//     // Fallback chain
-//     return currentLang === 'en' ? 
-//            product.name :
-//            product[`name_${currentLang}`] || 
-//            product.translations?.[currentLang]?.name || 
-//            product.name;
-//   }
 getProductName(product) {
   const currentLang = this.state.currentLanguage;
   
@@ -2404,21 +2390,6 @@ getProductName(product) {
       }
     });
   },
-//  // Helper method to transform product data with translations
-//   transformProductData(product) {
-//     return {
-//       ...product,
-//       displayName: this.getProductTranslation(product, 'name'),
-//       displayDescription: this.getProductTranslation(product, 'description'),
-//       translations: product.translations || {},
-//       // Ensure we have fields for each supported language
-//       name_srb: product.name_srb || product.translations?.srb?.name || '',
-//       name_de: product.name_de || product.translations?.de?.name || '',
-//       description_srb: product.description_srb || product.translations?.srb?.description || '',
-//       description_de: product.description_de || product.translations?.de?.description || ''
-//     };
-//   }
-// };
 transformProductData(product) {
     // No need for complex transformation since backend handles it
     return {
@@ -2697,67 +2668,7 @@ async setupSearch() {
       showNotification(error.message, "error");
     }
   },
-// async fetchProducts(categoryId = null) {
-//   try {
-//     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-//     const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
-//     const response = await fetch(url);
-    
-//     if (!response.ok) throw new Error("Failed to fetch products");
-//     const data = await response.json();
-    
-//     // Check if the response has the new format with success property
-//     if (data.success) {
-//       this.state.products = data.products; // Access products array from the response
-//     } else {
-//       this.state.products = data; // Fallback for old format
-//     }
-    
-//     await this.renderProducts();
-//   } catch (error) {
-//     console.error("Error fetching products:", error);
-//     showNotification(error.message, "error");
-//   }
-// },
-//  async fetchProducts(categoryId = null) {
-//   try {
-//     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-//     const currentLang = i18nManager.state.currentLanguage;
-    
-//     // Add language parameter to URL
-//     const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
-//     url.searchParams.append('lang', currentLang);
-    
-//     const response = await fetch(url, {
-//       headers: {
-//         'Accept-Language': currentLang // Also send language in header
-//       }
-//     });
-    
-//     if (!response.ok) throw new Error("Failed to fetch products");
-//     const data = await response.json();
-    
-//     // Store products in state
-//     this.state.products = data.success ? data.products : data;
-    
-//     // If products don't have translations, we might want to transform them
-//     this.state.products = this.state.products.map(product => ({
-//       ...product,
-//       // Ensure we have a translations field even if empty
-//       translations: product.translations || {},
-//       // Make sure we have the base name in English
-//       name: product.name || '',
-//       // Add convenience fields for each supported language
-//       name_srb: product[`name_srb`] || product.translations?.srb?.name || '',
-//       name_de: product[`name_de`] || product.translations?.de?.name || ''
-//     }));
-    
-//     await this.renderProducts();
-//   } catch (error) {
-//     console.error("Error fetching products:", error);
-//     showNotification(error.message, "error");
-//   }
-// },
+
 async fetchProducts(categoryId = null) {
     try {
       const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
@@ -2821,207 +2732,6 @@ async fetchProducts(categoryId = null) {
     this.highlightSelectedCategory();
   },
 
-//   async renderProducts() {
-//     const gridContainer = document.querySelector(".grid-container");
-//     if (!gridContainer) return;
-    
-//     ratingManager.setProductData(this.state.products);
-//     gridContainer.innerHTML = "";
-
-//     this.state.products.forEach((product) => {
-//       const gridItem = document.createElement("div");
-//       gridItem.classList.add("grid-item", "grid-item-xl");
-//       gridItem.setAttribute("data-product-id", product.product_id);
-
-//       let imageSlider = '<div class="image-slider">';
-//       if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-//         product.images.forEach((img, index) => {
-//           imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
-//         });
-//       } else if (product.image_url) {
-//         imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
-//       } else {
-//         imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
-//       }
-//       imageSlider += '</div>';
-
-//      const ratingHTML = ratingManager.createProductRating(
-//       product.product_id,
-//       product.average_rating || 0,
-//       product.total_ratings || 0
-//     );
-
-//       // Create product content container
-//       const productContent = document.createElement("div");
-//       productContent.className = "product-content";
-//       productContent.innerHTML = `
-//         ${imageSlider}
-//         <div class="overlay">
-//           ${product.name} | <span class="price-span" data-usd-price="${product.price}">
-//             ${cryptoManager.formatCryptoPrice(product.price)}
-//           </span>
-//           | Stock: ${product.stock}
-//         </div>
-//       `;
-
-//       // Add click handler to product content for opening product page
-//       productContent.addEventListener("click", () => {
-//         productPageManager.openProductPage(product);
-//       });
-      
-//       gridItem.appendChild(productContent);
-      
-//       // Create buttons container
-//       const buttonsContainer = document.createElement("div");
-//       buttonsContainer.className = "product-buttons";
-
-//       // Add to cart button
-//       const addToCartButton = document.createElement("button");
-//       addToCartButton.textContent = "💰";
-//       addToCartButton.className = "add-to-cart-btn";
-//       addToCartButton.addEventListener("click", (e) => {
-//         e.stopPropagation(); // Prevent event from bubbling up
-//         cartManager.addItem(product.product_id);
-//       });
-
-//       // Share button
-//       const shareButton = document.createElement("button");
-//       shareButton.textContent = "🚀";
-//       shareButton.className = "share-btn";
-//       shareButton.addEventListener("click", (e) => {
-//         e.preventDefault(); // Prevent default behavior
-//         e.stopPropagation(); // Stop event from bubbling up
-//         socialSharingManager.showShareOptions(product);
-//       });
-
-//       // Rate button
-//       const rateButton = document.createElement("button");
-//       rateButton.textContent = "⭐";
-//       rateButton.className = "rate-btn";
-//       rateButton.addEventListener("click", (e) => {
-//         e.preventDefault(); // Prevent default behavior
-//         e.stopPropagation(); // Stop event from bubbling up
-//         ratingManager.openRatingModal(product.product_id.toString(), e);
-//       });
-
-//       // Add buttons to container
-//       buttonsContainer.appendChild(addToCartButton);
-//       buttonsContainer.appendChild(shareButton);
-//       buttonsContainer.appendChild(rateButton);
-      
-//       // Add buttons container to grid item
-//       gridItem.appendChild(buttonsContainer);
-//       gridContainer.appendChild(gridItem);
-//     });
-
-//    if (!document.querySelector('#product-buttons-styles')) {
-//     const style = document.createElement('style');
-//     style.id = 'product-buttons-styles';
-//     style.textContent = `
-//         .product-buttons {
-//             position: absolute;
-//             top: 10px;
-//             right: 10px;
-//             display: flex;
-//             flex-direction: column;
-//             gap: 8px;
-//             z-index: 10;
-//         }
-
-//         .product-buttons button {
-//             width: 32px;
-//             height: 32px;
-//             border-radius: 50%;
-//             cursor: pointer;
-//             background: rgba(255, 255, 255, 0.95);
-//             border: 1px solid #ddd;
-//             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-//             transition: all 0.2s ease;
-//             display: flex;
-//             align-items: center;
-//             justify-content: center;
-//             padding: 0;
-//         }
-
-//         .product-buttons button:hover {
-//             transform: scale(1.1);
-//             background: white;
-//             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-//         }
-
-//         .product-buttons button:active {
-//             transform: scale(0.95);
-//         }
-//     `;
-//     document.head.appendChild(style);
-// }
-//   productPageManager.updateProducts(this.state.products);
-//     if (!window.ratingManagerInitialized) {
-//       ratingManager.initialize();
-//       window.ratingManagerInitialized = true;
-//     }
-// if (!window.ratingManagerInitialized) {
-//     ratingManager.initialize();
-//     window.ratingManagerInitialized = true;
-//   }
-//     await ratingManager.fetchUserRatings();
-//     this.initializeImageSliders();
-// },
-// async renderProducts() {
-   
-//     const gridContainer = document.querySelector(".grid-container");
-//     if (!gridContainer) return;
-    
-//     gridContainer.innerHTML = "";
-//     const currentLang = i18nManager.state.currentLanguage;
-    
-//     this.state.products.forEach((product) => {
-//       const gridItem = document.createElement("div");
-//       gridItem.className = "grid-item grid-item-xl";
-//       gridItem.dataset.productId = product.product_id;
-
-//       // Use displayName which contains the translated name
-//       const productName = product.displayName;
-      
-//       // Create the product content
-//       const productContent = document.createElement("div");
-//       productContent.className = "product-content";
-      
-//       // Create image slider
-//       const imageSlider = this.createImageSlider(product, productName);
-      
-//       productContent.innerHTML = `
-//         ${imageSlider}
-//         <div class="overlay">
-//           ${productName} | 
-//           <span class="price-span" data-usd-price="${product.price}">
-//             ${cryptoManager.formatCryptoPrice(product.price)}
-//           </span>
-//           | ${i18nManager.translate('ui.labels.stock')}: ${product.stock}
-//         </div>
-//       `;
-
-//     // Add product click handler
-//     productContent.addEventListener("click", () => {
-//       productPageManager.openProductPage(product);
-//     });
-    
-//     // Create buttons container with all buttons
-//     const buttonsContainer = this.createButtonsContainer(product, translations, buttonTemplate);
-    
-//     gridItem.append(productContent, buttonsContainer);
-//     fragment.appendChild(gridItem);
-//   });
-  
-//   // Append all items at once
-//   gridContainer.appendChild(fragment);
-  
-//   // Add styles if needed
-//   this.ensureStylesExist();
-  
-//   // Update related managers
-//   await this.updateRelatedManagers();
-// },
 
 // Helper methods to keep the main render method clean
 async renderProducts() {
@@ -3200,70 +2910,6 @@ createImageSlider(product, productName) {
   return sliderHtml + '</div>';
 },
 
-// createButtonsContainer(product, translations, buttonTemplate) {
-//   const container = document.createElement("div");
-//   container.className = "product-buttons";
-
-//   // Add to Cart button
-//   const addToCartButton = buttonTemplate.cloneNode();
-//   addToCartButton.textContent = translations.addToCart;
-//   addToCartButton.className = "add-to-cart-btn";
-//   addToCartButton.addEventListener("click", (e) => {
-//     e.stopPropagation();
-//     cartManager.addItem(product.product_id);
-//   });
-
-//   // Share button
-//   const shareButton = buttonTemplate.cloneNode();
-//   shareButton.textContent = translations.share;
-//   shareButton.className = "share-btn";
-//   shareButton.addEventListener("click", (e) => {
-//     e.preventDefault();
-//     e.stopPropagation();
-//     socialSharingManager.showShareOptions(product);
-//   });
-
-//   // Rate button
-//   const rateButton = buttonTemplate.cloneNode();
-//   rateButton.textContent = translations.rate;
-//   rateButton.className = "rate-btn";
-//   rateButton.addEventListener("click", (e) => {
-//     e.preventDefault();
-//     e.stopPropagation();
-//     ratingManager.openRatingModal(product.product_id.toString(), e);
-//   });
-
-//   container.append(addToCartButton, shareButton, rateButton);
-//   return container;
-  
-// },
-
-// ensureStylesExist() {
-//   if (!document.querySelector('#product-buttons-styles')) {
-//     const styles = document.createElement('style');
-//     styles.id = 'product-buttons-styles';
-//     styles.textContent = `
-//       .product-buttons {
-//         display: flex;
-//         gap: 8px;
-//         padding: 8px;
-//         justify-content: center;
-//       }
-//       .product-buttons button {
-//         padding: 6px 12px;
-//         border-radius: 4px;
-//         border: 1px solid #ddd;
-//         background: white;
-//         cursor: pointer;
-//         transition: all 0.2s;
-//       }
-//       .product-buttons button:hover {
-//         background: #f5f5f5;
-//       }
-//     `;
-//     document.head.appendChild(styles);
-//   }
-// },
 createButtonsContainer(product, translations, buttonTemplate) {
   const container = document.createElement("div");
   container.className = "product-buttons";
