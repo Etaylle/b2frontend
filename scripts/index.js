@@ -2283,12 +2283,43 @@ const i18nManager = {
     window.dispatchEvent(new CustomEvent('languageChanged', { detail: { language: lang } }));
   },
 
-  // Add methods for handling product names
-  getProductName(product) {
-    if (!product) return '';
-    const lang = this.state.currentLanguage;
-    return lang === 'en' ? product.name : (product[`name_${lang}`] || product.name);
-  },
+//  getProductName(product) {
+//     const currentLang = this.state.currentLanguage;
+    
+//     // Use displayName if available (from backend)
+//     if (product.displayName) {
+//       return product.displayName;
+//     }
+    
+//     // Fallback chain
+//     return currentLang === 'en' ? 
+//            product.name :
+//            product[`name_${currentLang}`] || 
+//            product.translations?.[currentLang]?.name || 
+//            product.name;
+//   }
+getProductName(product) {
+  const currentLang = this.state.currentLanguage;
+  
+  // Try direct language-specific field first
+  const langField = `name_${currentLang}`;
+  if (currentLang !== 'en' && product[langField]) {
+    return product[langField];
+  }
+  
+  // Try translations object next
+  if (currentLang !== 'en' && product.translations?.[currentLang]?.name) {
+    return product.translations[currentLang].name;
+  }
+  
+  // Fallback to displayName if available
+  if (product.displayName) {
+    return product.displayName;
+  }
+  
+  // Final fallback to default name
+  return product.name;
+},
 
   getCategoryName(category) {
     if (!category) return '';
@@ -2314,6 +2345,28 @@ const i18nManager = {
     }
     
     return result || key;
+  },
+  getProductTranslation(product, field = 'name') {
+    const currentLang = this.state.currentLanguage;
+    
+    // If current language is English, return the default name
+    if (currentLang === 'en') {
+      return product[field];
+    }
+    
+    // Try to get translation from translations object first
+    if (product.translations?.[currentLang]?.[field]) {
+      return product.translations[currentLang][field];
+    }
+    
+    // Try to get translation from direct field (name_srb, name_de)
+    const translatedField = `${field}_${currentLang}`;
+    if (product[translatedField]) {
+      return product[translatedField];
+    }
+    
+    // Fallback to English
+    return product[field];
   },
 
   createLanguageSwitcher() {
@@ -2350,9 +2403,30 @@ const i18nManager = {
         element.textContent = translation;
       }
     });
+  },
+//  // Helper method to transform product data with translations
+//   transformProductData(product) {
+//     return {
+//       ...product,
+//       displayName: this.getProductTranslation(product, 'name'),
+//       displayDescription: this.getProductTranslation(product, 'description'),
+//       translations: product.translations || {},
+//       // Ensure we have fields for each supported language
+//       name_srb: product.name_srb || product.translations?.srb?.name || '',
+//       name_de: product.name_de || product.translations?.de?.name || '',
+//       description_srb: product.description_srb || product.translations?.srb?.description || '',
+//       description_de: product.description_de || product.translations?.de?.description || ''
+//     };
+//   }
+// };
+transformProductData(product) {
+    // No need for complex transformation since backend handles it
+    return {
+      ...product,
+      displayName: this.getProductName(product)
+    };
   }
 };
-
 const categoryManager = {
   state: {
     categories: [],
@@ -2645,45 +2719,75 @@ async setupSearch() {
 //     showNotification(error.message, "error");
 //   }
 // },
- async fetchProducts(categoryId = null) {
-  try {
-    const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-    const currentLang = i18nManager.state.currentLanguage;
+//  async fetchProducts(categoryId = null) {
+//   try {
+//     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+//     const currentLang = i18nManager.state.currentLanguage;
     
-    // Add language parameter to URL
-    const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
-    url.searchParams.append('lang', currentLang);
+//     // Add language parameter to URL
+//     const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
+//     url.searchParams.append('lang', currentLang);
     
-    const response = await fetch(url, {
-      headers: {
-        'Accept-Language': currentLang // Also send language in header
-      }
-    });
+//     const response = await fetch(url, {
+//       headers: {
+//         'Accept-Language': currentLang // Also send language in header
+//       }
+//     });
     
-    if (!response.ok) throw new Error("Failed to fetch products");
-    const data = await response.json();
+//     if (!response.ok) throw new Error("Failed to fetch products");
+//     const data = await response.json();
     
-    // Store products in state
-    this.state.products = data.success ? data.products : data;
+//     // Store products in state
+//     this.state.products = data.success ? data.products : data;
     
-    // If products don't have translations, we might want to transform them
-    this.state.products = this.state.products.map(product => ({
-      ...product,
-      // Ensure we have a translations field even if empty
-      translations: product.translations || {},
-      // Make sure we have the base name in English
-      name: product.name || '',
-      // Add convenience fields for each supported language
-      name_srb: product[`name_srb`] || product.translations?.srb?.name || '',
-      name_de: product[`name_de`] || product.translations?.de?.name || ''
-    }));
+//     // If products don't have translations, we might want to transform them
+//     this.state.products = this.state.products.map(product => ({
+//       ...product,
+//       // Ensure we have a translations field even if empty
+//       translations: product.translations || {},
+//       // Make sure we have the base name in English
+//       name: product.name || '',
+//       // Add convenience fields for each supported language
+//       name_srb: product[`name_srb`] || product.translations?.srb?.name || '',
+//       name_de: product[`name_de`] || product.translations?.de?.name || ''
+//     }));
     
-    await this.renderProducts();
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    showNotification(error.message, "error");
-  }
-},
+//     await this.renderProducts();
+//   } catch (error) {
+//     console.error("Error fetching products:", error);
+//     showNotification(error.message, "error");
+//   }
+// },
+async fetchProducts(categoryId = null) {
+    try {
+      const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+      const currentLang = i18nManager.state.currentLanguage;
+      
+      // Add language parameter to URL
+      const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
+      url.searchParams.append('lang', currentLang);
+      
+      const response = await fetch(url.toString(), {
+        headers: {
+          'Accept-Language': currentLang
+        }
+      });
+      
+      if (!response.ok) throw new Error("Failed to fetch products");
+      const data = await response.json();
+      
+      // Transform the product data with translations
+      const products = (data.success ? data.products : data).map(product => 
+        i18nManager.transformProductData(product)
+      );
+      
+      this.state.products = products;
+      await this.renderProducts();
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      showNotification(error.message, "error");
+    }
+  },
   renderCategories() {
     const container = document.querySelector(".categories");
     if (!container) {
@@ -2863,6 +2967,63 @@ async setupSearch() {
 //     await ratingManager.fetchUserRatings();
 //     this.initializeImageSliders();
 // },
+// async renderProducts() {
+   
+//     const gridContainer = document.querySelector(".grid-container");
+//     if (!gridContainer) return;
+    
+//     gridContainer.innerHTML = "";
+//     const currentLang = i18nManager.state.currentLanguage;
+    
+//     this.state.products.forEach((product) => {
+//       const gridItem = document.createElement("div");
+//       gridItem.className = "grid-item grid-item-xl";
+//       gridItem.dataset.productId = product.product_id;
+
+//       // Use displayName which contains the translated name
+//       const productName = product.displayName;
+      
+//       // Create the product content
+//       const productContent = document.createElement("div");
+//       productContent.className = "product-content";
+      
+//       // Create image slider
+//       const imageSlider = this.createImageSlider(product, productName);
+      
+//       productContent.innerHTML = `
+//         ${imageSlider}
+//         <div class="overlay">
+//           ${productName} | 
+//           <span class="price-span" data-usd-price="${product.price}">
+//             ${cryptoManager.formatCryptoPrice(product.price)}
+//           </span>
+//           | ${i18nManager.translate('ui.labels.stock')}: ${product.stock}
+//         </div>
+//       `;
+
+//     // Add product click handler
+//     productContent.addEventListener("click", () => {
+//       productPageManager.openProductPage(product);
+//     });
+    
+//     // Create buttons container with all buttons
+//     const buttonsContainer = this.createButtonsContainer(product, translations, buttonTemplate);
+    
+//     gridItem.append(productContent, buttonsContainer);
+//     fragment.appendChild(gridItem);
+//   });
+  
+//   // Append all items at once
+//   gridContainer.appendChild(fragment);
+  
+//   // Add styles if needed
+//   this.ensureStylesExist();
+  
+//   // Update related managers
+//   await this.updateRelatedManagers();
+// },
+
+// Helper methods to keep the main render method clean
 async renderProducts() {
   const gridContainer = document.querySelector(".grid-container");
   if (!gridContainer) return;
@@ -2870,16 +3031,16 @@ async renderProducts() {
   // Clear container once
   gridContainer.innerHTML = "";
   
-  // Cache translations to avoid multiple lookups
-  const translations = {
-    stock: i18nManager.translate('ui.labels.stock'),
-    addToCart: i18nManager.translate('ui.buttons.addToCart'),
-    share: i18nManager.translate('ui.buttons.share'),
-    rate: i18nManager.translate('ui.buttons.rate')
-  };
-  
   // Create document fragment for better performance
   const fragment = document.createDocumentFragment();
+  
+  // Cache translations to avoid multiple lookups
+  const translations = {
+    addToCart: i18nManager.translate('ui.buttons.addToCart'),
+    share: i18nManager.translate('ui.buttons.share'),
+    rate: i18nManager.translate('ui.buttons.rate'),
+    stock: i18nManager.translate('ui.labels.stock')
+  };
   
   // Create button template for reuse
   const buttonTemplate = document.createElement('button');
@@ -2889,14 +3050,15 @@ async renderProducts() {
     gridItem.className = "grid-item grid-item-xl";
     gridItem.dataset.productId = product.product_id;
 
+    // Get translated product name using i18nManager
     const productName = i18nManager.getProductName(product);
-
-    // Build image slider HTML
-    const imageSlider = this.createImageSlider(product, productName);
-
-    // Create product content
+    
     const productContent = document.createElement("div");
     productContent.className = "product-content";
+    
+    // Create image slider
+    const imageSlider = this.createImageSlider(product, productName);
+    
     productContent.innerHTML = `
       ${imageSlider}
       <div class="overlay">
@@ -2930,7 +3092,6 @@ async renderProducts() {
   await this.updateRelatedManagers();
 },
 
-// Helper methods to keep the main render method clean
 createImageSlider(product, productName) {
   let sliderHtml = '<div class="image-slider">';
   
@@ -2982,6 +3143,99 @@ createButtonsContainer(product, translations, buttonTemplate) {
 
   container.append(addToCartButton, shareButton, rateButton);
   return container;
+},
+
+ensureStylesExist() {
+  if (!document.querySelector('#product-buttons-styles')) {
+    const styles = document.createElement('style');
+    styles.id = 'product-buttons-styles';
+    styles.textContent = `
+      .product-buttons {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        z-index: 10;
+      }
+
+      .product-buttons button {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid #ddd;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+      }
+
+      .product-buttons button:hover {
+        transform: scale(1.1);
+        background: white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+    `;
+    document.head.appendChild(styles);
+  }
+},
+createImageSlider(product, productName) {
+  let sliderHtml = '<div class="image-slider">';
+  
+  if (product.images?.length) {
+    sliderHtml += product.images
+      .map((img, index) => `<img src="${img}" alt="${productName} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`)
+      .join('');
+  } else if (product.image_url) {
+    sliderHtml += `<img src="${product.image_url}" alt="${productName}" class="active">`;
+  } else {
+    sliderHtml += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
+  }
+  
+  return sliderHtml + '</div>';
+},
+
+createButtonsContainer(product, translations, buttonTemplate) {
+  const container = document.createElement("div");
+  container.className = "product-buttons";
+
+  // Add to Cart button
+  const addToCartButton = buttonTemplate.cloneNode();
+  addToCartButton.textContent = translations.addToCart;
+  addToCartButton.className = "add-to-cart-btn";
+  addToCartButton.addEventListener("click", (e) => {
+    e.stopPropagation();
+    cartManager.addItem(product.product_id);
+  });
+
+  // Share button
+  const shareButton = buttonTemplate.cloneNode();
+  shareButton.textContent = translations.share;
+  shareButton.className = "share-btn";
+  shareButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    socialSharingManager.showShareOptions(product);
+  });
+
+  // Rate button
+  const rateButton = buttonTemplate.cloneNode();
+  rateButton.textContent = translations.rate;
+  rateButton.className = "rate-btn";
+  rateButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    ratingManager.openRatingModal(product.product_id.toString(), e);
+  });
+
+  container.append(addToCartButton, shareButton, rateButton);
+  return container;
+  
 },
 
 ensureStylesExist() {
