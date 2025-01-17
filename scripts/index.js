@@ -2260,7 +2260,20 @@ const i18nManager = {
     }
   },
 
-  initialize() {
+  // initialize() {
+  //   const savedLang = localStorage.getItem('preferred_language');
+  //   const browserLang = navigator.language.split('-')[0];
+    
+  //   this.setLanguage(
+  //     savedLang || 
+  //     (this.state.supportedLanguages.includes(browserLang) ? browserLang : this.state.defaultLanguage)
+  //   );
+    
+  //   this.createLanguageSwitcher();
+  //   return this.updateUI();
+  //   this.fetchProducts();
+  // },
+ initialize() {
     const savedLang = localStorage.getItem('preferred_language');
     const browserLang = navigator.language.split('-')[0];
     
@@ -2270,10 +2283,10 @@ const i18nManager = {
     );
     
     this.createLanguageSwitcher();
-    return this.updateUI();
-    this.fetchProducts();
+    
+    // Initial content refresh
+    return this.refreshAllContent();
   },
-
 
   getCurrentLanguage() {
     console.log('Current language:', i18nManager.state.currentLanguage);
@@ -2302,7 +2315,20 @@ const i18nManager = {
   // Update the product list with the translated product names and prices
   categoryManager.renderProducts();
 },
-  setLanguage(lang) {
+  // setLanguage(lang) {
+  //   if (!this.state.supportedLanguages.includes(lang)) {
+  //     console.warn(`Language ${lang} not supported, falling back to ${this.state.defaultLanguage}`);
+  //     lang = this.state.defaultLanguage;
+  //   }
+    
+  //   this.state.currentLanguage = lang;
+  //   localStorage.setItem('preferred_language', lang);
+  //   document.documentElement.lang = lang;
+    
+  //   // Dispatch a custom event when language changes
+  //   window.dispatchEvent(new CustomEvent('languageChanged', { detail: { language: lang } }));
+  // },
+    setLanguage(lang) {
     if (!this.state.supportedLanguages.includes(lang)) {
       console.warn(`Language ${lang} not supported, falling back to ${this.state.defaultLanguage}`);
       lang = this.state.defaultLanguage;
@@ -2313,7 +2339,11 @@ const i18nManager = {
     document.documentElement.lang = lang;
     
     // Dispatch a custom event when language changes
-    window.dispatchEvent(new CustomEvent('languageChanged', { detail: { language: lang } }));
+    window.dispatchEvent(new CustomEvent('languageChanged', { 
+      detail: { 
+        language: lang 
+      } 
+    }));
   },
 getProductName(product) {
   const currentLang = this.state.currentLanguage;
@@ -2386,6 +2416,24 @@ getProductName(product) {
     return product[field];
   },
 
+  // createLanguageSwitcher() {
+  //   const container = document.querySelector('.header-controls') || document.createElement('div');
+  //   container.innerHTML = `
+  //     <select class="language-switcher" aria-label="Select language">
+  //       ${this.state.supportedLanguages.map(lang => `
+  //         <option value="${lang}" ${lang === this.state.currentLanguage ? 'selected' : ''}>
+  //           ${lang.toUpperCase()}
+  //         </option>
+  //       `).join('')}
+  //     </select>
+  //   `;
+
+  //   container.querySelector('.language-switcher').addEventListener('change', (e) => {
+  //     this.setLanguage(e.target.value);
+  //     this.updateUI();
+  //     window.dispatchEvent(new CustomEvent('refreshContent'));
+  //   });
+  // },
   createLanguageSwitcher() {
     const container = document.querySelector('.header-controls') || document.createElement('div');
     container.innerHTML = `
@@ -2398,11 +2446,30 @@ getProductName(product) {
       </select>
     `;
 
-    container.querySelector('.language-switcher').addEventListener('change', (e) => {
-      this.setLanguage(e.target.value);
+    container.querySelector('.language-switcher').addEventListener('change', async (e) => {
+      const newLang = e.target.value;
+      this.setLanguage(newLang);
       this.updateUI();
-      window.dispatchEvent(new CustomEvent('refreshContent'));
+      
+      // Refresh all content that depends on language
+      await this.refreshAllContent();
     });
+  },
+   async refreshAllContent() {
+    // Update UI elements with translated text
+    this.updateUI();
+
+    // Refresh categories and products
+    if (categoryManager) {
+      // First fetch and render categories
+      await categoryManager.fetchCategories();
+      
+      // Then fetch products based on current category selection
+      await categoryManager.fetchProducts(categoryManager.state.selectedCategory);
+      
+      // Update search setup
+      categoryManager.setupSearch();
+    }
   },
 
   updateUI() {
@@ -2698,7 +2765,7 @@ async setupSearch() {
       }));
 
       await this.renderCategories();
-      await this.fetchProducts(); // Fetch initial products
+      await this.fetchProducts(); 
     } catch (error) {
       console.error("Error fetching categories:", error);
       showNotification(error.message, "error");
