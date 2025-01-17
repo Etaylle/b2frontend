@@ -3116,42 +3116,6 @@ initializeImageSliders() {
     }, { passive: true });
   });
 },
-createButtonsContainer(product, translations, buttonTemplate) {
-  const container = document.createElement("div");
-  container.className = "product-buttons";
-
-  // Add to cart button
-      const addToCartButton = document.createElement("button");
-      addToCartButton.textContent = "💰";
-      addToCartButton.className = "add-to-cart-btn";
-      addToCartButton.addEventListener("click", (e) => {
-        e.stopPropagation(); // Prevent event from bubbling up
-        cartManager.addItem(product.product_id);
-      });
-
-      // Share button
-      const shareButton = document.createElement("button");
-      shareButton.textContent = "🚀";
-      shareButton.className = "share-btn";
-      shareButton.addEventListener("click", (e) => {
-        e.preventDefault(); // Prevent default behavior
-        e.stopPropagation(); // Stop event from bubbling up
-        socialSharingManager.showShareOptions(product);
-      });
-
-      // Rate button
-      const rateButton = document.createElement("button");
-      rateButton.textContent = "⭐";
-      rateButton.className = "rate-btn";
-      rateButton.addEventListener("click", (e) => {
-        e.preventDefault(); // Prevent default behavior
-        e.stopPropagation(); // Stop event from bubbling up
-        ratingManager.openRatingModal(product.product_id.toString(), e);
-      });
-
-  container.append(addToCartButton, shareButton, rateButton);
-  return container;
-},
 ensureStylesExist() {
   if (!document.querySelector('#product-buttons-styles')) {
     const styles = document.createElement('style');
@@ -3334,21 +3298,7 @@ ensureStylesExist() {
 //     document.head.appendChild(styles);
 //   }
 // },
-createImageSlider(product, productName) {
-  let sliderHtml = '<div class="image-slider">';
-  
-  if (product.images?.length) {
-    sliderHtml += product.images
-      .map((img, index) => `<img src="${img}" alt="${productName} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`)
-      .join('');
-  } else if (product.image_url) {
-    sliderHtml += `<img src="${product.image_url}" alt="${productName}" class="active">`;
-  } else {
-    sliderHtml += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
-  }
-  
-  return sliderHtml + '</div>';
-},
+
 
 createButtonsContainer(product, translations, buttonTemplate) {
   const container = document.createElement("div");
