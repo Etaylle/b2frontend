@@ -3200,14 +3200,79 @@ createImageSlider(product, productName) {
   return sliderHtml + '</div>';
 },
 
+// createButtonsContainer(product, translations, buttonTemplate) {
+//   const container = document.createElement("div");
+//   container.className = "product-buttons";
+
+//   // Add to Cart button
+//   const addToCartButton = buttonTemplate.cloneNode();
+//   addToCartButton.textContent = translations.addToCart;
+//   addToCartButton.className = "add-to-cart-btn";
+//   addToCartButton.addEventListener("click", (e) => {
+//     e.stopPropagation();
+//     cartManager.addItem(product.product_id);
+//   });
+
+//   // Share button
+//   const shareButton = buttonTemplate.cloneNode();
+//   shareButton.textContent = translations.share;
+//   shareButton.className = "share-btn";
+//   shareButton.addEventListener("click", (e) => {
+//     e.preventDefault();
+//     e.stopPropagation();
+//     socialSharingManager.showShareOptions(product);
+//   });
+
+//   // Rate button
+//   const rateButton = buttonTemplate.cloneNode();
+//   rateButton.textContent = translations.rate;
+//   rateButton.className = "rate-btn";
+//   rateButton.addEventListener("click", (e) => {
+//     e.preventDefault();
+//     e.stopPropagation();
+//     ratingManager.openRatingModal(product.product_id.toString(), e);
+//   });
+
+//   container.append(addToCartButton, shareButton, rateButton);
+//   return container;
+  
+// },
+
+// ensureStylesExist() {
+//   if (!document.querySelector('#product-buttons-styles')) {
+//     const styles = document.createElement('style');
+//     styles.id = 'product-buttons-styles';
+//     styles.textContent = `
+//       .product-buttons {
+//         display: flex;
+//         gap: 8px;
+//         padding: 8px;
+//         justify-content: center;
+//       }
+//       .product-buttons button {
+//         padding: 6px 12px;
+//         border-radius: 4px;
+//         border: 1px solid #ddd;
+//         background: white;
+//         cursor: pointer;
+//         transition: all 0.2s;
+//       }
+//       .product-buttons button:hover {
+//         background: #f5f5f5;
+//       }
+//     `;
+//     document.head.appendChild(styles);
+//   }
+// },
 createButtonsContainer(product, translations, buttonTemplate) {
   const container = document.createElement("div");
   container.className = "product-buttons";
 
   // Add to Cart button
   const addToCartButton = buttonTemplate.cloneNode();
-  addToCartButton.textContent = translations.addToCart;
+  addToCartButton.innerHTML = "💰";
   addToCartButton.className = "add-to-cart-btn";
+  addToCartButton.title = translations.addToCart;  // Add tooltip
   addToCartButton.addEventListener("click", (e) => {
     e.stopPropagation();
     cartManager.addItem(product.product_id);
@@ -3215,8 +3280,9 @@ createButtonsContainer(product, translations, buttonTemplate) {
 
   // Share button
   const shareButton = buttonTemplate.cloneNode();
-  shareButton.textContent = translations.share;
+  shareButton.innerHTML = "🚀";
   shareButton.className = "share-btn";
+  shareButton.title = translations.share;  // Add tooltip
   shareButton.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -3225,8 +3291,9 @@ createButtonsContainer(product, translations, buttonTemplate) {
 
   // Rate button
   const rateButton = buttonTemplate.cloneNode();
-  rateButton.textContent = translations.rate;
+  rateButton.innerHTML = "⭐";
   rateButton.className = "rate-btn";
+  rateButton.title = translations.rate;  // Add tooltip
   rateButton.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -3235,7 +3302,6 @@ createButtonsContainer(product, translations, buttonTemplate) {
 
   container.append(addToCartButton, shareButton, rateButton);
   return container;
-  
 },
 
 ensureStylesExist() {
@@ -3244,27 +3310,45 @@ ensureStylesExist() {
     styles.id = 'product-buttons-styles';
     styles.textContent = `
       .product-buttons {
+        position: absolute;
+        top: 10px;
+        right: 10px;
         display: flex;
+        flex-direction: column;
         gap: 8px;
-        padding: 8px;
-        justify-content: center;
+        z-index: 10;
       }
+
       .product-buttons button {
-        padding: 6px 12px;
-        border-radius: 4px;
-        border: 1px solid #ddd;
-        background: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
         cursor: pointer;
-        transition: all 0.2s;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid #ddd;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        font-size: 16px;  /* Size for emojis */
+        line-height: 1;   /* Proper emoji alignment */
       }
+
       .product-buttons button:hover {
-        background: #f5f5f5;
+        transform: scale(1.1);
+        background: white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .product-buttons button:active {
+        transform: scale(0.95);
       }
     `;
     document.head.appendChild(styles);
   }
 },
-
 async updateRelatedManagers() {
   productPageManager.updateProducts(this.state.products);
   
