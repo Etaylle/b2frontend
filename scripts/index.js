@@ -2665,7 +2665,23 @@ async setupSearch() {
     }
 },
   
-  async fetchCategories() {
+  // async fetchCategories() {
+  //   try {
+  //     const response = await fetch('https://backend-3mvr.onrender.com/api/categories');
+  //     if (!response.ok) throw new Error(`Failed to fetch categories: ${response.statusText}`);
+
+  //     const categories = await response.json();
+  //     if (!Array.isArray(categories)) throw new Error("Categories data is not an array");
+
+  //     this.state.categories = categories;
+  //     await this.renderCategories();
+  //     await this.fetchProducts(); // Fetch initial products
+  //   } catch (error) {
+  //     console.error("Error fetching categories:", error);
+  //     showNotification(error.message, "error");
+  //   }
+  // },
+ async fetchCategories() {
     try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/categories');
       if (!response.ok) throw new Error(`Failed to fetch categories: ${response.statusText}`);
@@ -2673,7 +2689,12 @@ async setupSearch() {
       const categories = await response.json();
       if (!Array.isArray(categories)) throw new Error("Categories data is not an array");
 
-      this.state.categories = categories;
+      // Transform categories with proper translations
+      this.state.categories = categories.map(category => ({
+        ...category,
+        displayName: i18nManager.getCategoryName(category)
+      }));
+
       await this.renderCategories();
       await this.fetchProducts(); // Fetch initial products
     } catch (error) {
@@ -2712,39 +2733,145 @@ async fetchProducts(categoryId = null) {
       showNotification(error.message, "error");
     }
   },
-  renderCategories() {
+  // renderCategories() {
+  //   const container = document.querySelector(".categories");
+  //   if (!container) {
+  //     console.error("Categories container not found");
+  //     return;
+  //   }
+
+  //   container.innerHTML = ""; // Clear existing categories
+
+  //   // Create "All" button
+  //   const allButton = document.createElement("button");
+  //   allButton.className = `category-btn ${this.state.selectedCategory === null ? "active" : ""}`;
+  //   allButton.textContent = "All";
+  //   allButton.onclick = () => this.selectCategory(null);
+  //   container.appendChild(allButton);
+
+  //   // Create category buttons
+  //   this.state.categories.forEach(category => {
+  //     const button = document.createElement("button");
+  //     button.className = `category-btn ${this.state.selectedCategory === category.id ? "active" : ""}`;
+  //     button.setAttribute("data-id", category.id);
+  //     button.textContent = category.name;
+  //     button.onclick = () => this.selectCategory(category.id);
+  //     container.appendChild(button);
+  //   });
+  // },
+renderCategories() {
     const container = document.querySelector(".categories");
     if (!container) {
       console.error("Categories container not found");
       return;
     }
 
-    container.innerHTML = ""; // Clear existing categories
+    // Clear existing categories once
+    container.innerHTML = "";
+
+    // Create document fragment for better performance
+    const fragment = document.createDocumentFragment();
 
     // Create "All" button
     const allButton = document.createElement("button");
     allButton.className = `category-btn ${this.state.selectedCategory === null ? "active" : ""}`;
-    allButton.textContent = "All";
+    allButton.textContent = i18nManager.translate('ui.categories.all');
     allButton.onclick = () => this.selectCategory(null);
-    container.appendChild(allButton);
+    fragment.appendChild(allButton);
 
     // Create category buttons
     this.state.categories.forEach(category => {
       const button = document.createElement("button");
       button.className = `category-btn ${this.state.selectedCategory === category.id ? "active" : ""}`;
       button.setAttribute("data-id", category.id);
-      button.textContent = category.name;
+      button.textContent = category.displayName;
       button.onclick = () => this.selectCategory(category.id);
-      container.appendChild(button);
+      fragment.appendChild(button);
     });
-  },
 
-  async selectCategory(categoryId) {
+    // Append all buttons at once
+    container.appendChild(fragment);
+
+    // Ensure styles exist
+    this.ensureCategoryStylesExist();
+  },
+  // async selectCategory(categoryId) {
+  //   this.state.selectedCategory = categoryId;
+  //   await this.fetchProducts(categoryId);
+  //   this.highlightSelectedCategory();
+  // },
+   async selectCategory(categoryId) {
     this.state.selectedCategory = categoryId;
-    await this.fetchProducts(categoryId);
-    this.highlightSelectedCategory();
-  },
+    this.state.searchTerm = ''; // Clear search when changing categories
+    
+    // Clear search input
+    const searchInput = document.getElementById('product-search');
+    if (searchInput) {
+      searchInput.value = '';
+    }
 
+    await this.renderCategories(); // Update active states
+    await this.fetchProducts(categoryId);
+  }
+,
+ensureCategoryStylesExist() {
+    if (!document.querySelector('#category-styles')) {
+      const styles = document.createElement('style');
+      styles.id = 'category-styles';
+      styles.textContent = `
+        .categories {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          margin-bottom: 20px;
+          padding: 10px;
+        }
+
+        .category-btn {
+          padding: 8px 16px;
+          border: 1px solid #ddd;
+          border-radius: 20px;
+          background: white;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          font-size: 14px;
+          color: #444;
+          min-width: 80px;
+          text-align: center;
+        }
+
+        .category-btn:hover {
+          background: #f5f5f5;
+          transform: translateY(-1px);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .category-btn.active {
+          background: #007bff;
+          color: white;
+          border-color: #0056b3;
+        }
+
+        .category-btn.active:hover {
+          background: #0056b3;
+        }
+
+        @media (max-width: 768px) {
+          .categories {
+            gap: 8px;
+            padding: 8px;
+          }
+
+          .category-btn {
+            padding: 6px 12px;
+            font-size: 13px;
+            min-width: 70px;
+          }
+        }
+      `;
+      document.head.appendChild(styles);
+    }
+  },
 
 // Helper methods to keep the main render method clean
 async renderProducts() {
