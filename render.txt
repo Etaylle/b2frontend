@@ -1,0 +1,45 @@
+// const gridContainer = document.querySelector(".grid-container");
+    // if (!gridContainer) return;
+    
+    // ratingManager.setProductData(this.state.products);
+    // gridContainer.innerHTML = "";
+
+    // this.state.products.forEach((product) => {
+    //   const gridItem = document.createElement("div");
+    //   gridItem.classList.add("grid-item", "grid-item-xl");
+    //   gridItem.setAttribute("data-product-id", product.product_id);
+
+    //   // Image slider code remains the same
+    //   let imageSlider = '<div class="image-slider">';
+    //   if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+    //     product.images.forEach((img, index) => {
+    //       imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
+    //     });
+    //   } else if (product.image_url) {
+    //     imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
+    //   } else {
+    //     imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
+    //   }
+    //   imageSlider += '</div>';
+
+    //   const ratingHTML = ratingManager.createProductRating(
+    //     product.product_id,
+    //     product.average_rating || 0,
+    //     product.total_ratings || 0
+    //   );
+
+    //   // Get product name in current language
+    //   const productName = i18nManager.getProductName(product);
+
+    //   // Create product content container with translations
+    //   const productContent = document.createElement("div");
+    //   productContent.className = "product-content";
+    //   productContent.innerHTML = `
+    //     ${imageSlider}
+    //     <div class="overlay">
+    //       ${productName} | <span class="price-span" data-usd-price="${product.price}">
+    //         ${cryptoManager.formatCryptoPrice(product.price)}
+    //       </span>
+    //       | ${i18n.translate('labels.stock')}: ${product.stock}
+    //     </div>
+    //   `;

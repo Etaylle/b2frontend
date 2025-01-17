@@ -121,13 +121,23 @@ const languageManager = {
     header.appendChild(selector);
   },
 
-  changeLanguage(lang) {
-    if (this.state.translations[lang]) {
-      this.state.currentLanguage = lang;
-      localStorage.setItem('preferredLanguage', lang);
-      this.updatePageContent();
-    }
-  },
+  async changeLanguage(language) {
+  if (!this.state.supportedLanguages.includes(language)) {
+    console.error(`Language ${language} is not supported`);
+    return;
+  }
+
+  this.state.currentLanguage = language;
+  localStorage.setItem('preferred_language', language);
+  
+  // Reload categories and products with new language
+  if (categoryManager) {
+    await categoryManager.fetchCategories();
+    await categoryManager.fetchProducts(categoryManager.state.selectedCategory);
+  }
+  
+  this.updateUILanguage();
+},
 
   translate(key) {
     return this.state.translations[this.state.currentLanguage]?.[key] || 
@@ -2501,16 +2511,16 @@ const i18nManager = {
 
   // Enhanced method to get localized content
   getLocalizedContent(item, field) {
-    if (!item) return '';
-    
-    const currentLang = this.state.currentLanguage;
-    if (currentLang === 'en') {
-      return item[field] || '';
-    }
-    
-    const localizedField = `${field}_${currentLang}`;
-    return item[localizedField] || item[field] || '';
-  },
+  if (!item) return '';
+  
+  const currentLang = this.state.currentLanguage;
+  if (currentLang === 'en') {
+    return item[field] || '';
+  }
+  
+  const localizedField = `${field}_${currentLang}`;
+  return item[localizedField] || item[field] || ''; // Fallback to English if translation missing
+},
 
   // Specific method for product names
   getProductName(product) {
@@ -2995,51 +3005,7 @@ async fetchProducts(categoryId = null) {
 //     this.initializeImageSliders();
 // },
 async renderProducts() {
-    // const gridContainer = document.querySelector(".grid-container");
-    // if (!gridContainer) return;
     
-    // ratingManager.setProductData(this.state.products);
-    // gridContainer.innerHTML = "";
-
-    // this.state.products.forEach((product) => {
-    //   const gridItem = document.createElement("div");
-    //   gridItem.classList.add("grid-item", "grid-item-xl");
-    //   gridItem.setAttribute("data-product-id", product.product_id);
-
-    //   // Image slider code remains the same
-    //   let imageSlider = '<div class="image-slider">';
-    //   if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-    //     product.images.forEach((img, index) => {
-    //       imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
-    //     });
-    //   } else if (product.image_url) {
-    //     imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
-    //   } else {
-    //     imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
-    //   }
-    //   imageSlider += '</div>';
-
-    //   const ratingHTML = ratingManager.createProductRating(
-    //     product.product_id,
-    //     product.average_rating || 0,
-    //     product.total_ratings || 0
-    //   );
-
-    //   // Get product name in current language
-    //   const productName = i18nManager.getProductName(product);
-
-    //   // Create product content container with translations
-    //   const productContent = document.createElement("div");
-    //   productContent.className = "product-content";
-    //   productContent.innerHTML = `
-    //     ${imageSlider}
-    //     <div class="overlay">
-    //       ${productName} | <span class="price-span" data-usd-price="${product.price}">
-    //         ${cryptoManager.formatCryptoPrice(product.price)}
-    //       </span>
-    //       | ${i18n.translate('labels.stock')}: ${product.stock}
-    //     </div>
-    //   `;
  const gridContainer = document.querySelector(".grid-container");
     if (!gridContainer) return;
     
@@ -3090,8 +3056,7 @@ async renderProducts() {
 
       // Create buttons with translations
       const addToCartButton = document.createElement("button");
-      addToCartButton.textContent = i18n.translate('buttons.addToCart');
-      addToCartButton.className = "add-to-cart-btn";
+      addToCartButton.textContent = i18nManager.getTranslation('buttons.addToCart');      addToCartButton.className = "add-to-cart-btn";
       addToCartButton.addEventListener("click", (e) => {
         e.stopPropagation();
         cartManager.addItem(product.product_id);
@@ -3223,20 +3188,46 @@ window.recommendationManager = recommendationManager;
 window.socialSharingManager = socialSharingManager;
 window.productPageManager = productPageManager;
 window.i18nManager = i18nManager;
+// async function fetchProducts(categoryId = null) {
+//   try {
+//     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+//     const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
+//     const response = await fetch(url);
+    
+//     if (!response.ok) throw new Error("Failed to fetch products");
+//     const data = await response.json();
+    
+//     // Check if the response has the new format with success property
+//     if (data.success) {
+//       this.state.products = data.products ? data.products : data; 
+//     } else {productPageManager.updateProducts(this.state.products);
+//       this.state.products = data; // Fallback for old format
+//     }
+    
+//     await this.renderProducts();
+//   } catch (error) {
+//     console.error("Error fetching products:", error);
+//     showNotification(error.message, "error");
+//   }
+
+// }
 async function fetchProducts(categoryId = null) {
   try {
     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-    const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
-    const response = await fetch(url);
+    const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
+    
+    // Add language parameter
+    url.searchParams.append('lang', this.state.currentLanguage);
+    
+    const response = await fetch(url.toString());
     
     if (!response.ok) throw new Error("Failed to fetch products");
     const data = await response.json();
     
-    // Check if the response has the new format with success property
     if (data.success) {
-      this.state.products = data.products ? data.products : data; 
-    } else {productPageManager.updateProducts(this.state.products);
-      this.state.products = data; // Fallback for old format
+      this.state.products = data.data; // Note: Changed to data.data since backend returns data property
+    } else {
+      this.state.products = data;
     }
     
     await this.renderProducts();
@@ -3244,7 +3235,6 @@ async function fetchProducts(categoryId = null) {
     console.error("Error fetching products:", error);
     showNotification(error.message, "error");
   }
-
 }
 function initializeImageSliders() {
   document.querySelectorAll('.image-slider').forEach(slider => {
