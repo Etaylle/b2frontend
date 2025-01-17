@@ -62,10 +62,67 @@
                     <li id="login-btn"><a href="#login" aria-label="Login">Login</a></li>
                     <li id="register-btn"><a href="#register" aria-label="Register">Register</a></li>
                     <li id="logout-button" style="display: none;"><a href="#logout" aria-label="Logout">Logout</a></li> -->
-                <button data-i18n="ui.buttons.login">Login</button>
+                <!-- <button data-i18n="ui.buttons.login">Login</button>
                 <button data-i18n="ui.buttons.register">Register</button>
                 <button data-i18n="ui.buttons.cart">Cart</button>
-                <button data-i18n="ui.buttons.orderHistory">Order History</button>
+                <button data-i18n="ui.buttons.orderHistory">Order History</button> -->
+                <style>
+                    .nav-buttons {
+                        display: flex;
+                        gap: 1rem;
+                        align-items: center;
+                        padding: 0.5rem;
+                    }
+                
+                    .nav-button {
+                        display: inline-flex;
+                        align-items: center;
+                        padding: 0.5rem 1rem;
+                        background-color: transparent;
+                        color: white;
+                        text-decoration: none;
+                        border: none;
+                        border-radius: 4px;
+                        font-size: 0.9rem;
+                        font-weight: 500;
+                        cursor: pointer;
+                        transition: all 0.2s ease-in-out;
+                    }
+                
+                    .nav-button:hover {
+                        background-color: rgba(255, 255, 255, 0.1);
+                        transform: translateY(-1px);
+                    }
+                
+                    .nav-button:active {
+                        transform: translateY(0);
+                    }
+                
+                    /* Optional: Add icons to buttons */
+                    .nav-button i {
+                        margin-right: 0.5rem;
+                        font-size: 1rem;
+                    }
+                </style>
+                
+                <div class="nav-buttons">
+                    <a href="login.html" class="nav-button" data-i18n="ui.buttons.login">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Login
+                    </a>
+                    <a href="register.html" class="nav-button" data-i18n="ui.buttons.register">
+                        <i class="fas fa-user-plus"></i>
+                        Register
+                    </a>
+                    <a href="cart.html" class="nav-button" data-i18n="ui.buttons.cart">
+                        <i class="fas fa-shopping-cart"></i>
+                        Cart
+                    </a>
+                    <a href="orderHistory.html" class="nav-button" data-i18n="ui.buttons.orderHistory">
+                        <i class="fas fa-history"></i>
+                        Order History
+                    </a>
+                </div>
                 </ul>
 
                 
