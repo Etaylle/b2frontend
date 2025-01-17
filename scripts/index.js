@@ -2317,7 +2317,7 @@ const socialSharingManager = {
 //   }};
 const i18nManager = {
   state: {
-    currentLanguage: 'en', // Default language
+    currentLanguage: 'en',
     translations: {
       en: {
         buttons: {
@@ -2400,18 +2400,12 @@ const i18nManager = {
 
   async initialize() {
     try {
-      // Load saved language preference from localStorage
       const savedLang = localStorage.getItem('preferred_language');
       if (savedLang && this.state.supportedLanguages.includes(savedLang)) {
         this.state.currentLanguage = savedLang;
       }
-
-      // Setup language switcher
       this.setupLanguageSwitcher();
-      
-      // Update UI language
       this.updateUILanguage();
-
     } catch (error) {
       console.error('Error initializing i18nManager:', error);
       showNotification('Error loading translations', 'error');
@@ -2420,8 +2414,6 @@ const i18nManager = {
 
   setupLanguageSwitcher() {
     const container = document.querySelector('.header-controls') || document.body;
-    
-    // Remove existing switcher if present
     const existingSwitcher = container.querySelector('.language-switcher');
     if (existingSwitcher) {
       existingSwitcher.remove();
@@ -2454,11 +2446,12 @@ const i18nManager = {
     this.state.currentLanguage = language;
     localStorage.setItem('preferred_language', language);
     
-    // Reload products and categories in new language
-    await categoryManager.fetchCategories();
-    await categoryManager.fetchProducts(categoryManager.state.selectedCategory);
+    // Reload categories and products
+    if (categoryManager) {
+      await categoryManager.fetchCategories();
+      await categoryManager.fetchProducts(categoryManager.state.selectedCategory);
+    }
     
-    // Update UI elements
     this.updateUILanguage();
   },
 
@@ -2466,7 +2459,7 @@ const i18nManager = {
     const translations = this.state.translations[this.state.currentLanguage];
     if (!translations) return;
 
-    // Update all elements with data-i18n attribute
+    // Update elements with data-i18n attribute
     document.querySelectorAll('[data-i18n]').forEach(element => {
       const key = element.getAttribute('data-i18n');
       const translation = this.getTranslation(key);
@@ -2490,21 +2483,43 @@ const i18nManager = {
   },
 
   getTranslation(key) {
-    const keys = key.split('.');
-    let translation = this.state.translations[this.state.currentLanguage];
-    
-    for (const k of keys) {
-      if (!translation[k]) return key;
-      translation = translation[k];
+    try {
+      const keys = key.split('.');
+      let translation = this.state.translations[this.state.currentLanguage];
+      
+      for (const k of keys) {
+        if (!translation || !translation[k]) return key;
+        translation = translation[k];
+      }
+      
+      return translation;
+    } catch (error) {
+      console.error('Translation error:', error);
+      return key;
     }
-    
-    return translation;
   },
 
-  // Helper method to get product name in current language
+  // Enhanced method to get localized content
+  getLocalizedContent(item, field) {
+    if (!item) return '';
+    
+    const currentLang = this.state.currentLanguage;
+    if (currentLang === 'en') {
+      return item[field] || '';
+    }
+    
+    const localizedField = `${field}_${currentLang}`;
+    return item[localizedField] || item[field] || '';
+  },
+
+  // Specific method for product names
   getProductName(product) {
-    const langKey = this.state.currentLanguage === 'en' ? 'name' : `name_${this.state.currentLanguage}`;
-    return product[langKey] || product.name; // Fallback to default name if translation doesn't exist
+    return this.getLocalizedContent(product, 'name');
+  },
+
+  // Specific method for category names
+  getCategoryName(category) {
+    return this.getLocalizedContent(category, 'name');
   }
 };
 const categoryManager = {
@@ -2980,40 +2995,76 @@ async fetchProducts(categoryId = null) {
 //     this.initializeImageSliders();
 // },
 async renderProducts() {
-    const gridContainer = document.querySelector(".grid-container");
+    // const gridContainer = document.querySelector(".grid-container");
+    // if (!gridContainer) return;
+    
+    // ratingManager.setProductData(this.state.products);
+    // gridContainer.innerHTML = "";
+
+    // this.state.products.forEach((product) => {
+    //   const gridItem = document.createElement("div");
+    //   gridItem.classList.add("grid-item", "grid-item-xl");
+    //   gridItem.setAttribute("data-product-id", product.product_id);
+
+    //   // Image slider code remains the same
+    //   let imageSlider = '<div class="image-slider">';
+    //   if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+    //     product.images.forEach((img, index) => {
+    //       imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
+    //     });
+    //   } else if (product.image_url) {
+    //     imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
+    //   } else {
+    //     imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
+    //   }
+    //   imageSlider += '</div>';
+
+    //   const ratingHTML = ratingManager.createProductRating(
+    //     product.product_id,
+    //     product.average_rating || 0,
+    //     product.total_ratings || 0
+    //   );
+
+    //   // Get product name in current language
+    //   const productName = i18nManager.getProductName(product);
+
+    //   // Create product content container with translations
+    //   const productContent = document.createElement("div");
+    //   productContent.className = "product-content";
+    //   productContent.innerHTML = `
+    //     ${imageSlider}
+    //     <div class="overlay">
+    //       ${productName} | <span class="price-span" data-usd-price="${product.price}">
+    //         ${cryptoManager.formatCryptoPrice(product.price)}
+    //       </span>
+    //       | ${i18n.translate('labels.stock')}: ${product.stock}
+    //     </div>
+    //   `;
+ const gridContainer = document.querySelector(".grid-container");
     if (!gridContainer) return;
     
-    ratingManager.setProductData(this.state.products);
     gridContainer.innerHTML = "";
-
+    
     this.state.products.forEach((product) => {
       const gridItem = document.createElement("div");
       gridItem.classList.add("grid-item", "grid-item-xl");
       gridItem.setAttribute("data-product-id", product.product_id);
 
-      // Image slider code remains the same
+      // Get localized product name
+      const productName = i18nManager.getProductName(product);
+
       let imageSlider = '<div class="image-slider">';
       if (product.images && Array.isArray(product.images) && product.images.length > 0) {
         product.images.forEach((img, index) => {
-          imageSlider += `<img src="${img}" alt="${product.name} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
+          imageSlider += `<img src="${img}" alt="${productName} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
         });
       } else if (product.image_url) {
-        imageSlider += `<img src="${product.image_url}" alt="${product.name}" class="active">`;
+        imageSlider += `<img src="${product.image_url}" alt="${productName}" class="active">`;
       } else {
         imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
       }
       imageSlider += '</div>';
 
-      const ratingHTML = ratingManager.createProductRating(
-        product.product_id,
-        product.average_rating || 0,
-        product.total_ratings || 0
-      );
-
-      // Get product name in current language
-      const productName = i18nManager.getProductName(product);
-
-      // Create product content container with translations
       const productContent = document.createElement("div");
       productContent.className = "product-content";
       productContent.innerHTML = `
@@ -3022,7 +3073,7 @@ async renderProducts() {
           ${productName} | <span class="price-span" data-usd-price="${product.price}">
             ${cryptoManager.formatCryptoPrice(product.price)}
           </span>
-          | ${i18n.translate('labels.stock')}: ${product.stock}
+          | ${i18nManager.getTranslation('labels.stock')}: ${product.stock}
         </div>
       `;
 
@@ -3032,7 +3083,7 @@ async renderProducts() {
       });
       
       gridItem.appendChild(productContent);
-      
+      gridContainer.appendChild(gridItem);
       // Create buttons container
       const buttonsContainer = document.createElement("div");
       buttonsContainer.className = "product-buttons";
@@ -3123,13 +3174,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     // Initialize all managers in parallel with proper error handling
     await Promise.allSettled([
+      i18nManager.initialize(),
       cryptoManager.initialize(),
       ratingManager.initialize(),
       categoryManager.initialize(),
       paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl'),
       recommendationManager.initialize(),
       productPageManager.initialize(),
-      i18nManager.initialize(),
+      
      
     ]).then(results => {
       // Log any failures during initialization
