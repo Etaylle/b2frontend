@@ -2946,105 +2946,105 @@ ensureCategoryStylesExist() {
   },
 
 // Helper methods to keep the main render method clean
-async renderProducts() {
-  const gridContainer = document.querySelector(".grid-container");
-  if (!gridContainer) return;
+// async renderProducts() {
+//   const gridContainer = document.querySelector(".grid-container");
+//   if (!gridContainer) return;
   
-  // Clear container once
-  gridContainer.innerHTML = "";
+//   // Clear container once
+//   gridContainer.innerHTML = "";
   
-  // Create document fragment for better performance
-  const fragment = document.createDocumentFragment();
+//   // Create document fragment for better performance
+//   const fragment = document.createDocumentFragment();
   
-  // Cache translations to avoid multiple lookups
-  const translations = {
-    addToCart: i18nManager.translate('ui.buttons.addToCart'),
-    share: i18nManager.translate('ui.buttons.share'),
-    rate: i18nManager.translate('ui.buttons.rate'),
-    stock: i18nManager.translate('ui.labels.stock')
-  };
+//   // Cache translations to avoid multiple lookups
+//   const translations = {
+//     addToCart: i18nManager.translate('ui.buttons.addToCart'),
+//     share: i18nManager.translate('ui.buttons.share'),
+//     rate: i18nManager.translate('ui.buttons.rate'),
+//     stock: i18nManager.translate('ui.labels.stock')
+//   };
   
-  // Create button template for reuse
-  const buttonTemplate = document.createElement('button');
+//   // Create button template for reuse
+//   const buttonTemplate = document.createElement('button');
   
-  this.state.products.forEach((product) => {
-    const gridItem = document.createElement("div");
-    gridItem.className = "grid-item grid-item-xl";
-    gridItem.dataset.productId = product.product_id;
+//   this.state.products.forEach((product) => {
+//     const gridItem = document.createElement("div");
+//     gridItem.className = "grid-item grid-item-xl";
+//     gridItem.dataset.productId = product.product_id;
 
-    // Get translated product name using i18nManager
-    const productName = i18nManager.getProductName(product);
+//     // Get translated product name using i18nManager
+//     const productName = i18nManager.getProductName(product);
     
-    const productContent = document.createElement("div");
-    productContent.className = "product-content";
+//     const productContent = document.createElement("div");
+//     productContent.className = "product-content";
     
-    // Create image slider
-    const imageSlider = this.createImageSlider(product, productName);
+//     // Create image slider
+//     const imageSlider = this.createImageSlider(product, productName);
     
-    productContent.innerHTML = `
-      ${imageSlider}
-      <div class="overlay">
-        ${productName} | 
-        <span class="price-span" data-usd-price="${product.price}">
-          ${cryptoManager.formatCryptoPrice(product.price)}
-        </span>
-        | ${translations.stock}: ${product.stock}
-      </div>
-    `;
+//     productContent.innerHTML = `
+//       ${imageSlider}
+//       <div class="overlay">
+//         ${productName} | 
+//         <span class="price-span" data-usd-price="${product.price}">
+//           ${cryptoManager.formatCryptoPrice(product.price)}
+//         </span>
+//         | ${translations.stock}: ${product.stock}
+//       </div>
+//     `;
 
-    // Add product click handler
-    productContent.addEventListener("click", () => {
-      productPageManager.openProductPage(product);
-    });
+//     // Add product click handler
+//     productContent.addEventListener("click", () => {
+//       productPageManager.openProductPage(product);
+//     });
     
-    // Create buttons container with all buttons
-    const buttonsContainer = this.createButtonsContainer(product, translations, buttonTemplate);
+//     // Create buttons container with all buttons
+//     const buttonsContainer = this.createButtonsContainer(product, translations, buttonTemplate);
     
-    gridItem.append(productContent, buttonsContainer);
-    fragment.appendChild(gridItem);
-  });
+//     gridItem.append(productContent, buttonsContainer);
+//     fragment.appendChild(gridItem);
+//   });
   
-  // Append all items at once
-  gridContainer.appendChild(fragment);
+//   // Append all items at once
+//   gridContainer.appendChild(fragment);
   
-  // Add styles if needed
-  this.ensureStylesExist();
-  // Initialize slider
-   this.initializeImageSliders();
-  // Update related managers
-  await this.updateRelatedManagers();
-},
+//   // Add styles if needed
+//   this.ensureStylesExist();
+//   // Initialize slider
+//    this.initializeImageSliders();
+//   // Update related managers
+//   await this.updateRelatedManagers();
+// },
 
-createImageSlider(product, productName) {
-  let sliderHtml = '<div class="image-slider">';
+// createImageSlider(product, productName) {
+//   let sliderHtml = '<div class="image-slider">';
   
-  const images = product.images?.length ? product.images : 
-                 product.image_url ? [product.image_url] :
-                 ['/images/default-product-image.jpg'];
+//   const images = product.images?.length ? product.images : 
+//                  product.image_url ? [product.image_url] :
+//                  ['/images/default-product-image.jpg'];
   
-  // Add navigation buttons if there are multiple images
-  if (images.length > 1) {
-    sliderHtml += `
-      <button class="slider-nav prev" aria-label="Previous image">‹</button>
-      <button class="slider-nav next" aria-label="Next image">›</button>
-      <div class="slider-dots">
-        ${images.map((_, i) => `<button class="slider-dot${i === 0 ? ' active' : ''}" aria-label="Go to image ${i + 1}"></button>`).join('')}
-      </div>
-    `;
-  }
+//   // Add navigation buttons if there are multiple images
+//   if (images.length > 1) {
+//     sliderHtml += `
+//       <button class="slider-nav prev" aria-label="Previous image">‹</button>
+//       <button class="slider-nav next" aria-label="Next image">›</button>
+//       <div class="slider-dots">
+//         ${images.map((_, i) => `<button class="slider-dot${i === 0 ? ' active' : ''}" aria-label="Go to image ${i + 1}"></button>`).join('')}
+//       </div>
+//     `;
+//   }
   
-  // Add images
-  sliderHtml += '<div class="slider-track">';
-  images.forEach((img, index) => {
-    sliderHtml += `
-      <div class="slider-slide${index === 0 ? ' active' : ''}" style="--slide-index: ${index}">
-        <img src="${img}" alt="${productName}${images.length > 1 ? ` - Image ${index + 1}` : ''}" loading="lazy">
-      </div>
-    `;
-  });
+//   // Add images
+//   sliderHtml += '<div class="slider-track">';
+//   images.forEach((img, index) => {
+//     sliderHtml += `
+//       <div class="slider-slide${index === 0 ? ' active' : ''}" style="--slide-index: ${index}">
+//         <img src="${img}" alt="${productName}${images.length > 1 ? ` - Image ${index + 1}` : ''}" loading="lazy">
+//       </div>
+//     `;
+//   });
   
-  return sliderHtml + '</div></div>';
-},
+//   return sliderHtml + '</div></div>';
+// },
 // initializeImageSliders() {
 //   const sliders = document.querySelectorAll('.image-slider');
   
@@ -3116,6 +3116,127 @@ createImageSlider(product, productName) {
 //     }, { passive: true });
 //   });
 // },
+async renderProducts() {
+  const gridContainer = document.querySelector(".grid-container");
+  if (!gridContainer) return;
+  
+  gridContainer.innerHTML = "";
+  const fragment = document.createDocumentFragment();
+  
+  const translations = {
+    addToCart: i18nManager.translate('ui.buttons.addToCart'),
+    share: i18nManager.translate('ui.buttons.share'),
+    rate: i18nManager.translate('ui.buttons.rate'),
+    stock: i18nManager.translate('ui.labels.stock')
+  };
+  
+  const buttonTemplate = document.createElement('button');
+  
+  this.state.products.forEach((product) => {
+    const gridItem = document.createElement("div");
+    gridItem.className = "grid-item grid-item-xl";
+    gridItem.dataset.productId = product.product_id;
+
+    const productName = i18nManager.getProductName(product);
+    
+    const productContent = document.createElement("div");
+    productContent.className = "product-content";
+    
+    // Create and immediately append the image slider
+    const imageSlider = this.createImageSlider(product, productName);
+    productContent.appendChild(imageSlider); // Changed from innerHTML to appendChild
+    
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.innerHTML = `
+      ${productName} | 
+      <span class="price-span" data-usd-price="${product.price}">
+        ${cryptoManager.formatCryptoPrice(product.price)}
+      </span>
+      | ${translations.stock}: ${product.stock}
+    `;
+    
+    productContent.appendChild(overlay);
+
+    productContent.addEventListener("click", () => {
+      productPageManager.openProductPage(product);
+    });
+    
+    const buttonsContainer = this.createButtonsContainer(product, translations, buttonTemplate);
+    
+    gridItem.append(productContent, buttonsContainer);
+    fragment.appendChild(gridItem);
+  });
+  
+  gridContainer.appendChild(fragment);
+  
+  this.ensureStylesExist();
+  this.initializeImageSliders();
+  await this.updateRelatedManagers();
+},
+
+createImageSlider(product, productName) {
+  const sliderContainer = document.createElement('div');
+  sliderContainer.className = 'image-slider';
+  
+  const images = product.images?.length ? product.images : 
+                product.image_url ? [product.image_url] :
+                ['/images/default-product-image.jpg'];
+  
+  // Create slider track
+  const track = document.createElement('div');
+  track.className = 'slider-track';
+  
+  // Create and append slides
+  images.forEach((imgSrc, index) => {
+    const slide = document.createElement('div');
+    slide.className = `slider-slide${index === 0 ? ' active' : ''}`;
+    slide.style.setProperty('--slide-index', index);
+    
+    const img = document.createElement('img');
+    img.src = imgSrc;
+    img.alt = `${productName}${images.length > 1 ? ` - Image ${index + 1}` : ''}`;
+    img.loading = 'lazy';
+    
+    slide.appendChild(img);
+    track.appendChild(slide);
+  });
+  
+  sliderContainer.appendChild(track);
+  
+  // Add navigation if multiple images
+  if (images.length > 1) {
+    // Previous button
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'slider-nav prev';
+    prevBtn.setAttribute('aria-label', 'Previous image');
+    prevBtn.textContent = '‹';
+    
+    // Next button
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'slider-nav next';
+    nextBtn.setAttribute('aria-label', 'Next image');
+    nextBtn.textContent = '›';
+    
+    // Dots container
+    const dotsContainer = document.createElement('div');
+    dotsContainer.className = 'slider-dots';
+    
+    // Create dots
+    images.forEach((_, i) => {
+      const dot = document.createElement('button');
+      dot.className = `slider-dot${i === 0 ? ' active' : ''}`;
+      dot.setAttribute('aria-label', `Go to image ${i + 1}`);
+      dotsContainer.appendChild(dot);
+    });
+    
+    sliderContainer.appendChild(prevBtn);
+    sliderContainer.appendChild(nextBtn);
+    sliderContainer.appendChild(dotsContainer);
+  }
+  
+  return sliderContainer;
+},
 initializeImageSliders() {
   const sliders = document.querySelectorAll('.image-slider');
   
@@ -3439,56 +3560,6 @@ createButtonsContainer(product, translations, buttonTemplate) {
   container.append(addToCartButton, shareButton, rateButton);
   return container;
 },
-
-// ensureStylesExist() {
-//   if (!document.querySelector('#product-buttons-styles')) {
-//     const styles = document.createElement('style');
-//     styles.id = 'product-buttons-styles';
-//     styles.textContent = `
-//       .product-buttons {
-//         position: absolute;
-//         top: 10px;
-//         right: 10px;
-//         display: flex;
-//         flex-direction: column;
-//         gap: 8px;
-//         z-index: 10;
-//       }
-
-//       .product-buttons button {
-//         width: 32px;
-//         height: 32px;
-//         min-width: 32px;  /* Prevent text from expanding button */
-//         border-radius: 50%;
-//         cursor: pointer;
-//         background: rgba(255, 255, 255, 0.95);
-//         border: 1px solid #ddd;
-//         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-//         transition: all 0.2s ease;
-//         display: flex;
-//         align-items: center;
-//         justify-content: center;
-//         padding: 0;
-//         color: #444;  /* Icon color */
-//       }
-
-//       .product-buttons button i {
-//         font-size: 14px;  /* Icon size */
-//       }
-
-//       .product-buttons button:hover {
-//         transform: scale(1.1);
-//         background: white;
-//         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-//       }
-
-//       .product-buttons button:active {
-//         transform: scale(0.95);
-//       }
-//     `;
-//     document.head.appendChild(styles);
-//   }
-// },
 async updateRelatedManagers() {
   productPageManager.updateProducts(this.state.products);
   
