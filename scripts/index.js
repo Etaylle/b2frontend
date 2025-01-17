@@ -2189,7 +2189,7 @@ const socialSharingManager = {
 //   }
 //   }};
 const i18nManager = {
-  state: {
+   state: {
     currentLanguage: 'en',
     defaultLanguage: 'en',
     supportedLanguages: ['en', 'srb', 'de'],
@@ -2200,7 +2200,12 @@ const i18nManager = {
             addToCart: "Add to Cart",
             share: "Share",
             rate: "Rate",
-            all: "All"
+            all: "All",
+            login: "Login",
+            logout: "Logout",
+            register: "Register",
+            cart: "Cart",
+            orderHistory: "Order History"
           },
           labels: {
             stock: "Stock",
@@ -2216,7 +2221,12 @@ const i18nManager = {
             addToCart: "Додај у корпу",
             share: "Подели",
             rate: "Оцени",
-            all: "Све"
+            all: "Све",
+            login: "Пријава",
+            logout: "Одјава",
+            register: "Регистрација",
+            cart: "Корпа",
+            orderHistory: "Историја поруџбина"
           },
           labels: {
             stock: "Стање",
@@ -2232,7 +2242,12 @@ const i18nManager = {
             addToCart: "In den Warenkorb",
             share: "Teilen",
             rate: "Bewerten",
-            all: "Alle"
+            all: "Alle",
+            login: "Anmelden",
+            logout: "Abmelden",
+            register: "Registrieren",
+            cart: "Warenkorb",
+            orderHistory: "Bestellverlauf"
           },
           labels: {
             stock: "Lagerbestand",
@@ -2720,27 +2735,24 @@ async fetchProducts(categoryId = null) {
       showNotification(error.message, "error");
     }
   },
- 
-renderCategories() {
+  renderCategories() {
     const container = document.querySelector(".categories");
     if (!container) {
       console.error("Categories container not found");
       return;
     }
 
-    // Clear existing categories once
     container.innerHTML = "";
-
-    // Create document fragment for better performance
     const fragment = document.createDocumentFragment();
 
-    // Create "All" button
-const allButton = document.createElement("button");
-allButton.className = `category-btn ${this.state.selectedCategory === null ? "active" : ""}`;
-allButton.textContent = i18nManager.translate('ui.categories.all');
-allButton.onclick = () => this.selectCategory(null);
-fragment.appendChild(allButton);
-    // Create category buttons
+    // Create "All" button with proper translation
+    const allButton = document.createElement("button");
+    allButton.className = `category-btn ${this.state.selectedCategory === null ? "active" : ""}`;
+    allButton.textContent = i18nManager.translate('ui.buttons.all');
+    allButton.onclick = () => this.selectCategory(null);
+    fragment.appendChild(allButton);
+
+    // Rest of the categories
     this.state.categories.forEach(category => {
       const button = document.createElement("button");
       button.className = `category-btn ${this.state.selectedCategory === category.id ? "active" : ""}`;
@@ -2750,12 +2762,44 @@ fragment.appendChild(allButton);
       fragment.appendChild(button);
     });
 
-    // Append all buttons at once
     container.appendChild(fragment);
-
-    // Ensure styles exist
     this.ensureCategoryStylesExist();
   },
+// renderCategories() {
+//     const container = document.querySelector(".categories");
+//     if (!container) {
+//       console.error("Categories container not found");
+//       return;
+//     }
+
+//     // Clear existing categories once
+//     container.innerHTML = "";
+
+//     // Create document fragment for better performance
+//     const fragment = document.createDocumentFragment();
+
+//     // Create "All" button
+// const allButton = document.createElement("button");
+// allButton.className = `category-btn ${this.state.selectedCategory === null ? "active" : ""}`;
+// allButton.textContent = i18nManager.translate('ui.categories.all');
+// allButton.onclick = () => this.selectCategory(null);
+// fragment.appendChild(allButton);
+//     // Create category buttons
+//     this.state.categories.forEach(category => {
+//       const button = document.createElement("button");
+//       button.className = `category-btn ${this.state.selectedCategory === category.id ? "active" : ""}`;
+//       button.setAttribute("data-id", category.id);
+//       button.textContent = category.displayName;
+//       button.onclick = () => this.selectCategory(category.id);
+//       fragment.appendChild(button);
+//     });
+
+//     // Append all buttons at once
+//     container.appendChild(fragment);
+
+//     // Ensure styles exist
+//     this.ensureCategoryStylesExist();
+//   },
   // async selectCategory(categoryId) {
   //   this.state.selectedCategory = categoryId;
   //   await this.fetchProducts(categoryId);
