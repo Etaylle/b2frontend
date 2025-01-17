@@ -3270,9 +3270,9 @@ createButtonsContainer(product, translations, buttonTemplate) {
 
   // Add to Cart button
   const addToCartButton = buttonTemplate.cloneNode();
-  addToCartButton.innerHTML = "💰";
+  addToCartButton.innerHTML = '<i class="fas fa-shopping-cart"></i>';  // Cart icon
   addToCartButton.className = "add-to-cart-btn";
-  addToCartButton.title = translations.addToCart;  // Add tooltip
+  addToCartButton.title = translations.addToCart;
   addToCartButton.addEventListener("click", (e) => {
     e.stopPropagation();
     cartManager.addItem(product.product_id);
@@ -3280,9 +3280,9 @@ createButtonsContainer(product, translations, buttonTemplate) {
 
   // Share button
   const shareButton = buttonTemplate.cloneNode();
-  shareButton.innerHTML = "🚀";
+  shareButton.innerHTML = '<i class="fas fa-share-alt"></i>';  // Share icon
   shareButton.className = "share-btn";
-  shareButton.title = translations.share;  // Add tooltip
+  shareButton.title = translations.share;
   shareButton.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -3291,9 +3291,9 @@ createButtonsContainer(product, translations, buttonTemplate) {
 
   // Rate button
   const rateButton = buttonTemplate.cloneNode();
-  rateButton.innerHTML = "⭐";
+  rateButton.innerHTML = '<i class="fas fa-star"></i>';  // Star icon
   rateButton.className = "rate-btn";
-  rateButton.title = translations.rate;  // Add tooltip
+  rateButton.title = translations.rate;
   rateButton.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -3322,6 +3322,7 @@ ensureStylesExist() {
       .product-buttons button {
         width: 32px;
         height: 32px;
+        min-width: 32px;  /* Prevent text from expanding button */
         border-radius: 50%;
         cursor: pointer;
         background: rgba(255, 255, 255, 0.95);
@@ -3332,8 +3333,11 @@ ensureStylesExist() {
         align-items: center;
         justify-content: center;
         padding: 0;
-        font-size: 16px;  /* Size for emojis */
-        line-height: 1;   /* Proper emoji alignment */
+        color: #444;  /* Icon color */
+      }
+
+      .product-buttons button i {
+        font-size: 14px;  /* Icon size */
       }
 
       .product-buttons button:hover {
