@@ -2243,13 +2243,9 @@ const i18nManager = {
   },
 
   initialize() {
-    // Try to load language from localStorage first
     const savedLang = localStorage.getItem('preferred_language');
-    
-    // Then try browser language
     const browserLang = navigator.language.split('-')[0];
     
-    // Set language with fallback chain
     this.setLanguage(
       savedLang || 
       (this.state.supportedLanguages.includes(browserLang) ? browserLang : this.state.defaultLanguage)
@@ -2268,6 +2264,42 @@ const i18nManager = {
     this.state.currentLanguage = lang;
     localStorage.setItem('preferred_language', lang);
     document.documentElement.lang = lang;
+    
+    // Dispatch a custom event when language changes
+    window.dispatchEvent(new CustomEvent('languageChanged', { detail: { language: lang } }));
+  },
+
+  // Add methods for handling product names
+  getProductName(product) {
+    if (!product) return '';
+    const lang = this.state.currentLanguage;
+    return lang === 'en' ? product.name : (product[`name_${lang}`] || product.name);
+  },
+
+  getCategoryName(category) {
+    if (!category) return '';
+    const lang = this.state.currentLanguage;
+    return lang === 'en' ? category.name : (category[`name_${lang}`] || category.name);
+  },
+
+  translate(key) {
+    const keys = key.split('.');
+    let result = this.state.translations[this.state.currentLanguage];
+    
+    for (const k of keys) {
+      result = result?.[k];
+      if (!result) break;
+    }
+    
+    if (!result && this.state.currentLanguage !== this.state.defaultLanguage) {
+      result = this.state.translations[this.state.defaultLanguage];
+      for (const k of keys) {
+        result = result?.[k];
+        if (!result) break;
+      }
+    }
+    
+    return result || key;
   },
 
   createLanguageSwitcher() {
@@ -2285,50 +2317,11 @@ const i18nManager = {
     container.querySelector('.language-switcher').addEventListener('change', (e) => {
       this.setLanguage(e.target.value);
       this.updateUI();
-      // Trigger page content refresh
-      if (categoryManager) {
-        categoryManager.fetchCategories();
-      }
+      window.dispatchEvent(new CustomEvent('refreshContent'));
     });
   },
 
-  // Get translated content with fallback chain
-  translate(key) {
-    const keys = key.split('.');
-    let result = this.state.translations[this.state.currentLanguage];
-    
-    for (const k of keys) {
-      result = result?.[k];
-      if (!result) break;
-    }
-    
-    if (!result && this.state.currentLanguage !== this.state.defaultLanguage) {
-      // Fallback to default language
-      result = this.state.translations[this.state.defaultLanguage];
-      for (const k of keys) {
-        result = result?.[k];
-        if (!result) break;
-      }
-    }
-    
-    return result || key;
-  },
-
-  // Get localized field from database object
-  getLocalizedField(item, fieldName) {
-    if (!item) return '';
-    
-    const lang = this.state.currentLanguage;
-    if (lang === this.state.defaultLanguage) {
-      return item[fieldName];
-    }
-    
-    const localizedField = `${fieldName}_${lang}`;
-    return item[localizedField] || item[fieldName] || '';
-  },
-
   updateUI() {
-    // Update all elements with data-i18n attribute
     document.querySelectorAll('[data-i18n]').forEach(element => {
       const key = element.getAttribute('data-i18n');
       const translation = this.translate(key);
@@ -2345,6 +2338,7 @@ const i18nManager = {
     });
   }
 };
+
 const categoryManager = {
   state: {
     categories: [],
@@ -2818,103 +2812,164 @@ async fetchProducts(categoryId = null) {
 //     this.initializeImageSliders();
 // },
 async renderProducts() {
-    
- const gridContainer = document.querySelector(".grid-container");
-    if (!gridContainer) return;
-    
-    gridContainer.innerHTML = "";
-    
-    this.state.products.forEach((product) => {
-      const gridItem = document.createElement("div");
-      gridItem.classList.add("grid-item", "grid-item-xl");
-      gridItem.setAttribute("data-product-id", product.product_id);
+  const gridContainer = document.querySelector(".grid-container");
+  if (!gridContainer) return;
+  
+  // Clear container once
+  gridContainer.innerHTML = "";
+  
+  // Cache translations to avoid multiple lookups
+  const translations = {
+    stock: i18nManager.translate('ui.labels.stock'),
+    addToCart: i18nManager.translate('ui.buttons.addToCart'),
+    share: i18nManager.translate('ui.buttons.share'),
+    rate: i18nManager.translate('ui.buttons.rate')
+  };
+  
+  // Create document fragment for better performance
+  const fragment = document.createDocumentFragment();
+  
+  // Create button template for reuse
+  const buttonTemplate = document.createElement('button');
+  
+  this.state.products.forEach((product) => {
+    const gridItem = document.createElement("div");
+    gridItem.className = "grid-item grid-item-xl";
+    gridItem.dataset.productId = product.product_id;
 
-      // Get localized product name
-      const productName = i18nManager.getProductName(product);
+    const productName = i18nManager.getProductName(product);
 
-      let imageSlider = '<div class="image-slider">';
-      if (product.images && Array.isArray(product.images) && product.images.length > 0) {
-        product.images.forEach((img, index) => {
-          imageSlider += `<img src="${img}" alt="${productName} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`;
-        });
-      } else if (product.image_url) {
-        imageSlider += `<img src="${product.image_url}" alt="${productName}" class="active">`;
-      } else {
-        imageSlider += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
-      }
-      imageSlider += '</div>';
+    // Build image slider HTML
+    const imageSlider = this.createImageSlider(product, productName);
 
-      const productContent = document.createElement("div");
-      productContent.className = "product-content";
-      productContent.innerHTML = `
-        ${imageSlider}
-        <div class="overlay">
-          ${productName} | <span class="price-span" data-usd-price="${product.price}">
-            ${cryptoManager.formatCryptoPrice(product.price)}
-          </span>
-          | ${i18nManager.getTranslation('labels.stock')}: ${product.stock}
-        </div>
-      `;
+    // Create product content
+    const productContent = document.createElement("div");
+    productContent.className = "product-content";
+    productContent.innerHTML = `
+      ${imageSlider}
+      <div class="overlay">
+        ${productName} | 
+        <span class="price-span" data-usd-price="${product.price}">
+          ${cryptoManager.formatCryptoPrice(product.price)}
+        </span>
+        | ${translations.stock}: ${product.stock}
+      </div>
+    `;
 
-      // Product click handler remains the same
-      productContent.addEventListener("click", () => {
-        productPageManager.openProductPage(product);
-      });
-      
-      gridItem.appendChild(productContent);
-      gridContainer.appendChild(gridItem);
-      // Create buttons container
-      const buttonsContainer = document.createElement("div");
-      buttonsContainer.className = "product-buttons";
-
-      // Create buttons with translations
-      const addToCartButton = document.createElement("button");
-      addToCartButton.textContent = i18nManager.getTranslation('buttons.addToCart');      addToCartButton.className = "add-to-cart-btn";
-      addToCartButton.addEventListener("click", (e) => {
-        e.stopPropagation();
-        cartManager.addItem(product.product_id);
-      });
-
-      const shareButton = document.createElement("button");
-      shareButton.textContent = i18n.translate('buttons.share');
-      shareButton.className = "share-btn";
-      shareButton.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        socialSharingManager.showShareOptions(product);
-      });
-
-      const rateButton = document.createElement("button");
-      rateButton.textContent = i18n.translate('buttons.rate');
-      rateButton.className = "rate-btn";
-      rateButton.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        ratingManager.openRatingModal(product.product_id.toString(), e);
-      });
-
-      // Add buttons to container
-      buttonsContainer.appendChild(addToCartButton);
-      buttonsContainer.appendChild(shareButton);
-      buttonsContainer.appendChild(rateButton);
-      
-      gridItem.appendChild(buttonsContainer);
-      gridContainer.appendChild(gridItem);
+    // Add product click handler
+    productContent.addEventListener("click", () => {
+      productPageManager.openProductPage(product);
     });
-
-    // Rest of the code remains the same
-    if (!document.querySelector('#product-buttons-styles')) {
-      // ... styles remain the same
-    }
     
-    productPageManager.updateProducts(this.state.products);
-    if (!window.ratingManagerInitialized) {
-      ratingManager.initialize();
-      window.ratingManagerInitialized = true;
-    }
-    await ratingManager.fetchUserRatings();
-    this.initializeImageSliders();
-},   
+    // Create buttons container with all buttons
+    const buttonsContainer = this.createButtonsContainer(product, translations, buttonTemplate);
+    
+    gridItem.append(productContent, buttonsContainer);
+    fragment.appendChild(gridItem);
+  });
+  
+  // Append all items at once
+  gridContainer.appendChild(fragment);
+  
+  // Add styles if needed
+  this.ensureStylesExist();
+  
+  // Update related managers
+  await this.updateRelatedManagers();
+},
+
+// Helper methods to keep the main render method clean
+createImageSlider(product, productName) {
+  let sliderHtml = '<div class="image-slider">';
+  
+  if (product.images?.length) {
+    sliderHtml += product.images
+      .map((img, index) => `<img src="${img}" alt="${productName} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`)
+      .join('');
+  } else if (product.image_url) {
+    sliderHtml += `<img src="${product.image_url}" alt="${productName}" class="active">`;
+  } else {
+    sliderHtml += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
+  }
+  
+  return sliderHtml + '</div>';
+},
+
+createButtonsContainer(product, translations, buttonTemplate) {
+  const container = document.createElement("div");
+  container.className = "product-buttons";
+
+  // Add to Cart button
+  const addToCartButton = buttonTemplate.cloneNode();
+  addToCartButton.textContent = translations.addToCart;
+  addToCartButton.className = "add-to-cart-btn";
+  addToCartButton.addEventListener("click", (e) => {
+    e.stopPropagation();
+    cartManager.addItem(product.product_id);
+  });
+
+  // Share button
+  const shareButton = buttonTemplate.cloneNode();
+  shareButton.textContent = translations.share;
+  shareButton.className = "share-btn";
+  shareButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    socialSharingManager.showShareOptions(product);
+  });
+
+  // Rate button
+  const rateButton = buttonTemplate.cloneNode();
+  rateButton.textContent = translations.rate;
+  rateButton.className = "rate-btn";
+  rateButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    ratingManager.openRatingModal(product.product_id.toString(), e);
+  });
+
+  container.append(addToCartButton, shareButton, rateButton);
+  return container;
+},
+
+ensureStylesExist() {
+  if (!document.querySelector('#product-buttons-styles')) {
+    const styles = document.createElement('style');
+    styles.id = 'product-buttons-styles';
+    styles.textContent = `
+      .product-buttons {
+        display: flex;
+        gap: 8px;
+        padding: 8px;
+        justify-content: center;
+      }
+      .product-buttons button {
+        padding: 6px 12px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .product-buttons button:hover {
+        background: #f5f5f5;
+      }
+    `;
+    document.head.appendChild(styles);
+  }
+},
+
+async updateRelatedManagers() {
+  productPageManager.updateProducts(this.state.products);
+  
+  if (!window.ratingManagerInitialized) {
+    ratingManager.initialize();
+    window.ratingManagerInitialized = true;
+  }
+  
+  await ratingManager.fetchUserRatings();
+  this.initializeImageSliders();
+}, 
 async initialize() {
     await this.fetchCategories();
     await this.setupSearch();
