@@ -3270,11 +3270,14 @@ async renderProducts() {
     fragment.appendChild(gridItem);
   });
   
-  // Append all items at once
+ // Append all items at once
   gridContainer.appendChild(fragment);
   
   // Add styles if needed
   this.ensureStylesExist();
+  
+  // Initialize all sliders
+  this.initializeImageSliders();
   
   // Update related managers
   await this.updateRelatedManagers();
@@ -3283,67 +3286,104 @@ async renderProducts() {
 createImageSlider(product, productName) {
   let sliderHtml = '<div class="image-slider">';
   
-  if (product.images?.length) {
-    sliderHtml += product.images
-      .map((img, index) => `<img src="${img}" alt="${productName} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`)
-      .join('');
-  } else if (product.image_url) {
-    sliderHtml += `<img src="${product.image_url}" alt="${productName}" class="active">`;
-  } else {
-    sliderHtml += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
+  const images = product.images?.length ? product.images : 
+                 product.image_url ? [product.image_url] :
+                 ['/images/default-product-image.jpg'];
+  
+  // Add navigation buttons if there are multiple images
+  if (images.length > 1) {
+    sliderHtml += `
+      <button class="slider-nav prev" aria-label="Previous image">‹</button>
+      <button class="slider-nav next" aria-label="Next image">›</button>
+      <div class="slider-dots">
+        ${images.map((_, i) => `<button class="slider-dot${i === 0 ? ' active' : ''}" aria-label="Go to image ${i + 1}"></button>`).join('')}
+      </div>
+    `;
   }
   
-  return sliderHtml + '</div>';
+  // Add images
+  sliderHtml += '<div class="slider-track">';
+  images.forEach((img, index) => {
+    sliderHtml += `
+      <div class="slider-slide${index === 0 ? ' active' : ''}" style="--slide-index: ${index}">
+        <img src="${img}" alt="${productName}${images.length > 1 ? ` - Image ${index + 1}` : ''}" loading="lazy">
+      </div>
+    `;
+  });
+  
+  return sliderHtml + '</div></div>';
 },
 
-createButtonsContainer(product, translations, buttonTemplate) {
-  const container = document.createElement("div");
-  container.className = "product-buttons";
+initializeImageSliders() {
+  const sliders = document.querySelectorAll('.image-slider');
+  
+  sliders.forEach(slider => {
+    const track = slider.querySelector('.slider-track');
+    if (!track) return;
 
-  // Define button configurations
-  const buttons = [
-    {
-      icon: '<i class="fas fa-shopping-cart"></i>',
-      className: 'add-to-cart-btn',
-      title: translations.addToCart,
-      handler: (e) => {
-        e.stopPropagation();
-        cartManager.addItem(product.product_id);
-      }
-    },
-    {
-      icon: '<i class="fas fa-share-alt"></i>',
-      className: 'share-btn',
-      title: translations.share,
-      handler: (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        socialSharingManager.showShareOptions(product);
-      }
-    },
-    {
-      icon: '<i class="fas fa-star"></i>',
-      className: 'rate-btn',
-      title: translations.rate,
-      handler: (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        ratingManager.openRatingModal(product.product_id.toString(), e);
-      }
-    }
-  ];
+    const slides = slider.querySelectorAll('.slider-slide');
+    if (slides.length <= 1) return;
 
-  // Create and append all buttons
-  buttons.forEach(({ icon, className, title, handler }) => {
-    const button = buttonTemplate.cloneNode();
-    button.innerHTML = icon;
-    button.className = className;
-    button.title = title;
-    button.addEventListener("click", handler);
-    container.appendChild(button);
+    const dots = slider.querySelectorAll('.slider-dot');
+    let currentIndex = 0;
+    
+    // Function to update active slide and dot
+    const updateSlider = (newIndex) => {
+      // Remove active class from current slide and dot
+      slides[currentIndex].classList.remove('active');
+      dots[currentIndex].classList.remove('active');
+      
+      // Add active class to new slide and dot
+      currentIndex = newIndex;
+      slides[currentIndex].classList.add('active');
+      dots[currentIndex].classList.add('active');
+    };
+
+    // Previous button click handler
+    slider.querySelector('.prev')?.addEventListener('click', (e) => {
+      e.stopPropagation(); // Prevent product click
+      const newIndex = (currentIndex - 1 + slides.length) % slides.length;
+      updateSlider(newIndex);
+    });
+
+    // Next button click handler
+    slider.querySelector('.next')?.addEventListener('click', (e) => {
+      e.stopPropagation(); // Prevent product click
+      const newIndex = (currentIndex + 1) % slides.length;
+      updateSlider(newIndex);
+    });
+
+    // Dot click handlers
+    dots.forEach((dot, index) => {
+      dot.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent product click
+        updateSlider(index);
+      });
+    });
+
+    // Touch/swipe support
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    slider.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+
+    slider.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      const diff = touchStartX - touchEndX;
+      
+      if (Math.abs(diff) > 50) { // Minimum swipe distance
+        if (diff > 0) { // Swipe left
+          const newIndex = (currentIndex + 1) % slides.length;
+          updateSlider(newIndex);
+        } else { // Swipe right
+          const newIndex = (currentIndex - 1 + slides.length) % slides.length;
+          updateSlider(newIndex);
+        }
+      }
+    }, { passive: true });
   });
-
-  return container;
 },
 
 ensureStylesExist() {
@@ -3351,6 +3391,99 @@ ensureStylesExist() {
     const styles = document.createElement('style');
     styles.id = 'product-buttons-styles';
     styles.textContent = `
+      /* Previous button styles remain the same */
+      
+      .image-slider {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      .slider-track {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+
+      .slider-slide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .slider-slide.active {
+        opacity: 1;
+        z-index: 1;
+      }
+
+      .slider-slide img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .slider-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.8);
+        border: none;
+        border-radius: 50%;
+        font-size: 24px;
+        line-height: 1;
+        color: #444;
+        cursor: pointer;
+        z-index: 2;
+        transition: all 0.2s ease;
+      }
+
+      .slider-nav:hover {
+        background: rgba(255, 255, 255, 0.95);
+        transform: translateY(-50%) scale(1.1);
+      }
+
+      .slider-nav.prev {
+        left: 10px;
+      }
+
+      .slider-nav.next {
+        right: 10px;
+      }
+
+      .slider-dots {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 8px;
+        z-index: 2;
+      }
+
+      .slider-dot {
+        width: 8px;
+        height: 8px;
+        border: none;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        padding: 0;
+        transition: all 0.2s ease;
+      }
+
+      .slider-dot.active {
+        background: white;
+        transform: scale(1.2);
+      }
+
+      /* Keep existing product-buttons styles */
       .product-buttons {
         position: absolute;
         top: 10px;
