@@ -2946,105 +2946,105 @@ ensureCategoryStylesExist() {
   },
 
 // Helper methods to keep the main render method clean
-// async renderProducts() {
-//   const gridContainer = document.querySelector(".grid-container");
-//   if (!gridContainer) return;
+async renderProducts() {
+  const gridContainer = document.querySelector(".grid-container");
+  if (!gridContainer) return;
   
-//   // Clear container once
-//   gridContainer.innerHTML = "";
+  // Clear container once
+  gridContainer.innerHTML = "";
   
-//   // Create document fragment for better performance
-//   const fragment = document.createDocumentFragment();
+  // Create document fragment for better performance
+  const fragment = document.createDocumentFragment();
   
-//   // Cache translations to avoid multiple lookups
-//   const translations = {
-//     addToCart: i18nManager.translate('ui.buttons.addToCart'),
-//     share: i18nManager.translate('ui.buttons.share'),
-//     rate: i18nManager.translate('ui.buttons.rate'),
-//     stock: i18nManager.translate('ui.labels.stock')
-//   };
+  // Cache translations to avoid multiple lookups
+  const translations = {
+    addToCart: i18nManager.translate('ui.buttons.addToCart'),
+    share: i18nManager.translate('ui.buttons.share'),
+    rate: i18nManager.translate('ui.buttons.rate'),
+    stock: i18nManager.translate('ui.labels.stock')
+  };
   
-//   // Create button template for reuse
-//   const buttonTemplate = document.createElement('button');
+  // Create button template for reuse
+  const buttonTemplate = document.createElement('button');
   
-//   this.state.products.forEach((product) => {
-//     const gridItem = document.createElement("div");
-//     gridItem.className = "grid-item grid-item-xl";
-//     gridItem.dataset.productId = product.product_id;
+  this.state.products.forEach((product) => {
+    const gridItem = document.createElement("div");
+    gridItem.className = "grid-item grid-item-xl";
+    gridItem.dataset.productId = product.product_id;
 
-//     // Get translated product name using i18nManager
-//     const productName = i18nManager.getProductName(product);
+    // Get translated product name using i18nManager
+    const productName = i18nManager.getProductName(product);
     
-//     const productContent = document.createElement("div");
-//     productContent.className = "product-content";
+    const productContent = document.createElement("div");
+    productContent.className = "product-content";
     
-//     // Create image slider
-//     const imageSlider = this.createImageSlider(product, productName);
+    // Create image slider
+    const imageSlider = this.createImageSlider(product, productName);
     
-//     productContent.innerHTML = `
-//       ${imageSlider}
-//       <div class="overlay">
-//         ${productName} | 
-//         <span class="price-span" data-usd-price="${product.price}">
-//           ${cryptoManager.formatCryptoPrice(product.price)}
-//         </span>
-//         | ${translations.stock}: ${product.stock}
-//       </div>
-//     `;
+    productContent.innerHTML = `
+      ${imageSlider}
+      <div class="overlay">
+        ${productName} | 
+        <span class="price-span" data-usd-price="${product.price}">
+          ${cryptoManager.formatCryptoPrice(product.price)}
+        </span>
+        | ${translations.stock}: ${product.stock}
+      </div>
+    `;
 
-//     // Add product click handler
-//     productContent.addEventListener("click", () => {
-//       productPageManager.openProductPage(product);
-//     });
+    // Add product click handler
+    productContent.addEventListener("click", () => {
+      productPageManager.openProductPage(product);
+    });
     
-//     // Create buttons container with all buttons
-//     const buttonsContainer = this.createButtonsContainer(product, translations, buttonTemplate);
+    // Create buttons container with all buttons
+    const buttonsContainer = this.createButtonsContainer(product, translations, buttonTemplate);
     
-//     gridItem.append(productContent, buttonsContainer);
-//     fragment.appendChild(gridItem);
-//   });
+    gridItem.append(productContent, buttonsContainer);
+    fragment.appendChild(gridItem);
+  });
   
-//   // Append all items at once
-//   gridContainer.appendChild(fragment);
+  // Append all items at once
+  gridContainer.appendChild(fragment);
   
-//   // Add styles if needed
-//   this.ensureStylesExist();
-//   // Initialize slider
-//    this.initializeImageSliders();
-//   // Update related managers
-//   await this.updateRelatedManagers();
-// },
+  // Add styles if needed
+  this.ensureStylesExist();
+  // Initialize slider
+   this.initializeImageSliders();
+  // Update related managers
+  await this.updateRelatedManagers();
+},
 
-// createImageSlider(product, productName) {
-//   let sliderHtml = '<div class="image-slider">';
+createImageSlider(product, productName) {
+  let sliderHtml = '<div class="image-slider">';
   
-//   const images = product.images?.length ? product.images : 
-//                  product.image_url ? [product.image_url] :
-//                  ['/images/default-product-image.jpg'];
+  const images = product.images?.length ? product.images : 
+                 product.image_url ? [product.image_url] :
+                 ['/images/default-product-image.jpg'];
   
-//   // Add navigation buttons if there are multiple images
-//   if (images.length > 1) {
-//     sliderHtml += `
-//       <button class="slider-nav prev" aria-label="Previous image">‹</button>
-//       <button class="slider-nav next" aria-label="Next image">›</button>
-//       <div class="slider-dots">
-//         ${images.map((_, i) => `<button class="slider-dot${i === 0 ? ' active' : ''}" aria-label="Go to image ${i + 1}"></button>`).join('')}
-//       </div>
-//     `;
-//   }
+  // Add navigation buttons if there are multiple images
+  if (images.length > 1) {
+    sliderHtml += `
+      <button class="slider-nav prev" aria-label="Previous image">‹</button>
+      <button class="slider-nav next" aria-label="Next image">›</button>
+      <div class="slider-dots">
+        ${images.map((_, i) => `<button class="slider-dot${i === 0 ? ' active' : ''}" aria-label="Go to image ${i + 1}"></button>`).join('')}
+      </div>
+    `;
+  }
   
-//   // Add images
-//   sliderHtml += '<div class="slider-track">';
-//   images.forEach((img, index) => {
-//     sliderHtml += `
-//       <div class="slider-slide${index === 0 ? ' active' : ''}" style="--slide-index: ${index}">
-//         <img src="${img}" alt="${productName}${images.length > 1 ? ` - Image ${index + 1}` : ''}" loading="lazy">
-//       </div>
-//     `;
-//   });
+  // Add images
+  sliderHtml += '<div class="slider-track">';
+  images.forEach((img, index) => {
+    sliderHtml += `
+      <div class="slider-slide${index === 0 ? ' active' : ''}" style="--slide-index: ${index}">
+        <img src="${img}" alt="${productName}${images.length > 1 ? ` - Image ${index + 1}` : ''}" loading="lazy">
+      </div>
+    `;
+  });
   
-//   return sliderHtml + '</div></div>';
-// },
+  return sliderHtml + '</div></div>';
+},
 // initializeImageSliders() {
 //   const sliders = document.querySelectorAll('.image-slider');
   
@@ -3116,245 +3116,6 @@ ensureCategoryStylesExist() {
 //     }, { passive: true });
 //   });
 // },
-async renderProducts() {
-  const gridContainer = document.querySelector(".grid-container");
-  if (!gridContainer) return;
-  
-  gridContainer.innerHTML = "";
-  const fragment = document.createDocumentFragment();
-  
-  const translations = {
-    addToCart: i18nManager.translate('ui.buttons.addToCart'),
-    share: i18nManager.translate('ui.buttons.share'),
-    rate: i18nManager.translate('ui.buttons.rate'),
-    stock: i18nManager.translate('ui.labels.stock')
-  };
-  
-  const buttonTemplate = document.createElement('button');
-  
-  this.state.products.forEach((product) => {
-    const gridItem = document.createElement("div");
-    gridItem.className = "grid-item grid-item-xl";
-    gridItem.dataset.productId = product.product_id;
-
-    const productName = i18nManager.getProductName(product);
-    
-    const productContent = document.createElement("div");
-    productContent.className = "product-content";
-    
-    const imageSlider = this.createImageSlider(product, productName);
-    productContent.appendChild(imageSlider);
-    
-    const overlay = document.createElement('div');
-    overlay.className = 'overlay';
-    overlay.innerHTML = `
-      ${productName} | 
-      <span class="price-span" data-usd-price="${product.price}">
-        ${cryptoManager.formatCryptoPrice(product.price)}
-      </span>
-      | ${translations.stock}: ${product.stock}
-    `;
-    
-    productContent.appendChild(overlay);
-
-    productContent.addEventListener("click", () => {
-      productPageManager.openProductPage(product);
-    });
-    
-    const buttonsContainer = this.createButtonsContainer(product, translations, buttonTemplate);
-    
-    gridItem.append(productContent, buttonsContainer);
-    fragment.appendChild(gridItem);
-  });
-  
-  gridContainer.appendChild(fragment);
-  
-  this.ensureStylesExist();
-  this.initializeImageSliders();
-  await this.updateRelatedManagers();
-},
-
-createImageSlider(product, productName) {
-  const sliderContainer = document.createElement('div');
-  sliderContainer.className = 'image-slider';
-  
-  const sliderTrack = document.createElement('div');
-  sliderTrack.className = 'slider-track';
-  
-  // Ensure we have a valid array of images
-  const images = Array.isArray(product.images) && product.images.length > 0 ? product.images :
-                product.image_url ? [product.image_url] :
-                ['/images/default-product-image.jpg'];
-  
-  images.forEach((imgSrc, index) => {
-    const slideDiv = document.createElement('div');
-    slideDiv.className = `slider-slide${index === 0 ? ' active' : ''}`;
-    
-    const img = document.createElement('img');
-    img.src = imgSrc;
-    img.alt = `${productName} - Image ${index + 1}`;
-    img.loading = 'lazy';
-    img.onerror = () => {
-      img.src = '/images/default-product-image.jpg';
-    };
-    
-    slideDiv.appendChild(img);
-    sliderTrack.appendChild(slideDiv);
-  });
-  
-  sliderContainer.appendChild(sliderTrack);
-  
-  if (images.length > 1) {
-    const prevBtn = document.createElement('button');
-    prevBtn.className = 'slider-nav prev';
-    prevBtn.setAttribute('aria-label', 'Previous image');
-    prevBtn.innerHTML = '&#8249;';
-    
-    const nextBtn = document.createElement('button');
-    nextBtn.className = 'slider-nav next';
-    nextBtn.setAttribute('aria-label', 'Next image');
-    nextBtn.innerHTML = '&#8250;';
-    
-    const dotsContainer = document.createElement('div');
-    dotsContainer.className = 'slider-dots';
-    
-    images.forEach((_, i) => {
-      const dot = document.createElement('button');
-      dot.className = `slider-dot${i === 0 ? ' active' : ''}`;
-      dot.setAttribute('aria-label', `Go to image ${i + 1}`);
-      dotsContainer.appendChild(dot);
-    });
-    
-    sliderContainer.appendChild(prevBtn);
-    sliderContainer.appendChild(nextBtn);
-    sliderContainer.appendChild(dotsContainer);
-  }
-  
-  return sliderContainer;
-},
-
-ensureStylesExist() {
-  if (!document.querySelector('#product-slider-styles')) {
-    const styles = document.createElement('style');
-    styles.id = 'product-slider-styles';
-    styles.textContent = `
-      .grid-item {
-        position: relative;
-        aspect-ratio: 1;
-        min-height: 200px;
-      }
-
-      .product-content {
-        width: 100%;
-        height: 100%;
-        position: relative;
-      }
-
-      .image-slider {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        background: #f5f5f5;
-      }
-
-      .slider-track {
-        position: relative;
-        width: 100%;
-        height: 100%;
-      }
-
-      .slider-slide {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.3s ease;
-      }
-
-      .slider-slide.active {
-        opacity: 1;
-        pointer-events: auto;
-        z-index: 1;
-      }
-
-      .slider-slide img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-      }
-
-      .slider-nav {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 2;
-        background: rgba(255, 255, 255, 0.8);
-        border: none;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        cursor: pointer;
-        font-size: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s ease;
-      }
-
-      .slider-nav:hover {
-        background: rgba(255, 255, 255, 0.95);
-      }
-
-      .slider-nav.prev { left: 10px; }
-      .slider-nav.next { right: 10px; }
-
-      .slider-dots {
-        position: absolute;
-        bottom: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        gap: 8px;
-        z-index: 2;
-        background: rgba(0, 0, 0, 0.3);
-        padding: 4px 8px;
-        border-radius: 12px;
-      }
-
-      .slider-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.5);
-        border: none;
-        padding: 0;
-        cursor: pointer;
-        transition: all 0.2s ease;
-      }
-
-      .slider-dot.active {
-        background: white;
-        transform: scale(1.2);
-      }
-
-      .overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: rgba(0, 0, 0, 0.7);
-        color: white;
-        padding: 10px;
-        z-index: 2;
-      }
-    `;
-    document.head.appendChild(styles);
-  }
-},
 initializeImageSliders() {
   const sliders = document.querySelectorAll('.image-slider');
   
@@ -3455,148 +3216,148 @@ initializeImageSliders() {
     slider.addEventListener('mouseleave', startAutoplay);
   });
 },
-// ensureStylesExist() {
-//   if (!document.querySelector('#product-buttons-styles')) {
-//     const styles = document.createElement('style');
-//     styles.id = 'product-buttons-styles';
-//     styles.textContent = `
-//       /* Previous button styles remain the same */
+ensureStylesExist() {
+  if (!document.querySelector('#product-buttons-styles')) {
+    const styles = document.createElement('style');
+    styles.id = 'product-buttons-styles';
+    styles.textContent = `
+      /* Previous button styles remain the same */
       
-//       .image-slider {
-//         position: relative;
-//         width: 100%;
-//         height: 100%;
-//         overflow: hidden;
-//       }
+      .image-slider {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
 
-//       .slider-track {
-//         position: relative;
-//         width: 100%;
-//         height: 100%;
-//       }
+      .slider-track {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
 
-//       .slider-slide {
-//         position: absolute;
-//         top: 0;
-//         left: 0;
-//         width: 100%;
-//         height: 100%;
-//         opacity: 0;
-//         transition: opacity 0.3s ease;
-//       }
+      .slider-slide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
 
-//       .slider-slide.active {
-//         opacity: 1;
-//         z-index: 1;
-//       }
+      .slider-slide.active {
+        opacity: 1;
+        z-index: 1;
+      }
 
-//       .slider-slide img {
-//         width: 100%;
-//         height: 100%;
-//         object-fit: cover;
-//       }
+      .slider-slide img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
 
-//       .slider-nav {
-//         position: absolute;
-//         top: 50%;
-//         transform: translateY(-50%);
-//         width: 40px;
-//         height: 40px;
-//         background: rgba(255, 255, 255, 0.8);
-//         border: none;
-//         border-radius: 50%;
-//         font-size: 24px;
-//         line-height: 1;
-//         color: #444;
-//         cursor: pointer;
-//         z-index: 2;
-//         transition: all 0.2s ease;
-//       }
+      .slider-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.8);
+        border: none;
+        border-radius: 50%;
+        font-size: 24px;
+        line-height: 1;
+        color: #444;
+        cursor: pointer;
+        z-index: 2;
+        transition: all 0.2s ease;
+      }
 
-//       .slider-nav:hover {
-//         background: rgba(255, 255, 255, 0.95);
-//         transform: translateY(-50%) scale(1.1);
-//       }
+      .slider-nav:hover {
+        background: rgba(255, 255, 255, 0.95);
+        transform: translateY(-50%) scale(1.1);
+      }
 
-//       .slider-nav.prev {
-//         left: 10px;
-//       }
+      .slider-nav.prev {
+        left: 10px;
+      }
 
-//       .slider-nav.next {
-//         right: 10px;
-//       }
+      .slider-nav.next {
+        right: 10px;
+      }
 
-//       .slider-dots {
-//         position: absolute;
-//         bottom: 10px;
-//         left: 50%;
-//         transform: translateX(-50%);
-//         display: flex;
-//         gap: 8px;
-//         z-index: 2;
-//       }
+      .slider-dots {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 8px;
+        z-index: 2;
+      }
 
-//       .slider-dot {
-//         width: 8px;
-//         height: 8px;
-//         border: none;
-//         border-radius: 50%;
-//         background: rgba(255, 255, 255, 0.5);
-//         cursor: pointer;
-//         padding: 0;
-//         transition: all 0.2s ease;
-//       }
+      .slider-dot {
+        width: 8px;
+        height: 8px;
+        border: none;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        padding: 0;
+        transition: all 0.2s ease;
+      }
 
-//       .slider-dot.active {
-//         background: white;
-//         transform: scale(1.2);
-//       }
+      .slider-dot.active {
+        background: white;
+        transform: scale(1.2);
+      }
 
-//       /* Keep existing product-buttons styles */
-//       .product-buttons {
-//         position: absolute;
-//         top: 10px;
-//         right: 10px;
-//         display: flex;
-//         flex-direction: column;
-//         gap: 8px;
-//         z-index: 10;
-//       }
+      /* Keep existing product-buttons styles */
+      .product-buttons {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        z-index: 10;
+      }
 
-//       .product-buttons button {
-//         width: 32px;
-//         height: 32px;
-//         min-width: 32px;
-//         border-radius: 50%;
-//         cursor: pointer;
-//         background: rgba(255, 255, 255, 0.95);
-//         border: 1px solid #ddd;
-//         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-//         transition: all 0.2s ease;
-//         display: flex;
-//         align-items: center;
-//         justify-content: center;
-//         padding: 0;
-//         color: #444;
-//       }
+      .product-buttons button {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid #ddd;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        color: #444;
+      }
 
-//       .product-buttons button i {
-//         font-size: 14px;
-//       }
+      .product-buttons button i {
+        font-size: 14px;
+      }
 
-//       .product-buttons button:hover {
-//         transform: scale(1.1);
-//         background: white;
-//         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-//       }
+      .product-buttons button:hover {
+        transform: scale(1.1);
+        background: white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
 
-//       .product-buttons button:active {
-//         transform: scale(0.95);
-//       }
-//     `;
-//     document.head.appendChild(styles);
-//   }
-// },
+      .product-buttons button:active {
+        transform: scale(0.95);
+      }
+    `;
+    document.head.appendChild(styles);
+  }
+},
 
 // ensureStylesExist() {
 //   if (!document.querySelector('#product-buttons-styles')) {
