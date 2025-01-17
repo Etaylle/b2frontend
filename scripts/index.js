@@ -2254,7 +2254,21 @@ const i18nManager = {
     this.createLanguageSwitcher();
     return this.updateUI();
   },
+// Add this to your i18nManager to help with debugging
 
+  getCurrentLanguage() {
+    console.log('Current language:', i18nManager.state.currentLanguage);
+    console.log('Available languages:', i18nManager.state.supportedLanguages);
+    return i18nManager.state.currentLanguage;
+  },
+  
+  forceLanguage(lang) {
+    i18nManager.setLanguage(lang);
+    i18nManager.updateUI();
+    // Trigger a content refresh
+    window.dispatchEvent(new CustomEvent('refreshContent'));
+  }
+,
   setLanguage(lang) {
     if (!this.state.supportedLanguages.includes(lang)) {
       console.warn(`Language ${lang} not supported, falling back to ${this.state.defaultLanguage}`);
