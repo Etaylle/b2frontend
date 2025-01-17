@@ -2259,20 +2259,6 @@ const i18nManager = {
       }
     }
   },
-
-  // initialize() {
-  //   const savedLang = localStorage.getItem('preferred_language');
-  //   const browserLang = navigator.language.split('-')[0];
-    
-  //   this.setLanguage(
-  //     savedLang || 
-  //     (this.state.supportedLanguages.includes(browserLang) ? browserLang : this.state.defaultLanguage)
-  //   );
-    
-  //   this.createLanguageSwitcher();
-  //   return this.updateUI();
-  //   this.fetchProducts();
-  // },
  initialize() {
     const savedLang = localStorage.getItem('preferred_language');
     const browserLang = navigator.language.split('-')[0];
@@ -2970,20 +2956,14 @@ async renderProducts() {
   this.state.products.forEach((product) => {
     const gridItem = document.createElement("div");
     gridItem.className = "grid-item grid-item-xl";
-    gridItem.dataset.productId = product.product_id;    
+    gridItem.dataset.productId = product.product_id;
+
+    // Get translated product name using i18nManager
+    const productName = i18nManager.getProductName(product);
+    
     const productContent = document.createElement("div");
     productContent.className = "product-content";
-    let productName;
-  try {
-    productName = i18nManager.getProductName(product);
-    if (!productName) {
-      console.warn(`Translation missing for product ${product.product_id}, falling back to default name`);
-      productName = product.name || 'Product';
-    }
-  } catch (error) {
-    console.error('Error getting product translation:', error);
-    productName = product.name || 'Product';
-  }
+    
     // Create image slider
     const imageSlider = this.createImageSlider(product, productName);
     
@@ -3171,42 +3151,6 @@ initializeImageSliders() {
     slider.addEventListener('mouseenter', stopAutoSlide);
     slider.addEventListener('mouseleave', startAutoSlide);
   });
-},
-createButtonsContainer(product, translations, buttonTemplate) {
-  const container = document.createElement("div");
-  container.className = "product-buttons";
-
-  // Add to cart button
-      const addToCartButton = document.createElement("button");
-      addToCartButton.textContent = "💰";
-      addToCartButton.className = "add-to-cart-btn";
-      addToCartButton.addEventListener("click", (e) => {
-        e.stopPropagation(); // Prevent event from bubbling up
-        cartManager.addItem(product.product_id);
-      });
-
-      // Share button
-      const shareButton = document.createElement("button");
-      shareButton.textContent = "🚀";
-      shareButton.className = "share-btn";
-      shareButton.addEventListener("click", (e) => {
-        e.preventDefault(); // Prevent default behavior
-        e.stopPropagation(); // Stop event from bubbling up
-        socialSharingManager.showShareOptions(product);
-      });
-
-      // Rate button
-      const rateButton = document.createElement("button");
-      rateButton.textContent = "⭐";
-      rateButton.className = "rate-btn";
-      rateButton.addEventListener("click", (e) => {
-        e.preventDefault(); // Prevent default behavior
-        e.stopPropagation(); // Stop event from bubbling up
-        ratingManager.openRatingModal(product.product_id.toString(), e);
-      });
-
-  container.append(addToCartButton, shareButton, rateButton);
-  return container;
 },
 
 createButtonsContainer(product, translations, buttonTemplate) {
