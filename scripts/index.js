@@ -3270,13 +3270,12 @@ async renderProducts() {
     fragment.appendChild(gridItem);
   });
   
- // Append all items at once
+  // Append all items at once
   gridContainer.appendChild(fragment);
   
-  // Add styles if needed
-  this.ensureStylesExist();
   
-  // Initialize all sliders
+  this.ensureStylesExist();
+
   this.initializeImageSliders();
   
   // Update related managers
@@ -3313,7 +3312,6 @@ createImageSlider(product, productName) {
   
   return sliderHtml + '</div></div>';
 },
-
 initializeImageSliders() {
   const sliders = document.querySelectorAll('.image-slider');
   
@@ -3385,7 +3383,55 @@ initializeImageSliders() {
     }, { passive: true });
   });
 },
+createButtonsContainer(product, translations, buttonTemplate) {
+  const container = document.createElement("div");
+  container.className = "product-buttons";
 
+  // Define button configurations
+  const buttons = [
+    {
+      icon: '<i class="fas fa-shopping-cart"></i>',
+      className: 'add-to-cart-btn',
+      title: translations.addToCart,
+      handler: (e) => {
+        e.stopPropagation();
+        cartManager.addItem(product.product_id);
+      }
+    },
+    {
+      icon: '<i class="fas fa-share-alt"></i>',
+      className: 'share-btn',
+      title: translations.share,
+      handler: (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        socialSharingManager.showShareOptions(product);
+      }
+    },
+    {
+      icon: '<i class="fas fa-star"></i>',
+      className: 'rate-btn',
+      title: translations.rate,
+      handler: (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        ratingManager.openRatingModal(product.product_id.toString(), e);
+      }
+    }
+  ];
+
+  // Create and append all buttons
+  buttons.forEach(({ icon, className, title, handler }) => {
+    const button = buttonTemplate.cloneNode();
+    button.innerHTML = icon;
+    button.className = className;
+    button.title = title;
+    button.addEventListener("click", handler);
+    container.appendChild(button);
+  });
+
+  return container;
+},
 ensureStylesExist() {
   if (!document.querySelector('#product-buttons-styles')) {
     const styles = document.createElement('style');
@@ -3528,6 +3574,55 @@ ensureStylesExist() {
     document.head.appendChild(styles);
   }
 },
+// ensureStylesExist() {
+//   if (!document.querySelector('#product-buttons-styles')) {
+//     const styles = document.createElement('style');
+//     styles.id = 'product-buttons-styles';
+//     styles.textContent = `
+//       .product-buttons {
+//         position: absolute;
+//         top: 10px;
+//         right: 10px;
+//         display: flex;
+//         flex-direction: column;
+//         gap: 8px;
+//         z-index: 10;
+//       }
+
+//       .product-buttons button {
+//         width: 32px;
+//         height: 32px;
+//         min-width: 32px;
+//         border-radius: 50%;
+//         cursor: pointer;
+//         background: rgba(255, 255, 255, 0.95);
+//         border: 1px solid #ddd;
+//         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+//         transition: all 0.2s ease;
+//         display: flex;
+//         align-items: center;
+//         justify-content: center;
+//         padding: 0;
+//         color: #444;
+//       }
+
+//       .product-buttons button i {
+//         font-size: 14px;
+//       }
+
+//       .product-buttons button:hover {
+//         transform: scale(1.1);
+//         background: white;
+//         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+//       }
+
+//       .product-buttons button:active {
+//         transform: scale(0.95);
+//       }
+//     `;
+//     document.head.appendChild(styles);
+//   }
+// },
 async updateRelatedManagers() {
   productPageManager.updateProducts(this.state.products);
   
