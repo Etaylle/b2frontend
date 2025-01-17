@@ -2970,14 +2970,20 @@ async renderProducts() {
   this.state.products.forEach((product) => {
     const gridItem = document.createElement("div");
     gridItem.className = "grid-item grid-item-xl";
-    gridItem.dataset.productId = product.product_id;
-
-    // Get translated product name using i18nManager
-    const productName = i18nManager.getProductName(product);
-    
+    gridItem.dataset.productId = product.product_id;    
     const productContent = document.createElement("div");
     productContent.className = "product-content";
-    
+    let productName;
+  try {
+    productName = i18nManager.getProductName(product);
+    if (!productName) {
+      console.warn(`Translation missing for product ${product.product_id}, falling back to default name`);
+      productName = product.name || 'Product';
+    }
+  } catch (error) {
+    console.error('Error getting product translation:', error);
+    productName = product.name || 'Product';
+  }
     // Create image slider
     const imageSlider = this.createImageSlider(product, productName);
     
@@ -3015,19 +3021,32 @@ async renderProducts() {
 },
 
 createImageSlider(product, productName) {
+  // Add fallback for product name
+  const safeProductName = productName || product.name || 'Product';
+  
   let sliderHtml = '<div class="image-slider">';
   
-  const images = product.images?.length ? product.images : 
-                 product.image_url ? [product.image_url] :
-                 ['/images/default-product-image.jpg'];
+  // Add defensive check for images
+  const images = Array.isArray(product.images) && product.images.length > 0 ? product.images : 
+                product.image_url ? [product.image_url] :
+                ['/images/default-product-image.jpg'];
+  
+  // Log for debugging
+  console.debug('Creating slider for product:', {
+    id: product.product_id,
+    name: safeProductName,
+    imageCount: images.length
+  });
   
   // Add navigation buttons if there are multiple images
   if (images.length > 1) {
     sliderHtml += `
-      <button class="slider-nav prev" aria-label="Previous image">‹</button>
-      <button class="slider-nav next" aria-label="Next image">›</button>
+      <button class="slider-nav prev" aria-label="${i18nManager.translate('ui.buttons.previous') || 'Previous image'}">‹</button>
+      <button class="slider-nav next" aria-label="${i18nManager.translate('ui.buttons.next') || 'Next image'}">›</button>
       <div class="slider-dots">
-        ${images.map((_, i) => `<button class="slider-dot${i === 0 ? ' active' : ''}" aria-label="Go to image ${i + 1}"></button>`).join('')}
+        ${images.map((_, i) => `<button class="slider-dot${i === 0 ? ' active' : ''}" 
+          aria-label="${i18nManager.translate('ui.buttons.goToImage', { number: i + 1 }) || `Go to image ${i + 1}`}">
+          </button>`).join('')}
       </div>
     `;
   }
@@ -3035,16 +3054,21 @@ createImageSlider(product, productName) {
   // Add images within slider track
   sliderHtml += '<div class="slider-track">';
   images.forEach((img, index) => {
+    // Add error handling for image loading
     sliderHtml += `
       <div class="slider-slide${index === 0 ? ' active' : ''}" style="--slide-index: ${index}">
-        <img src="${img}" alt="${productName}${images.length > 1 ? ` - Image ${index + 1}` : ''}" loading="lazy">
+        <img 
+          src="${img}" 
+          alt="${safeProductName}${images.length > 1 ? ` - ${i18nManager.translate('ui.labels.image', { number: index + 1 }) || `Image ${index + 1}`}` : ''}" 
+          loading="lazy"
+          onerror="this.onerror=null; this.src='/images/default-product-image.jpg';"
+        >
       </div>
     `;
   });
   
   return sliderHtml + '</div></div>';
 },
-
 // Update the initializeImageSliders function to handle both manual and automatic sliding
 initializeImageSliders() {
   const sliders = document.querySelectorAll('.image-slider');
