@@ -3142,9 +3142,9 @@ async renderProducts() {
     const productContent = document.createElement("div");
     productContent.className = "product-content";
     
-    // Create and immediately append the image slider
+    // Create and append the image slider with correct class structure
     const imageSlider = this.createImageSlider(product, productName);
-    productContent.appendChild(imageSlider); // Changed from innerHTML to appendChild
+    productContent.appendChild(imageSlider);
     
     const overlay = document.createElement('div');
     overlay.className = 'overlay';
@@ -3176,33 +3176,34 @@ async renderProducts() {
 },
 
 createImageSlider(product, productName) {
+  // Create outer image-slider container
   const sliderContainer = document.createElement('div');
   sliderContainer.className = 'image-slider';
+  
+  // Create slider-track container
+  const sliderTrack = document.createElement('div');
+  sliderTrack.className = 'slider-track';
   
   const images = product.images?.length ? product.images : 
                 product.image_url ? [product.image_url] :
                 ['/images/default-product-image.jpg'];
   
-  // Create slider track
-  const track = document.createElement('div');
-  track.className = 'slider-track';
-  
   // Create and append slides
   images.forEach((imgSrc, index) => {
-    const slide = document.createElement('div');
-    slide.className = `slider-slide${index === 0 ? ' active' : ''}`;
-    slide.style.setProperty('--slide-index', index);
+    const slideDiv = document.createElement('div');
+    slideDiv.className = `slider-slide${index === 0 ? ' active' : ''}`;
+    slideDiv.style.setProperty('--slide-index', index);
     
     const img = document.createElement('img');
     img.src = imgSrc;
-    img.alt = `${productName}${images.length > 1 ? ` - Image ${index + 1}` : ''}`;
+    img.alt = productName;
     img.loading = 'lazy';
     
-    slide.appendChild(img);
-    track.appendChild(slide);
+    slideDiv.appendChild(img);
+    sliderTrack.appendChild(slideDiv);
   });
   
-  sliderContainer.appendChild(track);
+  sliderContainer.appendChild(sliderTrack);
   
   // Add navigation if multiple images
   if (images.length > 1) {
@@ -3211,18 +3212,19 @@ createImageSlider(product, productName) {
     prevBtn.className = 'slider-nav prev';
     prevBtn.setAttribute('aria-label', 'Previous image');
     prevBtn.textContent = '‹';
+    sliderContainer.appendChild(prevBtn);
     
     // Next button
     const nextBtn = document.createElement('button');
     nextBtn.className = 'slider-nav next';
     nextBtn.setAttribute('aria-label', 'Next image');
     nextBtn.textContent = '›';
+    sliderContainer.appendChild(nextBtn);
     
     // Dots container
     const dotsContainer = document.createElement('div');
     dotsContainer.className = 'slider-dots';
     
-    // Create dots
     images.forEach((_, i) => {
       const dot = document.createElement('button');
       dot.className = `slider-dot${i === 0 ? ' active' : ''}`;
@@ -3230,12 +3232,95 @@ createImageSlider(product, productName) {
       dotsContainer.appendChild(dot);
     });
     
-    sliderContainer.appendChild(prevBtn);
-    sliderContainer.appendChild(nextBtn);
     sliderContainer.appendChild(dotsContainer);
   }
   
   return sliderContainer;
+},
+
+ensureStylesExist() {
+  if (!document.querySelector('#product-slider-styles')) {
+    const styles = document.createElement('style');
+    styles.id = 'product-slider-styles';
+    styles.textContent = `
+      .image-slider {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      .slider-track {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+
+      .slider-slide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .slider-slide.active {
+        opacity: 1;
+        z-index: 1;
+      }
+
+      .slider-slide img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      
+      /* Navigation styles */
+      .slider-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 2;
+        background: rgba(255, 255, 255, 0.8);
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 24px;
+      }
+
+      .slider-nav.prev { left: 10px; }
+      .slider-nav.next { right: 10px; }
+
+      .slider-dots {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 8px;
+        z-index: 2;
+      }
+
+      .slider-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.5);
+        border: none;
+        padding: 0;
+        cursor: pointer;
+      }
+
+      .slider-dot.active {
+        background: white;
+      }
+    `;
+    document.head.appendChild(styles);
+  }
 },
 initializeImageSliders() {
   const sliders = document.querySelectorAll('.image-slider');
