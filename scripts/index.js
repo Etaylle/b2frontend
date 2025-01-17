@@ -3112,38 +3112,34 @@ createButtonsContainer(product, translations, buttonTemplate) {
   const container = document.createElement("div");
   container.className = "product-buttons";
 
-  // Add to Cart button
-  const addToCartButton = buttonTemplate.cloneNode();
-  addToCartButton.textContent = translations.addToCart;
-  addToCartButton.className = "add-to-cart-btn";
-  addToCartButton.addEventListener("click", (e) => {
-    e.stopPropagation();
-    cartManager.addItem(product.product_id);
-  });
+   // Add to cart button
+      const addToCartButton = document.createElement("button");
+      addToCartButton.textContent = "💰";
+      addToCartButton.className = "add-to-cart-btn";
+      addToCartButton.addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent event from bubbling up
+        cartManager.addItem(product.product_id);
+      });
 
-  // Share button
-  const shareButton = buttonTemplate.cloneNode();
-  shareButton.textContent = translations.share;
-  shareButton.className = "share-btn";
-  shareButton.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    socialSharingManager.showShareOptions(product);
-  });
+      // Share button
+      const shareButton = document.createElement("button");
+      shareButton.textContent = "🚀";
+      shareButton.className = "share-btn";
+      shareButton.addEventListener("click", (e) => {
+        e.preventDefault(); // Prevent default behavior
+        e.stopPropagation(); // Stop event from bubbling up
+        socialSharingManager.showShareOptions(product);
+      });
 
-  // Rate button
-  const rateButton = buttonTemplate.cloneNode();
-  rateButton.textContent = translations.rate;
-  rateButton.className = "rate-btn";
-  rateButton.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    ratingManager.openRatingModal(product.product_id.toString(), e);
-  });
-
-  container.append(addToCartButton, shareButton, rateButton);
-  return container;
-},
+      // Rate button
+      const rateButton = document.createElement("button");
+      rateButton.textContent = "⭐";
+      rateButton.className = "rate-btn";
+      rateButton.addEventListener("click", (e) => {
+        e.preventDefault(); // Prevent default behavior
+        e.stopPropagation(); // Stop event from bubbling up
+        ratingManager.openRatingModal(product.product_id.toString(), e);
+      });
 
 ensureStylesExist() {
   if (!document.querySelector('#product-buttons-styles')) {
