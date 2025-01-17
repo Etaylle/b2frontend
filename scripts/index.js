@@ -3112,7 +3112,7 @@ createButtonsContainer(product, translations, buttonTemplate) {
   const container = document.createElement("div");
   container.className = "product-buttons";
 
-   // Add to cart button
+  // Add to cart button
       const addToCartButton = document.createElement("button");
       addToCartButton.textContent = "💰";
       addToCartButton.className = "add-to-cart-btn";
@@ -3140,6 +3140,10 @@ createButtonsContainer(product, translations, buttonTemplate) {
         e.stopPropagation(); // Stop event from bubbling up
         ratingManager.openRatingModal(product.product_id.toString(), e);
       });
+
+  container.append(addToCartButton, shareButton, rateButton);
+  return container;
+},
 
 ensureStylesExist() {
   if (!document.querySelector('#product-buttons-styles')) {
