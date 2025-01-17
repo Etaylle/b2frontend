@@ -2271,6 +2271,19 @@ const i18nManager = {
     this.fetchProducts();
   }
 ,
+ refreshContent() {
+  // Update the UI elements with the translated text
+  i18nManager.updateUI();
+
+  // Update the search history dropdown content
+  categoryManager.setupSearch();
+
+  // Update the category list with the translated category names
+  categoryManager.renderCategories();
+
+  // Update the product list with the translated product names and prices
+  categoryManager.renderProducts();
+},
   setLanguage(lang) {
     if (!this.state.supportedLanguages.includes(lang)) {
       console.warn(`Language ${lang} not supported, falling back to ${this.state.defaultLanguage}`);
@@ -2391,7 +2404,7 @@ getProductName(product) {
     });
   },
 transformProductData(product) {
-    // No need for complex transformation since backend handles it
+    
     return {
       ...product,
       displayName: this.getProductName(product)
