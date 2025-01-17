@@ -3043,7 +3043,7 @@ createImageSlider(product, productName) {
   });
   
   return sliderHtml + '</div></div>';
-}
+},
 
 // Update the initializeImageSliders function to handle both manual and automatic sliding
 initializeImageSliders() {
