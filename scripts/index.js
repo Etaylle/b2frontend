@@ -2623,21 +2623,60 @@ async setupSearch() {
       showNotification(error.message, "error");
     }
   },
-async fetchProducts(categoryId = null) {
+// async fetchProducts(categoryId = null) {
+//   try {
+//     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+//     const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
+//     const response = await fetch(url);
+    
+//     if (!response.ok) throw new Error("Failed to fetch products");
+//     const data = await response.json();
+    
+//     // Check if the response has the new format with success property
+//     if (data.success) {
+//       this.state.products = data.products; // Access products array from the response
+//     } else {
+//       this.state.products = data; // Fallback for old format
+//     }
+    
+//     await this.renderProducts();
+//   } catch (error) {
+//     console.error("Error fetching products:", error);
+//     showNotification(error.message, "error");
+//   }
+// },
+ async fetchProducts(categoryId = null) {
   try {
     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-    const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
-    const response = await fetch(url);
+    const currentLang = i18nManager.state.currentLanguage;
+    
+    // Add language parameter to URL
+    const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
+    url.searchParams.append('lang', currentLang);
+    
+    const response = await fetch(url, {
+      headers: {
+        'Accept-Language': currentLang // Also send language in header
+      }
+    });
     
     if (!response.ok) throw new Error("Failed to fetch products");
     const data = await response.json();
     
-    // Check if the response has the new format with success property
-    if (data.success) {
-      this.state.products = data.products; // Access products array from the response
-    } else {
-      this.state.products = data; // Fallback for old format
-    }
+    // Store products in state
+    this.state.products = data.success ? data.products : data;
+    
+    // If products don't have translations, we might want to transform them
+    this.state.products = this.state.products.map(product => ({
+      ...product,
+      // Ensure we have a translations field even if empty
+      translations: product.translations || {},
+      // Make sure we have the base name in English
+      name: product.name || '',
+      // Add convenience fields for each supported language
+      name_srb: product[`name_srb`] || product.translations?.srb?.name || '',
+      name_de: product[`name_de`] || product.translations?.de?.name || ''
+    }));
     
     await this.renderProducts();
   } catch (error) {
@@ -2645,7 +2684,6 @@ async fetchProducts(categoryId = null) {
     showNotification(error.message, "error");
   }
 },
- 
   renderCategories() {
     const container = document.querySelector(".categories");
     if (!container) {
