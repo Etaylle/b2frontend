@@ -3009,8 +3009,7 @@ async renderProducts() {
   
   // Add styles if needed
   this.ensureStylesExist();
-  // Initialize slider
-   this.initializeImageSliders();
+  this.initializeImageSliders();
   // Update related managers
   await this.updateRelatedManagers();
 },
@@ -3045,77 +3044,6 @@ createImageSlider(product, productName) {
   
   return sliderHtml + '</div></div>';
 },
-// initializeImageSliders() {
-//   const sliders = document.querySelectorAll('.image-slider');
-  
-//   sliders.forEach(slider => {
-//     const track = slider.querySelector('.slider-track');
-//     if (!track) return;
-
-//     const slides = slider.querySelectorAll('.slider-slide');
-//     if (slides.length <= 1) return;
-
-//     const dots = slider.querySelectorAll('.slider-dot');
-//     let currentIndex = 0;
-    
-//     // Function to update active slide and dot
-//     const updateSlider = (newIndex) => {
-//       // Remove active class from current slide and dot
-//       slides[currentIndex].classList.remove('active');
-//       dots[currentIndex].classList.remove('active');
-      
-//       // Add active class to new slide and dot
-//       currentIndex = newIndex;
-//       slides[currentIndex].classList.add('active');
-//       dots[currentIndex].classList.add('active');
-//     };
-
-//     // Previous button click handler
-//     slider.querySelector('.prev')?.addEventListener('click', (e) => {
-//       e.stopPropagation(); // Prevent product click
-//       const newIndex = (currentIndex - 1 + slides.length) % slides.length;
-//       updateSlider(newIndex);
-//     });
-
-//     // Next button click handler
-//     slider.querySelector('.next')?.addEventListener('click', (e) => {
-//       e.stopPropagation(); // Prevent product click
-//       const newIndex = (currentIndex + 1) % slides.length;
-//       updateSlider(newIndex);
-//     });
-
-//     // Dot click handlers
-//     dots.forEach((dot, index) => {
-//       dot.addEventListener('click', (e) => {
-//         e.stopPropagation(); // Prevent product click
-//         updateSlider(index);
-//       });
-//     });
-
-//     // Touch/swipe support
-//     let touchStartX = 0;
-//     let touchEndX = 0;
-
-//     slider.addEventListener('touchstart', (e) => {
-//       touchStartX = e.changedTouches[0].screenX;
-//     }, { passive: true });
-
-//     slider.addEventListener('touchend', (e) => {
-//       touchEndX = e.changedTouches[0].screenX;
-//       const diff = touchStartX - touchEndX;
-      
-//       if (Math.abs(diff) > 50) { // Minimum swipe distance
-//         if (diff > 0) { // Swipe left
-//           const newIndex = (currentIndex + 1) % slides.length;
-//           updateSlider(newIndex);
-//         } else { // Swipe right
-//           const newIndex = (currentIndex - 1 + slides.length) % slides.length;
-//           updateSlider(newIndex);
-//         }
-//       }
-//     }, { passive: true });
-//   });
-// },
 initializeImageSliders() {
   const sliders = document.querySelectorAll('.image-slider');
   
@@ -3128,7 +3056,6 @@ initializeImageSliders() {
 
     const dots = slider.querySelectorAll('.slider-dot');
     let currentIndex = 0;
-    let autoplayInterval;
     
     // Function to update active slide and dot
     const updateSlider = (newIndex) => {
@@ -3142,44 +3069,25 @@ initializeImageSliders() {
       dots[currentIndex].classList.add('active');
     };
 
-    // Function to start autoplay
-    const startAutoplay = () => {
-      autoplayInterval = setInterval(() => {
-        const newIndex = (currentIndex + 1) % slides.length;
-        updateSlider(newIndex);
-      }, 3000);
-    };
-
-    // Function to stop autoplay
-    const stopAutoplay = () => {
-      clearInterval(autoplayInterval);
-    };
-
     // Previous button click handler
     slider.querySelector('.prev')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      stopAutoplay();
+      e.stopPropagation(); // Prevent product click
       const newIndex = (currentIndex - 1 + slides.length) % slides.length;
       updateSlider(newIndex);
-      startAutoplay();
     });
 
     // Next button click handler
     slider.querySelector('.next')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      stopAutoplay();
+      e.stopPropagation(); // Prevent product click
       const newIndex = (currentIndex + 1) % slides.length;
       updateSlider(newIndex);
-      startAutoplay();
     });
 
     // Dot click handlers
     dots.forEach((dot, index) => {
       dot.addEventListener('click', (e) => {
-        e.stopPropagation();
-        stopAutoplay();
+        e.stopPropagation(); // Prevent product click
         updateSlider(index);
-        startAutoplay();
       });
     });
 
@@ -3188,7 +3096,6 @@ initializeImageSliders() {
     let touchEndX = 0;
 
     slider.addEventListener('touchstart', (e) => {
-      stopAutoplay();
       touchStartX = e.changedTouches[0].screenX;
     }, { passive: true });
 
@@ -3205,31 +3112,153 @@ initializeImageSliders() {
           updateSlider(newIndex);
         }
       }
-      startAutoplay();
     }, { passive: true });
-
-    // Start autoplay initially
-    startAutoplay();
-
-    // Pause autoplay when hovering over slider
-    slider.addEventListener('mouseenter', stopAutoplay);
-    slider.addEventListener('mouseleave', startAutoplay);
   });
 },
+createButtonsContainer(product, translations, buttonTemplate) {
+  const container = document.createElement("div");
+  container.className = "product-buttons";
+
+  // Add to cart button
+      const addToCartButton = document.createElement("button");
+      addToCartButton.textContent = "💰";
+      addToCartButton.className = "add-to-cart-btn";
+      addToCartButton.addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent event from bubbling up
+        cartManager.addItem(product.product_id);
+      });
+
+      // Share button
+      const shareButton = document.createElement("button");
+      shareButton.textContent = "🚀";
+      shareButton.className = "share-btn";
+      shareButton.addEventListener("click", (e) => {
+        e.preventDefault(); // Prevent default behavior
+        e.stopPropagation(); // Stop event from bubbling up
+        socialSharingManager.showShareOptions(product);
+      });
+
+      // Rate button
+      const rateButton = document.createElement("button");
+      rateButton.textContent = "⭐";
+      rateButton.className = "rate-btn";
+      rateButton.addEventListener("click", (e) => {
+        e.preventDefault(); // Prevent default behavior
+        e.stopPropagation(); // Stop event from bubbling up
+        ratingManager.openRatingModal(product.product_id.toString(), e);
+      });
+
+  container.append(addToCartButton, shareButton, rateButton);
+  return container;
+},
+
+
+createImageSlider(product, productName) {
+  let sliderHtml = '<div class="image-slider">';
+  
+  if (product.images?.length) {
+    sliderHtml += product.images
+      .map((img, index) => `<img src="${img}" alt="${productName} - Image ${index + 1}" ${index === 0 ? 'class="active"' : ''}>`)
+      .join('');
+  } else if (product.image_url) {
+    sliderHtml += `<img src="${product.image_url}" alt="${productName}" class="active">`;
+  } else {
+    sliderHtml += '<img src="/images/default-product-image.jpg" alt="Default Image" class="active">';
+  }
+  
+  return sliderHtml + '</div>';
+},
+
+createButtonsContainer(product, translations, buttonTemplate) {
+  const container = document.createElement("div");
+  container.className = "product-buttons";
+
+  // Add to Cart button
+  const addToCartButton = buttonTemplate.cloneNode();
+  addToCartButton.innerHTML = '<i class="fas fa-shopping-cart"></i>';  // Cart icon
+  addToCartButton.className = "add-to-cart-btn";
+  addToCartButton.title = translations.addToCart;
+  addToCartButton.addEventListener("click", (e) => {
+    e.stopPropagation();
+    cartManager.addItem(product.product_id);
+  });
+
+  // Share button
+  const shareButton = buttonTemplate.cloneNode();
+  shareButton.innerHTML = '<i class="fas fa-share-alt"></i>';  // Share icon
+  shareButton.className = "share-btn";
+  shareButton.title = translations.share;
+  shareButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    socialSharingManager.showShareOptions(product);
+  });
+
+  // Rate button
+  const rateButton = buttonTemplate.cloneNode();
+  rateButton.innerHTML = '<i class="fas fa-star"></i>';  // Star icon
+  rateButton.className = "rate-btn";
+  rateButton.title = translations.rate;
+  rateButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    ratingManager.openRatingModal(product.product_id.toString(), e);
+  });
+
+  container.append(addToCartButton, shareButton, rateButton);
+  return container;
+},
+
 ensureStylesExist() {
   if (!document.querySelector('#product-buttons-styles')) {
     const styles = document.createElement('style');
     styles.id = 'product-buttons-styles';
     styles.textContent = `
-      /* Previous button styles remain the same */
-      
-      .image-slider {
+      .product-buttons {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        z-index: 10;
+      }
+ .image-slider {
         position: relative;
         width: 100%;
         height: 100%;
         overflow: hidden;
       }
+.product-buttons {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        z-index: 10;
+      }
 
+      .product-buttons button {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid #ddd;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+      }
+
+      .product-buttons button:hover {
+        transform: scale(1.1);
+        background: white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
       .slider-track {
         position: relative;
         width: 100%;
@@ -3354,90 +3383,39 @@ ensureStylesExist() {
       .product-buttons button:active {
         transform: scale(0.95);
       }
+      .product-buttons button {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;  /* Prevent text from expanding button */
+        border-radius: 50%;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid #ddd;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        color: #444;  /* Icon color */
+      }
+
+      .product-buttons button i {
+        font-size: 14px;  /* Icon size */
+      }
+
+      .product-buttons button:hover {
+        transform: scale(1.1);
+        background: white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .product-buttons button:active {
+        transform: scale(0.95);
+      }
     `;
     document.head.appendChild(styles);
   }
-},
-
-// ensureStylesExist() {
-//   if (!document.querySelector('#product-buttons-styles')) {
-//     const styles = document.createElement('style');
-//     styles.id = 'product-buttons-styles';
-//     styles.textContent = `
-//       .product-buttons {
-//         position: absolute;
-//         top: 10px;
-//         right: 10px;
-//         display: flex;
-//         flex-direction: column;
-//         gap: 8px;
-//         z-index: 10;
-//       }
-
-//       .product-buttons button {
-//         width: 32px;
-//         height: 32px;
-//         border-radius: 50%;
-//         cursor: pointer;
-//         background: rgba(255, 255, 255, 0.95);
-//         border: 1px solid #ddd;
-//         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-//         transition: all 0.2s ease;
-//         display: flex;
-//         align-items: center;
-//         justify-content: center;
-//         padding: 0;
-//       }
-
-//       .product-buttons button:hover {
-//         transform: scale(1.1);
-//         background: white;
-//         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-//       }
-//     `;
-//     document.head.appendChild(styles);
-//   }
-// },
-
-
-createButtonsContainer(product, translations, buttonTemplate) {
-  const container = document.createElement("div");
-  container.className = "product-buttons";
-
-  // Add to Cart button
-  const addToCartButton = buttonTemplate.cloneNode();
-  addToCartButton.innerHTML = '<i class="fas fa-shopping-cart"></i>';  // Cart icon
-  addToCartButton.className = "add-to-cart-btn";
-  addToCartButton.title = translations.addToCart;
-  addToCartButton.addEventListener("click", (e) => {
-    e.stopPropagation();
-    cartManager.addItem(product.product_id);
-  });
-
-  // Share button
-  const shareButton = buttonTemplate.cloneNode();
-  shareButton.innerHTML = '<i class="fas fa-share-alt"></i>';  // Share icon
-  shareButton.className = "share-btn";
-  shareButton.title = translations.share;
-  shareButton.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    socialSharingManager.showShareOptions(product);
-  });
-
-  // Rate button
-  const rateButton = buttonTemplate.cloneNode();
-  rateButton.innerHTML = '<i class="fas fa-star"></i>';  // Star icon
-  rateButton.className = "rate-btn";
-  rateButton.title = translations.rate;
-  rateButton.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    ratingManager.openRatingModal(product.product_id.toString(), e);
-  });
-
-  container.append(addToCartButton, shareButton, rateButton);
-  return container;
 },
 async updateRelatedManagers() {
   productPageManager.updateProducts(this.state.products);
@@ -3448,13 +3426,25 @@ async updateRelatedManagers() {
   }
   
   await ratingManager.fetchUserRatings();
-  
+  this.initializeImageSliders();
 }, 
 async initialize() {
     await this.fetchCategories();
     await this.setupSearch();
   },
+  initializeImageSliders() {
+    document.querySelectorAll('.image-slider').forEach(slider => {
+      const images = slider.querySelectorAll('img');
+      if (images.length <= 1) return;
 
+      let currentIndex = 0;
+      setInterval(() => {
+        images[currentIndex].classList.remove('active');
+        currentIndex = (currentIndex + 1) % images.length;
+        images[currentIndex].classList.add('active');
+      }, 3000);
+    });
+  },
 
   highlightSelectedCategory() {
   // Remove 'active' class from all buttons
