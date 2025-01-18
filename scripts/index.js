@@ -2959,7 +2959,7 @@ async renderProducts() {
   });
   // Add styles if needed
   this.ensureStylesExist();
-  
+  this.initializeImageSliders();
   // Update related managers
   await this.updateRelatedManagers();
 },
