@@ -2241,7 +2241,8 @@ getProductName(product) {
       
       // Then fetch products based on current category selection
       await categoryManager.fetchProducts(categoryManager.state.selectedCategory);
-      
+      await categoryManager.renderProducts(categoryManager.state.products);
+      console.log('Calling renderProducts from:', new Error().stack);
       // Update search setup
       categoryManager.setupSearch();
     }
