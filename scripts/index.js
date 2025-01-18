@@ -3968,7 +3968,7 @@ async renderProducts(products) {
 },
 async initialize() {
     await this.fetchCategories();
-    await this.setupSearch();
+    
   },
   initializeImageSliders() {
     document.querySelectorAll('.image-slider').forEach(slider => {
