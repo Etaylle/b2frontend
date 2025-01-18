@@ -2289,170 +2289,6 @@ transformProductData(product) {
   }
 };
 
-const categoryManager = {
-  state: {
-    categories: [],
-    selectedCategory: null,
-    products: [],
-    searchTerm: '',
-    searchInput: null,
-    debounceTimeout: null
-  },
-
-  async initialize() {
-    await this.fetchCategories();
-    this.setupSearch();
-    
-    // Listen for language changes
-    window.addEventListener('languageChanged', () => {
-      this.updateSearchPlaceholder();
-    });
-    
-    return Promise.resolve();
-  },
-
-  setupSearch() {
-    const searchInput = document.getElementById('product-search');
-    if (!searchInput) return;
-
-    // Create search history dropdown
-    const searchHistoryDropdown = document.createElement('div');
-    searchHistoryDropdown.className = 'search-history-dropdown';
-    searchInput.parentNode.appendChild(searchHistoryDropdown);
-
-    // Input event with debouncing
-    searchInput.addEventListener('input', (e) => {
-      clearTimeout(this.state.debounceTimeout);
-      this.state.debounceTimeout = setTimeout(() => {
-        this.handleSearch(e.target.value);
-      }, 300);
-
-      // Show/hide clear button
-      const clearButton = searchInput.parentNode.querySelector('.clear-input');
-      if (clearButton) {
-        clearButton.style.display = e.target.value ? 'block' : 'none';
-      }
-    });
-
-    // Add clear input button
-    const clearButton = document.createElement('button');
-    clearButton.innerHTML = '&times;';
-    clearButton.className = 'clear-input';
-    clearButton.setAttribute('aria-label', i18nManager.translate('ui.buttons.clear'));
-    clearButton.onclick = () => {
-      searchInput.value = '';
-      this.handleSearch('');
-      clearButton.style.display = 'none';
-      searchHistoryDropdown.style.display = 'none';
-    };
-    searchInput.parentNode.appendChild(clearButton);
-
-    this.updateSearchPlaceholder();
-  },
-
-  async handleSearch(searchTerm) {
-    this.state.searchTerm = searchTerm.trim();
-    
-    if (this.state.searchTerm) {
-      this.updateSearchHistory(this.state.searchTerm);
-    }
-
-    try {
-      const currentLang = i18nManager.getCurrentLanguage();
-      const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-      const url = new URL(baseUrl);
-      
-      // Add search and language parameters
-      url.searchParams.append('lang', currentLang);
-      if (this.state.searchTerm) {
-        url.searchParams.append('search', this.state.searchTerm);
-      }
-      
-      // Add category filter if selected
-      if (this.state.selectedCategory) {
-        url.searchParams.append('categoryId', this.state.selectedCategory);
-      }
-
-      const response = await fetch(url.toString());
-      if (!response.ok) throw new Error('Search failed');
-      
-      const data = await response.json();
-      this.state.products = data.products || [];
-      
-      await this.renderProducts();
-      
-      // Show no results message if needed
-      if (this.state.products.length === 0 && this.state.searchTerm) {
-        const noResultsMessage = i18nManager.translate('ui.messages.noProductFound');
-        showNotification(noResultsMessage, 'info');
-      }
-    } catch (error) {
-      console.error('Search error:', error);
-      const errorMessage = i18nManager.translate('ui.messages.searchError');
-      showNotification(errorMessage, 'error');
-    }
-  },
-
-  async selectCategory(categoryId) {
-    this.state.selectedCategory = categoryId;
-    
-    // Clear search input
-    const searchInput = document.getElementById('product-search');
-    if (searchInput) {
-      searchInput.value = '';
-    }
-    
-    // Update UI to show active category
-    this.renderCategories();
-    
-    // Fetch products with category filter
-    try {
-      const currentLang = i18nManager.getCurrentLanguage();
-      const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-      const url = new URL(baseUrl);
-      
-      // Add language parameter
-      url.searchParams.append('lang', currentLang);
-      
-      // Add category filter if selected
-      if (categoryId) {
-        url.searchParams.append('categoryId', categoryId);
-      }
-
-      const response = await fetch(url.toString());
-      if (!response.ok) throw new Error('Failed to fetch products');
-      
-      const data = await response.json();
-      this.state.products = data.products || [];
-      
-      await this.renderProducts();
-    } catch (error) {
-      console.error('Category selection error:', error);
-      showNotification(error.message, 'error');
-    }
-  },
-
-  updateSearchHistory(term) {
-    try {
-      const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-      const index = searches.indexOf(term);
-      if (index > -1) {
-        searches.splice(index, 1);
-      }
-      searches.unshift(term);
-      searches.splice(5); // Keep only last 5 searches
-      localStorage.setItem('searchHistory', JSON.stringify(searches));
-    } catch (error) {
-      console.error('Error updating search history:', error);
-    }
-  },
-
-  updateSearchPlaceholder() {
-    const searchInput = document.getElementById('product-search');
-    if (searchInput) {
-      searchInput.placeholder = i18nManager.translate('ui.labels.search');
-    }
-  },
 // setupSearch() {
 //   const searchInput = document.getElementById('product-search');
 //   if (!searchInput) return;
@@ -2655,6 +2491,187 @@ const categoryManager = {
 //     searchInput.placeholder = i18nManager.translate('ui.labels.search');
 //   }
 // },
+const categoryManager = {
+  state: {
+    categories: [],
+    selectedCategory: null,
+    products: [],
+    searchTerm: '',
+    searchInput: null,
+    debounceTimeout: null
+  },
+
+  async initialize() {
+    await this.fetchCategories();
+    this.setupSearch();
+    
+    window.addEventListener('languageChanged', () => {
+      this.updateSearchPlaceholder();
+    });
+    
+    return Promise.resolve();
+  },
+
+  setupSearch() {
+    const searchInput = document.getElementById('product-search');
+    if (!searchInput) return;
+
+    const searchHistoryDropdown = document.createElement('div');
+    searchHistoryDropdown.className = 'search-history-dropdown';
+    searchInput.parentNode.appendChild(searchHistoryDropdown);
+
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(this.state.debounceTimeout);
+      this.state.debounceTimeout = setTimeout(() => {
+        this.handleSearch(e.target.value);
+      }, 300);
+
+      const clearButton = searchInput.parentNode.querySelector('.clear-input');
+      if (clearButton) {
+        clearButton.style.display = e.target.value ? 'block' : 'none';
+      }
+    });
+
+    const clearButton = document.createElement('button');
+    clearButton.innerHTML = '&times;';
+    clearButton.className = 'clear-input';
+    clearButton.setAttribute('aria-label', i18nManager.translate('ui.buttons.clear'));
+    clearButton.onclick = () => {
+      searchInput.value = '';
+      this.handleSearch('');
+      clearButton.style.display = 'none';
+      searchHistoryDropdown.style.display = 'none';
+    };
+    searchInput.parentNode.appendChild(clearButton);
+
+    this.updateSearchPlaceholder();
+  },
+
+  async handleSearch(searchTerm) {
+    this.state.searchTerm = searchTerm.trim();
+    
+    if (this.state.searchTerm) {
+      this.updateSearchHistory(this.state.searchTerm);
+    }
+
+    try {
+      const currentLang = i18nManager.getCurrentLanguage();
+      let url;
+      
+      if (this.state.selectedCategory) {
+        url = `https://backend-3mvr.onrender.com/api/products/category/${this.state.selectedCategory}`;
+      } else {
+        url = 'https://backend-3mvr.onrender.com/api/products';
+      }
+
+      // Add search parameters if there's a search term
+      if (this.state.searchTerm) {
+        const params = new URLSearchParams({
+          name: this.state.searchTerm
+        });
+        url += `?${params.toString()}`;
+      }
+
+      const response = await fetch(url, {
+        headers: {
+          'Accept-Language': currentLang
+        }
+      });
+
+      if (!response.ok) throw new Error('Search failed');
+      
+      const data = await response.json();
+      
+      // Handle both the new and old response formats
+      this.state.products = Array.isArray(data) ? data : (data.products || []);
+      
+      await this.renderProducts();
+      
+      if (this.state.products.length === 0 && this.state.searchTerm) {
+        const noResultsMessage = i18nManager.translate('ui.messages.noProductFound');
+        showNotification(noResultsMessage, 'info');
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      const errorMessage = i18nManager.translate('ui.messages.searchError');
+      showNotification(errorMessage, 'error');
+    }
+  },
+
+  async selectCategory(categoryId) {
+    this.state.selectedCategory = categoryId;
+    
+    const searchInput = document.getElementById('product-search');
+    if (searchInput) {
+      searchInput.value = '';
+      this.state.searchTerm = '';
+    }
+    
+    this.renderCategories();
+    
+    try {
+      let url;
+      if (categoryId) {
+        url = `https://backend-3mvr.onrender.com/api/products/category/${categoryId}`;
+      } else {
+        url = 'https://backend-3mvr.onrender.com/api/products';
+      }
+
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch products');
+      
+      const data = await response.json();
+      this.state.products = Array.isArray(data) ? data : (data.products || []);
+      
+      await this.renderProducts();
+    } catch (error) {
+      console.error('Category selection error:', error);
+      showNotification(error.message, 'error');
+    }
+  },
+
+  async fetchCategories() {
+    try {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/categories');
+      if (!response.ok) throw new Error(`Failed to fetch categories: ${response.statusText}`);
+
+      const categories = await response.json();
+      if (!Array.isArray(categories)) throw new Error("Categories data is not an array");
+
+      this.state.categories = categories.map(category => ({
+        ...category,
+        displayName: i18nManager.getCategoryName(category)
+      }));
+
+      await this.renderCategories();
+      await this.fetchProducts(); 
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      showNotification(error.message, "error");
+    }
+  },
+
+  updateSearchHistory(term) {
+    try {
+      const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+      const index = searches.indexOf(term);
+      if (index > -1) {
+        searches.splice(index, 1);
+      }
+      searches.unshift(term);
+      searches.splice(5);
+      localStorage.setItem('searchHistory', JSON.stringify(searches));
+    } catch (error) {
+      console.error('Error updating search history:', error);
+    }
+  },
+
+  updateSearchPlaceholder() {
+    const searchInput = document.getElementById('product-search');
+    if (searchInput) {
+      searchInput.placeholder = i18nManager.translate('ui.labels.search');
+    }
+  },
  showSearchHistory() {
     if (!this.state.searchHistoryDropdown) return;
     
@@ -2689,27 +2706,27 @@ const categoryManager = {
       this.state.searchHistoryDropdown.style.display = 'none';
     }
   }, 
-async fetchCategories() {
-    try {
-      const response = await fetch('https://backend-3mvr.onrender.com/api/categories');
-      if (!response.ok) throw new Error(`Failed to fetch categories: ${response.statusText}`);
+// async fetchCategories() {
+//     try {
+//       const response = await fetch('https://backend-3mvr.onrender.com/api/categories');
+//       if (!response.ok) throw new Error(`Failed to fetch categories: ${response.statusText}`);
 
-      const categories = await response.json();
-      if (!Array.isArray(categories)) throw new Error("Categories data is not an array");
+//       const categories = await response.json();
+//       if (!Array.isArray(categories)) throw new Error("Categories data is not an array");
 
-      // Transform categories with proper translations
-      this.state.categories = categories.map(category => ({
-        ...category,
-        displayName: i18nManager.getCategoryName(category)
-      }));
+//       // Transform categories with proper translations
+//       this.state.categories = categories.map(category => ({
+//         ...category,
+//         displayName: i18nManager.getCategoryName(category)
+//       }));
 
-      await this.renderCategories();
-      await this.fetchProducts(); 
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      showNotification(error.message, "error");
-    }
-  },
+//       await this.renderCategories();
+//       await this.fetchProducts(); 
+//     } catch (error) {
+//       console.error("Error fetching categories:", error);
+//       showNotification(error.message, "error");
+//     }
+//   },
 async fetchProducts(categoryId = null) {
   try {
     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
