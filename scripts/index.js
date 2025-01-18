@@ -2093,7 +2093,7 @@ const i18nManager = {
           }
         }
       }
-    }
+    }}
   },
  initialize() {
     const savedLang = localStorage.getItem('preferred_language');
@@ -2287,7 +2287,7 @@ transformProductData(product) {
       displayName: this.getProductName(product)
     };
   }
-}};
+};
 
 const categoryManager = {
   state: {
