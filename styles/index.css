@@ -158,7 +158,21 @@ html {
     scale: 1.1;
   }
     .grid-item button {
-     
+      border: none;
+      display: block;
+      position: relative;
+      top: 5px;
+      right: 5px;
+      height: 2rem;
+      width: 2rem;
+      border-radius: 50%;
+      background-color: #1976d2;
+      opacity: 0;
+      z-index: 2;
+      color: #fff;
+      font-size: 1.3rem;
+      transition: opacity 0.3s;
+      cursor: pointer;
     }
   
   
