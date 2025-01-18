@@ -2837,7 +2837,7 @@ async initialize() {
         throw error;
     }
 }
-
+,
 // In categoryManager
 async refreshAllContent() {
     try {
@@ -3597,8 +3597,8 @@ async renderProducts(products) {
   }
 },
 async initialize() {
-    await this.fetchCategories();
-    await this.setupSearch();
+    await categoryManager.fetchCategories();
+    await categoryManager.setupSearch();
   },
   initializeImageSliders() {
     document.querySelectorAll('.image-slider').forEach(slider => {
