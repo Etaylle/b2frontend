@@ -3475,17 +3475,103 @@ async updateRelatedManagers() {
   await ratingManager.fetchUserRatings();
   this.initializeImageSliders();
 },
-async renderProducts() {
+// async renderProducts() {
+//   const gridContainer = document.querySelector(".grid-container");
+//   if (!gridContainer) return;
+  
+//   // Clear container once
+//   gridContainer.innerHTML = "";
+  
+//   // Create document fragment for better performance
+//   const fragment = document.createDocumentFragment();
+  
+//   // Cache translations to avoid multiple lookups
+//   const translations = {
+//     addToCart: i18nManager.translate('ui.buttons.addToCart'),
+//     share: i18nManager.translate('ui.buttons.share'),
+//     rate: i18nManager.translate('ui.buttons.rate'),
+//     stock: i18nManager.translate('ui.labels.stock')
+//   };
+  
+//   // Create button template for reuse
+//   const buttonTemplate = document.createElement('button');
+  
+//   this.state.products.forEach((product) => {
+//     const gridItem = document.createElement("div");
+//     gridItem.className = "grid-item grid-item-xl";
+//     gridItem.dataset.productId = product.product_id;
+
+//     // Get translated product name using i18nManager
+//     const productName = i18nManager.getProductName(product);
+    
+//     const productContent = document.createElement("div");
+//     productContent.className = "product-content";
+    
+//     // Create image slider
+//     const imageSlider = this.createImageSlider(product, productName);
+    
+//     productContent.innerHTML = `
+//       ${imageSlider}
+//       <div class="overlay">
+//         ${productName} | 
+//         <span class="price-span" data-usd-price="${product.price}">
+//           ${cryptoManager.formatCryptoPrice(product.price)}
+//         </span>
+//         | ${translations.stock}: ${product.stock}
+//       </div>
+//     `;
+
+//     // Add product click handler
+//     productContent.addEventListener("click", () => {
+//       productPageManager.openProductPage(product);
+//     });
+    
+//     // Create buttons container with all buttons
+//     const buttonsContainer = this.createButtonsContainer(product, translations, buttonTemplate);
+    
+//     gridItem.append(productContent, buttonsContainer);
+//     fragment.appendChild(gridItem);
+//   });
+  
+//   // Append all items at once
+//   gridContainer.appendChild(fragment);
+//    // Initialize sliders after DOM is updated
+//   requestAnimationFrame(() => {
+//     this.initializeImageSliders();
+//   });
+//   // Add styles if needed
+//   this.ensureStylesExist();
+//   this.initializeImageSliders();
+//   // Update related managers
+//   await this.updateRelatedManagers();
+// }, 
+async renderProducts(products) {
   const gridContainer = document.querySelector(".grid-container");
   if (!gridContainer) return;
   
-  // Clear container once
+  // Update state with provided products or fetch them if not provided
+  if (products) {
+    this.state.products = products;
+  } else {
+    try {
+      const currentLang = i18nManager.getCurrentLanguage();
+      const response = await fetch('/api/products?lang=' + currentLang);
+      if (!response.ok) throw new Error('Failed to fetch products');
+      const data = await response.json();
+      this.state.products = data.products;
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      return;
+    }
+  }
+  
+  // Clear container
   gridContainer.innerHTML = "";
   
   // Create document fragment for better performance
   const fragment = document.createDocumentFragment();
   
-  // Cache translations to avoid multiple lookups
+  // Cache translations
   const translations = {
     addToCart: i18nManager.translate('ui.buttons.addToCart'),
     share: i18nManager.translate('ui.buttons.share'),
@@ -3493,40 +3579,64 @@ async renderProducts() {
     stock: i18nManager.translate('ui.labels.stock')
   };
   
-  // Create button template for reuse
+  // Create button template
   const buttonTemplate = document.createElement('button');
   
+  // Handle empty state
+  if (!this.state.products.length) {
+    const emptyState = document.createElement('div');
+    emptyState.className = 'empty-state';
+    emptyState.textContent = 'No products found';
+    gridContainer.appendChild(emptyState);
+    return;
+  }
+
+  // Render each product
   this.state.products.forEach((product) => {
     const gridItem = document.createElement("div");
     gridItem.className = "grid-item grid-item-xl";
     gridItem.dataset.productId = product.product_id;
 
-    // Get translated product name using i18nManager
-    const productName = i18nManager.getProductName(product);
+    // Get translated product name using i18nManager's getProductTranslation
+    const productName = i18nManager.getProductTranslation(product, 'name');
     
     const productContent = document.createElement("div");
     productContent.className = "product-content";
     
-    // Create image slider
+    // Create image slider with error handling
     const imageSlider = this.createImageSlider(product, productName);
+    
+    // Format price using crypto manager if available, fallback to regular formatting
+    const formattedPrice = window.cryptoManager ? 
+      cryptoManager.formatCryptoPrice(product.price) : 
+      new Intl.NumberFormat(i18nManager.getCurrentLanguage(), {
+        style: 'currency',
+        currency: 'USD'
+      }).format(product.price);
     
     productContent.innerHTML = `
       ${imageSlider}
       <div class="overlay">
-        ${productName} | 
+        <span class="product-name">${productName}</span> | 
         <span class="price-span" data-usd-price="${product.price}">
-          ${cryptoManager.formatCryptoPrice(product.price)}
+          ${formattedPrice}
         </span>
         | ${translations.stock}: ${product.stock}
       </div>
     `;
 
-    // Add product click handler
-    productContent.addEventListener("click", () => {
-      productPageManager.openProductPage(product);
+    // Add product click handler with error boundary
+    productContent.addEventListener("click", (e) => {
+      try {
+        if (window.productPageManager) {
+          productPageManager.openProductPage(product);
+        }
+      } catch (error) {
+        console.error('Error opening product page:', error);
+      }
     });
     
-    // Create buttons container with all buttons
+    // Create buttons container
     const buttonsContainer = this.createButtonsContainer(product, translations, buttonTemplate);
     
     gridItem.append(productContent, buttonsContainer);
@@ -3535,16 +3645,26 @@ async renderProducts() {
   
   // Append all items at once
   gridContainer.appendChild(fragment);
-   // Initialize sliders after DOM is updated
+
+  // Initialize sliders after DOM is updated
   requestAnimationFrame(() => {
-    this.initializeImageSliders();
+    try {
+      this.initializeImageSliders();
+    } catch (error) {
+      console.error('Error initializing image sliders:', error);
+    }
   });
-  // Add styles if needed
+
+  // Ensure styles exist
   this.ensureStylesExist();
-  this.initializeImageSliders();
-  // Update related managers
-  await this.updateRelatedManagers();
-}, 
+
+  // Update related managers if needed
+  try {
+    await this.updateRelatedManagers();
+  } catch (error) {
+    console.error('Error updating related managers:', error);
+  }
+},
 async initialize() {
     await this.fetchCategories();
     await this.setupSearch();
