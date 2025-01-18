@@ -2799,6 +2799,47 @@ async fetchCategories() {
 //       showNotification(error.message, "error");
 //     }
 //   }
+// async fetchProducts(categoryId = null) {
+//     try {
+//       const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+//       const currentLang = i18nManager.state.currentLanguage;
+      
+//       const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
+//       url.searchParams.append('lang', currentLang);
+      
+//       const response = await fetch(url.toString(), {
+//         headers: {
+//           'Accept-Language': currentLang
+//         }
+//       });
+      
+//       if (!response.ok) throw new Error("Failed to fetch products");
+//       const data = await response.json();
+      
+//       // Log the response to debug
+//       console.log('Products response:', data);
+      
+//       // Ensure we're getting an array of products
+//       let products;
+//       if (Array.isArray(data)) {
+//         products = data;
+//       } else if (data.products && Array.isArray(data.products)) {
+//         products = data.products;
+//       } else {
+//         throw new Error("Invalid products data format");
+//       }
+      
+//       // Transform and filter products
+//       this.state.products = products
+//         .map(product => i18nManager.transformProductData(product))
+//         .filter(product => !categoryId || product.category_id === categoryId);
+      
+//       await this.renderProducts();
+//     } catch (error) {
+//       console.error("Error fetching products:", error);
+//       showNotification(error.message, "error");
+//     }
+// },
 async fetchProducts(categoryId = null) {
     try {
       const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
@@ -2806,6 +2847,8 @@ async fetchProducts(categoryId = null) {
       
       const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
       url.searchParams.append('lang', currentLang);
+      
+      console.log('Fetching products from URL:', url.toString()); // Debug log
       
       const response = await fetch(url.toString(), {
         headers: {
@@ -2816,23 +2859,21 @@ async fetchProducts(categoryId = null) {
       if (!response.ok) throw new Error("Failed to fetch products");
       const data = await response.json();
       
-      // Log the response to debug
-      console.log('Products response:', data);
+      console.log('Raw API response:', data); // Debug log
       
-      // Ensure we're getting an array of products
-      let products;
-      if (Array.isArray(data)) {
-        products = data;
-      } else if (data.products && Array.isArray(data.products)) {
-        products = data.products;
-      } else {
-        throw new Error("Invalid products data format");
-      }
+      // Clear existing products first
+      this.state.products = [];
       
-      // Transform and filter products
-      this.state.products = products
-        .map(product => i18nManager.transformProductData(product))
-        .filter(product => !categoryId || product.category_id === categoryId);
+      // Use only the products from this response
+      const products = Array.isArray(data) ? data : 
+                      data.products ? data.products : 
+                      [data];
+      
+      this.state.products = products.map(product => 
+        i18nManager.transformProductData(product)
+      );
+      
+      console.log('Processed products:', this.state.products); // Debug log
       
       await this.renderProducts();
     } catch (error) {
@@ -3680,30 +3721,31 @@ window.socialSharingManager = socialSharingManager;
 window.productPageManager = productPageManager;
 window.i18nManager = i18nManager;
 
-async function fetchProducts(categoryId = null) {
-  try {
-    const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-    const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
+// async function fetchProducts(categoryId = null) {
+//   try {
+//     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+//     const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
     
-    // Add language parameter
-    url.searchParams.append('lang', this.state.currentLanguage);
+//     // Add language parameter
+//     url.searchParams.append('lang', this.state.currentLanguage);
     
-    const response = await fetch(url.toString());
+//     const response = await fetch(url.toString());
     
-    if (!response.ok) throw new Error("Failed to fetch products");
-    const data = await response.json();
+//     if (!response.ok) throw new Error("Failed to fetch products");
+//     const data = await response.json();
     
-    if (data.success) {
-      this.state.products = data.data; 
-      this.state.products = data;
-    }
+//     if (data.success) {
+//       this.state.products = data.data; 
+//       this.state.products = data;
+//     }
     
-    await this.renderProducts();
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    showNotification(error.message, "error");
-  }
-}
+//     await this.renderProducts();
+//   } catch (error) {
+//     console.error("Error fetching products:", error);
+//     showNotification(error.message, "error");
+//   }
+// }
+
 function initializeImageSliders() {
   document.querySelectorAll('.image-slider').forEach(slider => {
     const images = slider.querySelectorAll('img');
