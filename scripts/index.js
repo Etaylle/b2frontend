@@ -2813,45 +2813,96 @@ async fetchCategories() {
 //       showNotification(error.message, "error");
 //     }
 // },
+// async fetchProducts(categoryId = null) {
+//     try {
+//       const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+//       const currentLang = i18nManager.state.currentLanguage;
+      
+//       const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
+//       url.searchParams.append('lang', currentLang);
+      
+//       console.log('Fetching products from URL:', url.toString()); // Debug log
+      
+//       const response = await fetch(url.toString(), {
+//         headers: {
+//           'Accept-Language': currentLang
+//         }
+//       });
+      
+//       if (!response.ok) throw new Error("Failed to fetch products");
+//       const data = await response.json();
+      
+//       console.log('Raw API response:', data); // Debug log
+      
+//       // Clear existing products first
+//       this.state.products = [];
+      
+//       // Use only the products from this response
+//       const products = Array.isArray(data) ? data : 
+//                       data.products ? data.products : 
+//                       [data];
+      
+//       this.state.products = products.map(product => 
+//         i18nManager.transformProductData(product)
+//       );
+      
+//       console.log('Processed products:', this.state.products); // Debug log
+      
+//       await this.renderProducts();
+//     } catch (error) {
+//       console.error("Error fetching products:", error);
+//       showNotification(error.message, "error");
+//     }
+// },
 async fetchProducts(categoryId = null) {
     try {
-      const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-      const currentLang = i18nManager.state.currentLanguage;
-      
-      const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
-      url.searchParams.append('lang', currentLang);
-      
-      console.log('Fetching products from URL:', url.toString()); // Debug log
-      
-      const response = await fetch(url.toString(), {
-        headers: {
-          'Accept-Language': currentLang
+        const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+        const currentLang = i18nManager.state.currentLanguage;
+        
+        const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
+        url.searchParams.append('lang', currentLang);
+        
+        console.log('Fetching products from URL:', url.toString());
+        
+        const response = await fetch(url.toString(), {
+            headers: {
+                'Accept-Language': currentLang
+            }
+        });
+        
+        if (!response.ok) throw new Error("Failed to fetch products");
+        const data = await response.json();
+        
+        console.log('Raw API response:', data);
+        
+        // Process the data more explicitly
+        let products;
+        if (Array.isArray(data)) {
+            products = data;
+        } else if (data.products) {
+            products = data.products;
+        } else if (data.product_id) {  // Single product case
+            products = [data];
+        } else {
+            products = [];
         }
-      });
-      
-      if (!response.ok) throw new Error("Failed to fetch products");
-      const data = await response.json();
-      
-      console.log('Raw API response:', data); // Debug log
-      
-      // Clear existing products first
-      this.state.products = [];
-      
-      // Use only the products from this response
-      const products = Array.isArray(data) ? data : 
-                      data.products ? data.products : 
-                      [data];
-      
-      this.state.products = products.map(product => 
-        i18nManager.transformProductData(product)
-      );
-      
-      console.log('Processed products:', this.state.products); // Debug log
-      
-      await this.renderProducts();
+        
+        // Transform products and update state properly
+        const transformedProducts = products.map(product => 
+            i18nManager.transformProductData(product)
+        );
+        
+        // Use setState instead of direct mutation
+        await this.setState({
+            products: transformedProducts
+        });
+        
+        console.log('Processed products:', transformedProducts);
+        
+        await this.renderProducts();
     } catch (error) {
-      console.error("Error fetching products:", error);
-      showNotification(error.message, "error");
+        console.error("Error fetching products:", error);
+        showNotification(error.message, "error");
     }
 },
   renderCategories() {
