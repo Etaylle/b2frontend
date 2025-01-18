@@ -3051,10 +3051,7 @@ ensureStylesExist() {
 async renderProducts(products) {
   const gridContainer = document.querySelector(".grid-container");
   if (!gridContainer) return;
-  if (!products) {
-    console.warn('No products provided to renderProducts');
-    return;
-  }
+  
   // Update state with provided products or fetch them if not provided
   if (products) {
     this.state.products = products;
