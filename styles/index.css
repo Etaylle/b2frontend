@@ -632,21 +632,7 @@ html {
             100% { transform: rotate(360deg); }
         }
 
-        /* Button Loading State */
-        .btn-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .loading .btn-content span {
-            display: none;
-        }
-
-        .loading .btn-content .spinner {
-            display: inline-block;
-        }
+       
 
         /* Form Loading Overlay */
         .form-overlay {
