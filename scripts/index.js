@@ -2701,7 +2701,7 @@ async fetchProducts(categoryId = null) {
       const products = Array.isArray(data) ? data : 
                       data.products ? data.products : 
                       [data];
-      
+      this.state.products = [];
       this.state.products = products.map(product => 
         i18nManager.transformProductData(product)
       );
