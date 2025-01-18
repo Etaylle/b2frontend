@@ -994,7 +994,56 @@ main {
     padding: 20px;
     font-size: 16px;
   }
+.success-message,
+.error-message {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 1rem;
+  border-radius: 4px;
+  animation: fadeIn 0.3s, fadeOut 0.3s 1.7s;
+}
 
+.success-message {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.info-message {
+  background-color: #4c98af;
+  color: white;
+}
+
+.error-message {
+  background-color: #f44336;
+  color: white;
+}.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px 25px;
+  border-radius: 4px;
+  z-index: 1000;
+}
+
+.success-message {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.error-message {
+  background-color: #f44336;
+  color: white;
+}
+
+.checkout-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 4px;
+}
   /* Utility Classes */
   .hidden {
     display: none !important;
