@@ -2885,22 +2885,22 @@ async fetchProducts(categoryId = null) {
     this.ensureCategoryStylesExist();
   },
 
-// async selectCategory(categoryId) {
-//     console.log('Selecting category:', categoryId);
-//     this.state.selectedCategory = categoryId;
-//     this.state.searchTerm = '';
+async selectCategory(categoryId) {
+    console.log('Selecting category:', categoryId);
+    this.state.selectedCategory = categoryId;
+    this.state.searchTerm = '';
     
-//     const searchInput = document.getElementById('product-search');
-//     if (searchInput) {
-//       searchInput.value = '';
-//     }
+    const searchInput = document.getElementById('product-search');
+    if (searchInput) {
+      searchInput.value = '';
+    }
 
-//     await this.renderCategories();
-//     await this.fetchProducts(categoryId);
+    await this.renderCategories();
+    await this.fetchProducts(categoryId);
     
-//     // Add debug logging to verify state after fetch
-//     console.log('Current products after category selection:', this.state.products);
-// },
+    // Add debug logging to verify state after fetch
+    console.log('Current products after category selection:', this.state.products);
+},
 ensureCategoryStylesExist() {
     if (!document.querySelector('#category-styles')) {
       const styles = document.createElement('style');
