@@ -3513,7 +3513,7 @@ async function fetchProducts(categoryId = null) {
     const data = await response.json();
     
     if (data.success) {
-      this.state.products = data.data; // Note: Changed to data.data since backend returns data property
+      this.state.products = data.products;
     } else {
       this.state.products = data;
     }
