@@ -2491,181 +2491,44 @@ const categoryManager = {
     searchTerm: '',
     searchInput: null,
     searchHistoryDropdown: null,
-    debounceTimeout: null,
-    initialized: false
+    debounceTimeout: null
   },
-
-  async initialize() {
-    try {
-      // Create necessary DOM elements
-      await this.createRequiredElements();
-      
-      // Initialize search functionality
-      await this.setupSearch();
-      
-      // Fetch initial categories
-      await this.fetchCategories();
-      
-      // Set up language change listener
-      window.addEventListener('languageChanged', async () => {
-        await this.updateSearchPlaceholder();
-        await this.renderCategories();
-        await this.fetchProducts(this.state.selectedCategory);
-      });
-
-      this.state.initialized = true;
-      console.log('Category Manager initialized successfully');
-    } catch (error) {
-      console.error('Error initializing category manager:', error);
-      throw error;
-    }
+initialize() {
+    this.setupSearch();
+    
+    // Listen for language changes
+    window.addEventListener('languageChanged', () => {
+      this.updateSearchPlaceholder();
+    });
+    
+    return Promise.resolve();
   },
+  setupSearch() {
+    // Get search elements
+    this.state.searchInput = document.getElementById('product-search');
+    this.state.searchHistoryDropdown = document.getElementById('search-history');
+    
+    if (!this.state.searchInput) return;
 
-  async createRequiredElements() {
-    // Create search container if it doesn't exist
-    let searchContainer = document.querySelector('.search-container');
-    if (!searchContainer) {
-      searchContainer = document.createElement('div');
-      searchContainer.className = 'search-container';
-      
-      // Add it before the grid-container
-      const gridContainer = document.querySelector('.grid-container');
-      if (gridContainer) {
-        gridContainer.parentNode.insertBefore(searchContainer, gridContainer);
-      } else {
-        document.body.appendChild(searchContainer);
+    // Setup search input event listener with debouncing
+    this.state.searchInput.addEventListener('input', (e) => {
+      clearTimeout(this.state.debounceTimeout);
+      this.state.debounceTimeout = setTimeout(() => {
+        this.searchProducts(e.target.value);
+      }, 300); // 300ms debounce delay
+    });
+
+    // Setup search history display
+    this.state.searchInput.addEventListener('focus', () => {
+      this.showSearchHistory();
+    });
+
+    // Close search history when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#search-history') && !e.target.closest('#product-search')) {
+        this.hideSearchHistory();
       }
-    }
-
-    // Create search input if it doesn't exist
-    if (!document.getElementById('product-search')) {
-      const searchInput = document.createElement('input');
-      searchInput.type = 'text';
-      searchInput.id = 'product-search';
-      searchInput.className = 'search-input';
-      searchInput.placeholder = i18nManager.translate('ui.search.placeholder');
-      searchContainer.appendChild(searchInput);
-    }
-
-    // Create search history dropdown if it doesn't exist
-    if (!document.getElementById('search-history')) {
-      const searchHistory = document.createElement('div');
-      searchHistory.id = 'search-history';
-      searchHistory.className = 'search-history-dropdown';
-      searchContainer.appendChild(searchHistory);
-    }
-
-    // Create categories container if it doesn't exist
-    if (!document.querySelector('.categories')) {
-      const categoriesContainer = document.createElement('div');
-      categoriesContainer.className = 'categories';
-      searchContainer.after(categoriesContainer);
-    }
-
-    // Add necessary styles
-    this.ensureSearchStyles();
-  },
-
-  ensureSearchStyles() {
-    if (!document.querySelector('#search-styles')) {
-      const styles = document.createElement('style');
-      styles.id = 'search-styles';
-      styles.textContent = `
-        .search-container {
-          position: relative;
-          margin: 20px auto;
-          max-width: 600px;
-          padding: 0 20px;
-        }
-
-        .search-input {
-          width: 100%;
-          padding: 12px;
-          border: 1px solid #ddd;
-          border-radius: 24px;
-          font-size: 16px;
-          outline: none;
-          transition: border-color 0.2s ease;
-        }
-
-        .search-input:focus {
-          border-color: #007bff;
-          box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
-        }
-
-        .search-history-dropdown {
-          position: absolute;
-          top: 100%;
-          left: 20px;
-          right: 20px;
-          background: white;
-          border: 1px solid #ddd;
-          border-radius: 8px;
-          margin-top: 4px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-          display: none;
-          z-index: 1000;
-        }
-
-        .search-history-item {
-          padding: 10px 16px;
-          cursor: pointer;
-          transition: background-color 0.2s ease;
-        }
-
-        .search-history-item:hover {
-          background-color: #f5f5f5;
-        }
-
-        @media (max-width: 768px) {
-          .search-container {
-            padding: 0 10px;
-          }
-          
-          .search-input {
-            padding: 10px;
-            font-size: 14px;
-          }
-        }
-      `;
-      document.head.appendChild(styles);
-    }
-  },
-
-  async setupSearch() {
-    try {
-      this.state.searchInput = document.getElementById('product-search');
-      this.state.searchHistoryDropdown = document.getElementById('search-history');
-
-      if (!this.state.searchInput || !this.state.searchHistoryDropdown) {
-        throw new Error('Search elements not found in DOM');
-      }
-
-      // Set up input handler with debouncing
-      this.state.searchInput.addEventListener('input', (e) => {
-        clearTimeout(this.state.debounceTimeout);
-        this.state.debounceTimeout = setTimeout(() => {
-          this.searchProducts(e.target.value);
-        }, 300);
-      });
-
-      // Set up focus handler
-      this.state.searchInput.addEventListener('focus', () => {
-        this.showSearchHistory();
-      });
-
-      // Set up click outside listener
-      document.addEventListener('click', (e) => {
-        if (!e.target.closest('#search-history') && !e.target.closest('#product-search')) {
-          this.hideSearchHistory();
-        }
-      });
-
-      await this.updateSearchPlaceholder();
-    } catch (error) {
-      console.error('Error setting up search:', error);
-      throw error;
-    }
+    });
   },
   // async searchProducts(searchTerm) {
   //   this.state.searchTerm = searchTerm.toLowerCase();
@@ -2936,92 +2799,51 @@ async fetchProducts(categoryId = null) {
       showNotification(error.message, "error");
     }
   },
-//   renderCategories() {
-//     const container = document.querySelector(".categories");
-//     if (!container) {
-//       console.error("Categories container not found");
-//       return;
-//     }
+  renderCategories() {
+    const container = document.querySelector(".categories");
+    if (!container) {
+      console.error("Categories container not found");
+      return;
+    }
 
-//     container.innerHTML = "";
-//     const fragment = document.createDocumentFragment();
+    container.innerHTML = "";
+    const fragment = document.createDocumentFragment();
 
-//     // Create "All" button with proper translation
-//     const allButton = document.createElement("button");
-//     allButton.className = `category-btn ${this.state.selectedCategory === null ? "active" : ""}`;
-//     allButton.textContent = i18nManager.translate('ui.buttons.all');
-//     allButton.onclick = () => this.selectCategory(null);
-//     fragment.appendChild(allButton);
+    // Create "All" button with proper translation
+    const allButton = document.createElement("button");
+    allButton.className = `category-btn ${this.state.selectedCategory === null ? "active" : ""}`;
+    allButton.textContent = i18nManager.translate('ui.buttons.all');
+    allButton.onclick = () => this.selectCategory(null);
+    fragment.appendChild(allButton);
 
-//     // Rest of the categories
-//     this.state.categories.forEach(category => {
-//       const button = document.createElement("button");
-//       button.className = `category-btn ${this.state.selectedCategory === category.id ? "active" : ""}`;
-//       button.setAttribute("data-id", category.id);
-//       button.textContent = category.displayName;
-//       button.onclick = () => this.selectCategory(category.id);
-//       fragment.appendChild(button);
-//     });
+    // Rest of the categories
+    this.state.categories.forEach(category => {
+      const button = document.createElement("button");
+      button.className = `category-btn ${this.state.selectedCategory === category.id ? "active" : ""}`;
+      button.setAttribute("data-id", category.id);
+      button.textContent = category.displayName;
+      button.onclick = () => this.selectCategory(category.id);
+      fragment.appendChild(button);
+    });
 
-//     container.appendChild(fragment);
-//     this.ensureCategoryStylesExist();
-//   },
+    container.appendChild(fragment);
+    this.ensureCategoryStylesExist();
+  },
 
-//    async selectCategory(categoryId) {
-//     this.state.selectedCategory = categoryId;
-//     this.state.searchTerm = ''; // Clear search when changing categories
+   async selectCategory(categoryId) {
+    this.state.selectedCategory = categoryId;
+    this.state.searchTerm = ''; // Clear search when changing categories
     
-//     // Clear search input
-//     const searchInput = document.getElementById('product-search');
-//     if (searchInput) {
-//       searchInput.value = '';
-//     }
-
-//     await this.renderCategories(); // Update active states
-//     await this.fetchProducts(categoryId);
-//   }
-// ,
-  async updateSearchPlaceholder() {
-    if (this.state.searchInput) {
-      this.state.searchInput.placeholder = i18nManager.translate('ui.search.placeholder');
+    // Clear search input
+    const searchInput = document.getElementById('product-search');
+    if (searchInput) {
+      searchInput.value = '';
     }
-  },
 
-  async renderCategories() {
-    try {
-      const container = document.querySelector('.categories');
-      if (!container) {
-        throw new Error('Categories container not found');
-      }
-
-      // Clear existing categories
-      container.innerHTML = '';
-      const fragment = document.createDocumentFragment();
-
-      // Create "All" button
-      const allButton = document.createElement('button');
-      allButton.className = `category-btn ${this.state.selectedCategory === null ? 'active' : ''}`;
-      allButton.textContent = i18nManager.translate('ui.buttons.all');
-      allButton.onclick = () => this.selectCategory(null);
-      fragment.appendChild(allButton);
-
-      // Create category buttons
-      this.state.categories.forEach(category => {
-        const button = document.createElement('button');
-        button.className = `category-btn ${this.state.selectedCategory === category.id ? 'active' : ''}`;
-        button.setAttribute('data-id', category.id);
-        button.textContent = category.displayName;
-        button.onclick = () => this.selectCategory(category.id);
-        fragment.appendChild(button);
-      });
-
-      container.appendChild(fragment);
-      this.ensureCategoryStylesExist();
-    } catch (error) {
-      console.error('Error rendering categories:', error);
-      throw error;
-    }
-  },
+    await this.renderCategories(); // Update active states
+    await this.fetchProducts(categoryId);
+  }
+,
 ensureCategoryStylesExist() {
     if (!document.querySelector('#category-styles')) {
       const styles = document.createElement('style');
