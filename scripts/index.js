@@ -2101,56 +2101,39 @@ async initialize() {
       savedLang || 
       (this.state.supportedLanguages.includes(browserLang) ? browserLang : this.state.defaultLanguage)
     );
+
+    // Wait for categoryManager to be available and initialized
     if (window.categoryManager) {
-        await categoryManager.fetchProducts();
-    } else {
-        await categoryManager.fetchProducts(); 
+      await window.categoryManager.initialize();
     }
     
     await this.createLanguageSwitcher();
     return this.refreshAllContent();
   },
-  getCurrentLanguage() {
-    console.log('Current language:', i18nManager.state.currentLanguage);
-    console.log('Available languages:', i18nManager.state.supportedLanguages);
-    return i18nManager.state.currentLanguage;
+
+  async refreshAllContent() {
+    try {
+      // Update UI elements
+      this.updateUI();
+      
+      // Only attempt to fetch categories/products if categoryManager exists
+      if (window.categoryManager) {
+        // Use categoryManager's methods instead of undefined local methods
+        const selectedCategory = window.categoryManager.state.selectedCategory;
+        await window.categoryManager.fetchProducts(selectedCategory);
+      }
+      
+      // Dispatch content refresh event
+      window.dispatchEvent(new CustomEvent('contentRefreshed'));
+      
+    } catch (error) {
+      console.error('Error refreshing content:', error);
+      throw error;
+    }
   },
-  
-  forceLanguage(lang) {
-    i18nManager.setLanguage(lang);
-    i18nManager.updateUI();
-    // Trigger a content refresh
-    window.dispatchEvent(new CustomEvent('refreshContent'));
-    this.fetchProducts();
-  }
-,
-//  refreshContent() {
-//   // Update the UI elements with the translated text
-//   i18nManager.updateUI();
 
-//   // Update the search history dropdown content
-//   categoryManager.setupSearch();
-
-//   // Update the category list with the translated category names
-//   categoryManager.renderCategories();
-
-//   // Update the product list with the translated product names and prices
-//   categoryManager.renderProducts();
-// },
-  // setLanguage(lang) {
-  //   if (!this.state.supportedLanguages.includes(lang)) {
-  //     console.warn(`Language ${lang} not supported, falling back to ${this.state.defaultLanguage}`);
-  //     lang = this.state.defaultLanguage;
-  //   }
-    
-  //   this.state.currentLanguage = lang;
-  //   localStorage.setItem('preferred_language', lang);
-  //   document.documentElement.lang = lang;
-    
-  //   // Dispatch a custom event when language changes
-  //   window.dispatchEvent(new CustomEvent('languageChanged', { detail: { language: lang } }));
-  // },
-    setLanguage(lang) {
+  // Remove duplicate setLanguage method (there were two implementations)
+  setLanguage(lang) {
     if (!this.state.supportedLanguages.includes(lang)) {
       console.warn(`Language ${lang} not supported, falling back to ${this.state.defaultLanguage}`);
       lang = this.state.defaultLanguage;
@@ -2160,13 +2143,14 @@ async initialize() {
     localStorage.setItem('preferred_language', lang);
     document.documentElement.lang = lang;
     
-    // Dispatch a custom event when language changes
+    // Update HTML dir attribute for RTL languages if needed
+    document.documentElement.dir = ['ar', 'he', 'fa'].includes(lang) ? 'rtl' : 'ltr';
+    
     window.dispatchEvent(new CustomEvent('languageChanged', { 
-      detail: { 
-        language: lang 
-      } 
+      detail: { language: lang } 
     }));
   },
+
 getProductName(product) {
   const currentLang = this.state.currentLanguage;
   
@@ -2253,50 +2237,6 @@ transformProductData(products) {
       currency: 'USD'
     }).format(price);
   },
-
-async refreshAllContent() {
-    try {
-        // Update UI elements
-        this.updateUI();
-        
-        // Fetch categories first
-        await this.fetchCategories();
-        
-        // Then fetch products based on selected category
-        const currentCategory = this.state.selectedCategory;
-        if (currentCategory) {
-            await this.fetchProducts(currentCategory);
-        } else {
-            await this.fetchProducts();
-        }
-        
-        // Dispatch content refresh event
-        window.dispatchEvent(new CustomEvent('contentRefreshed'));
-        
-    } catch (error) {
-        console.error('Error refreshing content:', error);
-        throw error;
-    }
-},
-
-  setLanguage(lang) {
-    if (!this.state.supportedLanguages.includes(lang)) {
-      console.warn(`Language ${lang} not supported, falling back to ${this.state.defaultLanguage}`);
-      lang = this.state.defaultLanguage;
-    }
-    
-    this.state.currentLanguage = lang;
-    localStorage.setItem('preferred_language', lang);
-    document.documentElement.lang = lang;
-    
-    // Update HTML dir attribute for RTL languages if needed
-    document.documentElement.dir = ['ar', 'he', 'fa'].includes(lang) ? 'rtl' : 'ltr';
-    
-    window.dispatchEvent(new CustomEvent('languageChanged', { 
-      detail: { language: lang } 
-    }));
-  },
-
   createLanguageSwitcher() {
     const container = document.querySelector('.header-controls') || document.createElement('div');
     
