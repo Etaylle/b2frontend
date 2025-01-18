@@ -2894,54 +2894,54 @@ ensureCategoryStylesExist() {
 
 // Helper methods to keep the main render method clean
 
-// createImageSlider(product, productName) {
-//   const safeProductName = productName || product.name || 'Product';
+createImageSlider(product, productName) {
+  const safeProductName = productName || product.name || 'Product';
   
-//   // Ensure we have an array of images
-//   const images = Array.isArray(product.images) && product.images.length > 0 
-//     ? product.images 
-//     : [product.image_url || '/images/default-product-image.jpg'];
+  // Ensure we have an array of images
+  const images = Array.isArray(product.images) && product.images.length > 0 
+    ? product.images 
+    : [product.image_url || '/images/default-product-image.jpg'];
 
-//   let sliderHtml = `
-//     <div class="image-slider" data-product-id="${product.product_id}">
-//       <div class="slider-track">
-//   `;
+  let sliderHtml = `
+    <div class="image-slider" data-product-id="${product.product_id}">
+      <div class="slider-track">
+  `;
   
-//   // Add all images
-//   images.forEach((img, index) => {
-//     sliderHtml += `
-//       <div class="slider-slide${index === 0 ? ' active' : ''}" data-index="${index}">
-//         <img 
-//           src="${img}" 
-//           alt="${safeProductName}${images.length > 1 ? ` - Image ${index + 1}` : ''}"
-//           loading="lazy"
-//           onerror="this.onerror=null; this.src='/images/default-product-image.jpg';"
-//         >
-//       </div>
-//     `;
-//   });
+  // Add all images
+  images.forEach((img, index) => {
+    sliderHtml += `
+      <div class="slider-slide${index === 0 ? ' active' : ''}" data-index="${index}">
+        <img 
+          src="${img}" 
+          alt="${safeProductName}${images.length > 1 ? ` - Image ${index + 1}` : ''}"
+          loading="lazy"
+          onerror="this.onerror=null; this.src='/images/default-product-image.jpg';"
+        >
+      </div>
+    `;
+  });
   
-//   sliderHtml += '</div>'; // Close slider-track
+  sliderHtml += '</div>'; // Close slider-track
 
-//   // Only add navigation if there are multiple images
-//   if (images.length > 1) {
-//     sliderHtml += `
-//       <button class="slider-nav prev" aria-label="Previous image">❮</button>
-//       <button class="slider-nav next" aria-label="Next image">❯</button>
-//       <div class="slider-dots">
-//         ${images.map((_, i) => `
-//           <button class="slider-dot${i === 0 ? ' active' : ''}" 
-//             data-index="${i}" 
-//             aria-label="Go to image ${i + 1}">
-//           </button>
-//         `).join('')}
-//       </div>
-//     `;
-//   }
+  // Only add navigation if there are multiple images
+  if (images.length > 1) {
+    sliderHtml += `
+      <button class="slider-nav prev" aria-label="Previous image">❮</button>
+      <button class="slider-nav next" aria-label="Next image">❯</button>
+      <div class="slider-dots">
+        ${images.map((_, i) => `
+          <button class="slider-dot${i === 0 ? ' active' : ''}" 
+            data-index="${i}" 
+            aria-label="Go to image ${i + 1}">
+          </button>
+        `).join('')}
+      </div>
+    `;
+  }
 
-//   sliderHtml += '</div>'; // Close image-slider
-//   return sliderHtml;
-// },
+  sliderHtml += '</div>'; // Close image-slider
+  return sliderHtml;
+},
 // initializeImageSliders() {
 //   document.querySelectorAll('.image-slider').forEach(slider => {
 //     // Skip if already initialized or has only one image
@@ -3021,112 +3021,13 @@ ensureCategoryStylesExist() {
 //     slider.dataset.initialized = 'true';
 //   });
 // },
-// initializeImageSliders() {
-//   document.querySelectorAll('.image-slider').forEach(slider => {
-//     const gridItem = slider.closest('.grid-item');
-//     const productId = gridItem?.dataset.productId;
-//     const product = this.state.products.find(p => p.product_id.toString() === productId);
-    
-//     if (!product) return;
-//     // Skip if already initialized or has only one image
-//     if (slider.dataset.initialized === 'true') return;
-    
-//     const slides = slider.querySelectorAll('.slider-slide');
-//     if (slides.length <= 1) return;
-
-//     let currentIndex = 0;
-//     let autoPlayInterval;
-//     const productContent = slider.closest('.product-content');
-
-//     // Function to update active slide
-//     const updateSlide = (newIndex) => {
-//       slides[currentIndex].classList.remove('active');
-//       slider.querySelector(`.slider-dot[data-index="${currentIndex}"]`)?.classList.remove('active');
-      
-//       currentIndex = newIndex;
-      
-//       slides[currentIndex].classList.add('active');
-//       slider.querySelector(`.slider-dot[data-index="${currentIndex}"]`)?.classList.add('active');
-//     };
-
-//     // Function to start autoplay
-//     const startAutoPlay = () => {
-//       stopAutoPlay(); // Clear any existing interval
-//       autoPlayInterval = setInterval(() => {
-//         const nextIndex = (currentIndex + 1) % slides.length;
-//         updateSlide(nextIndex);
-//       }, 5000);
-//     };
-
-//     // Function to stop autoplay
-//     const stopAutoPlay = () => {
-//       if (autoPlayInterval) {
-//         clearInterval(autoPlayInterval);
-//         autoPlayInterval = null;
-//       }
-//     };
-
-//     // Previous button click handler
-//     const prevButton = slider.querySelector('.prev');
-//     if (prevButton) {
-//       prevButton.addEventListener('click', (e) => {
-//         e.preventDefault();
-//         e.stopPropagation();
-//         const prevIndex = (currentIndex - 1 + slides.length) % slides.length;
-//         updateSlide(prevIndex);
-//         stopAutoPlay();
-//         startAutoPlay();
-//       });
-//     }
-
-//     // Next button click handler
-//     const nextButton = slider.querySelector('.next');
-//     if (nextButton) {
-//       nextButton.addEventListener('click', (e) => {
-//         e.preventDefault();
-//         e.stopPropagation();
-//         const nextIndex = (currentIndex + 1) % slides.length;
-//         updateSlide(nextIndex);
-//         stopAutoPlay();
-//         startAutoPlay();
-//       });
-//     }
-
-//     // Dot navigation
-//     slider.querySelectorAll('.slider-dot').forEach(dot => {
-//       dot.addEventListener('click', (e) => {
-//         e.preventDefault();
-//         e.stopPropagation();
-//         const newIndex = parseInt(dot.dataset.index);
-//         updateSlide(newIndex);
-//         stopAutoPlay();
-//         startAutoPlay();
-//       });
-//     });
-
-//     // Add click handler for product content that excludes slider controls
-//     if (productContent) {
-//       productContent.addEventListener('click', (e) => {
-//         // Only open product page if not clicking slider controls
-//         if (!e.target.closest('.slider-nav') && !e.target.closest('.slider-dot')) {
-//           productPageManager.openProductPage(product);
-//         }
-//       });
-//     }
-
-//     // Start/stop autoplay on hover
-//     slider.addEventListener('mouseenter', stopAutoPlay);
-//     slider.addEventListener('mouseleave', startAutoPlay);
-
-//     // Start autoplay initially
-//     startAutoPlay();
-
-//     // Mark as initialized
-//     slider.dataset.initialized = 'true';
-//   });
-// },
 initializeImageSliders() {
   document.querySelectorAll('.image-slider').forEach(slider => {
+    const gridItem = slider.closest('.grid-item');
+    const productId = gridItem?.dataset.productId;
+    const product = this.state.products.find(p => p.product_id.toString() === productId);
+    
+    if (!product) return;
     // Skip if already initialized or has only one image
     if (slider.dataset.initialized === 'true') return;
     
@@ -3166,9 +3067,9 @@ initializeImageSliders() {
     };
 
     // Previous button click handler
-    const prevButton = slider.querySelector('.slider-nav.prev');
+    const prevButton = slider.querySelector('.prev');
     if (prevButton) {
-      prevButton.addEventListener('click', function(e) {
+      prevButton.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         const prevIndex = (currentIndex - 1 + slides.length) % slides.length;
@@ -3179,9 +3080,9 @@ initializeImageSliders() {
     }
 
     // Next button click handler
-    const nextButton = slider.querySelector('.slider-nav.next');
+    const nextButton = slider.querySelector('.next');
     if (nextButton) {
-      nextButton.addEventListener('click', function(e) {
+      nextButton.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         const nextIndex = (currentIndex + 1) % slides.length;
@@ -3190,112 +3091,25 @@ initializeImageSliders() {
         startAutoPlay();
       });
     }
+
+    // Dot navigation
+    slider.querySelectorAll('.slider-dot').forEach(dot => {
+      dot.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const newIndex = parseInt(dot.dataset.index);
+        updateSlide(newIndex);
+        stopAutoPlay();
+        startAutoPlay();
+      });
+    });
 
     // Add click handler for product content that excludes slider controls
     if (productContent) {
       productContent.addEventListener('click', (e) => {
-        const target = e.target;
         // Only open product page if not clicking slider controls
-        if (!target.closest('.slider-nav') && !target.closest('.slider-dot')) {
-          const gridItem = slider.closest('.grid-item');
-          const productId = gridItem?.dataset.productId;
-          const product = this.state.products.find(p => p.product_id.toString() === productId);
-          if (product) {
-            productPageManager.openProductPage(product);
-          }
-        }
-      });
-    }
-
-    // Start/stop autoplay on hover
-    slider.addEventListener('mouseenter', stopAutoPlay);
-    slider.addEventListener('mouseleave', startAutoPlay);
-
-    // Start autoplay initially
-    startAutoPlay();
-
-    // Mark as initialized
-    slider.dataset.initialized = 'true';
-  });
-},
-initializeImageSliders() {
-  document.querySelectorAll('.image-slider').forEach(slider => {
-    // Skip if already initialized or has only one image
-    if (slider.dataset.initialized === 'true') return;
-    
-    const slides = slider.querySelectorAll('.slider-slide');
-    if (slides.length <= 1) return;
-
-    let currentIndex = 0;
-    let autoPlayInterval;
-    const productContent = slider.closest('.product-content');
-
-    // Function to update active slide
-    const updateSlide = (newIndex) => {
-      slides[currentIndex].classList.remove('active');
-      slider.querySelector(`.slider-dot[data-index="${currentIndex}"]`)?.classList.remove('active');
-      
-      currentIndex = newIndex;
-      
-      slides[currentIndex].classList.add('active');
-      slider.querySelector(`.slider-dot[data-index="${currentIndex}"]`)?.classList.add('active');
-    };
-
-    // Function to start autoplay
-    const startAutoPlay = () => {
-      stopAutoPlay(); // Clear any existing interval
-      autoPlayInterval = setInterval(() => {
-        const nextIndex = (currentIndex + 1) % slides.length;
-        updateSlide(nextIndex);
-      }, 5000);
-    };
-
-    // Function to stop autoplay
-    const stopAutoPlay = () => {
-      if (autoPlayInterval) {
-        clearInterval(autoPlayInterval);
-        autoPlayInterval = null;
-      }
-    };
-
-    // Previous button click handler
-    const prevButton = slider.querySelector('.slider-nav.prev');
-    if (prevButton) {
-      prevButton.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const prevIndex = (currentIndex - 1 + slides.length) % slides.length;
-        updateSlide(prevIndex);
-        stopAutoPlay();
-        startAutoPlay();
-      });
-    }
-
-    // Next button click handler
-    const nextButton = slider.querySelector('.slider-nav.next');
-    if (nextButton) {
-      nextButton.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const nextIndex = (currentIndex + 1) % slides.length;
-        updateSlide(nextIndex);
-        stopAutoPlay();
-        startAutoPlay();
-      });
-    }
-
-    // Add click handler for product content that excludes slider controls
-    if (productContent) {
-      productContent.addEventListener('click', (e) => {
-        const target = e.target;
-        // Only open product page if not clicking slider controls
-        if (!target.closest('.slider-nav') && !target.closest('.slider-dot')) {
-          const gridItem = slider.closest('.grid-item');
-          const productId = gridItem?.dataset.productId;
-          const product = this.state.products.find(p => p.product_id.toString() === productId);
-          if (product) {
-            productPageManager.openProductPage(product);
-          }
+        if (!e.target.closest('.slider-nav') && !e.target.closest('.slider-dot')) {
+          productPageManager.openProductPage(product);
         }
       });
     }
