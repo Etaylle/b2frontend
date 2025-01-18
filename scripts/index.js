@@ -2296,10 +2296,11 @@ const categoryManager = {
     products: [],
     searchTerm: '',
     searchInput: null,
-    searchHistoryDropdown: null,
     debounceTimeout: null
   },
-initialize() {
+
+  async initialize() {
+    await this.fetchCategories();
     this.setupSearch();
     
     // Listen for language changes
@@ -2309,314 +2310,351 @@ initialize() {
     
     return Promise.resolve();
   },
-  // setupSearch() {
-  //   // Get search elements
-  //   this.state.searchInput = document.getElementById('product-search');
-  //   this.state.searchHistoryDropdown = document.getElementById('search-history');
+
+  setupSearch() {
+    const searchInput = document.getElementById('product-search');
+    if (!searchInput) return;
+
+    // Create search history dropdown
+    const searchHistoryDropdown = document.createElement('div');
+    searchHistoryDropdown.className = 'search-history-dropdown';
+    searchInput.parentNode.appendChild(searchHistoryDropdown);
+
+    // Input event with debouncing
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(this.state.debounceTimeout);
+      this.state.debounceTimeout = setTimeout(() => {
+        this.handleSearch(e.target.value);
+      }, 300);
+
+      // Show/hide clear button
+      const clearButton = searchInput.parentNode.querySelector('.clear-input');
+      if (clearButton) {
+        clearButton.style.display = e.target.value ? 'block' : 'none';
+      }
+    });
+
+    // Add clear input button
+    const clearButton = document.createElement('button');
+    clearButton.innerHTML = '&times;';
+    clearButton.className = 'clear-input';
+    clearButton.setAttribute('aria-label', i18nManager.translate('ui.buttons.clear'));
+    clearButton.onclick = () => {
+      searchInput.value = '';
+      this.handleSearch('');
+      clearButton.style.display = 'none';
+      searchHistoryDropdown.style.display = 'none';
+    };
+    searchInput.parentNode.appendChild(clearButton);
+
+    this.updateSearchPlaceholder();
+  },
+
+  async handleSearch(searchTerm) {
+    this.state.searchTerm = searchTerm.trim();
     
-  //   if (!this.state.searchInput) return;
-
-  //   // Setup search input event listener with debouncing
-  //   this.state.searchInput.addEventListener('input', (e) => {
-  //     clearTimeout(this.state.debounceTimeout);
-  //     this.state.debounceTimeout = setTimeout(() => {
-  //       this.searchProducts(e.target.value);
-  //     }, 300); // 300ms debounce delay
-  //   });
-
-  //   // Setup search history display
-  //   this.state.searchInput.addEventListener('focus', () => {
-  //     this.showSearchHistory();
-  //   });
-
-  //   // Close search history when clicking outside
-  //   document.addEventListener('click', (e) => {
-  //     if (!e.target.closest('#search-history') && !e.target.closest('#product-search')) {
-  //       this.hideSearchHistory();
-  //     }
-  //   });
-  // },
-
-
-async searchProducts(searchTerm) {
-  // Clear previous search results
-  this.state.products = [];
-  try {
-    // Normalize the search term
-    this.state.searchTerm = searchTerm.toLowerCase().trim();
-    
-    // Store search term in localStorage if not empty
     if (this.state.searchTerm) {
       this.updateSearchHistory(this.state.searchTerm);
     }
 
-    // If search is cleared (empty), fetch all products or category products
-    if (!this.state.searchTerm) {
+    try {
+      const currentLang = i18nManager.getCurrentLanguage();
+      const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+      const url = new URL(baseUrl);
+      
+      // Add search and language parameters
+      url.searchParams.append('lang', currentLang);
+      if (this.state.searchTerm) {
+        url.searchParams.append('search', this.state.searchTerm);
+      }
+      
+      // Add category filter if selected
       if (this.state.selectedCategory) {
-        await this.fetchProducts(this.state.selectedCategory);
-      } else {
-        await this.fetchProducts();
+        url.searchParams.append('categoryId', this.state.selectedCategory);
       }
-      return;
-    }
 
-    // Get current language for translations
-    const currentLang = i18nManager.getCurrentLanguage();
-
-    // Fetch products based on category selection
-    const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-    const url = new URL(this.state.selectedCategory ? 
-      `${baseUrl}/category/${this.state.selectedCategory}` : 
-      baseUrl
-    );
-    
-    // Add language and search parameters
-    url.searchParams.append('lang', currentLang);
-    url.searchParams.append('search', this.state.searchTerm);
-
-    const response = await fetch(url.toString(), {
-      headers: {
-        'Accept-Language': currentLang
+      const response = await fetch(url.toString());
+      if (!response.ok) throw new Error('Search failed');
+      
+      const data = await response.json();
+      this.state.products = data.products || [];
+      
+      await this.renderProducts();
+      
+      // Show no results message if needed
+      if (this.state.products.length === 0 && this.state.searchTerm) {
+        const noResultsMessage = i18nManager.translate('ui.messages.noProductFound');
+        showNotification(noResultsMessage, 'info');
       }
-    });
-
-    if (!response.ok) throw new Error("Failed to fetch products");
-    const data = await response.json();
-    const products = Array.isArray(data) ? data : (data.products || []);
-
-    // Filter products locally based on translated content
-    const filteredProducts = products.filter(product => {
-      const productName = i18nManager.getProductTranslation(product, 'name').toLowerCase();
-      const productDescription = i18nManager.getProductTranslation(product, 'description')?.toLowerCase() || '';
-      const price = product.price.toString();
-      
-      return productName.includes(this.state.searchTerm) || 
-             productDescription.includes(this.state.searchTerm) || 
-             price.includes(this.state.searchTerm);
-    });
-
-    // Transform products with translations
-    this.state.products = filteredProducts.map(product => 
-      i18nManager.transformProductData(product)
-    );
-    
-    await this.renderProducts();
-
-    // Show no results message if needed
-    if (this.state.products.length === 0) {
-      const noResultsMessage = i18nManager.translate('ui.messages.noProductFound');
-      showNotification(noResultsMessage, 'info');
+    } catch (error) {
+      console.error('Search error:', error);
+      const errorMessage = i18nManager.translate('ui.messages.searchError');
+      showNotification(errorMessage, 'error');
     }
+  },
 
-  } catch (error) {
-    console.error('Search error:', error);
-    const errorMessage = i18nManager.translate('ui.messages.searchError');
-    showNotification(errorMessage, 'error');
-  }
-},
-
-setupSearch() {
-  const searchInput = document.getElementById('product-search');
-  if (!searchInput) return;
-
-  // Create search history dropdown
-  const searchHistoryDropdown = document.createElement('div');
-  searchHistoryDropdown.className = 'search-history-dropdown';
-  searchInput.parentNode.appendChild(searchHistoryDropdown);
-
-  let debounceTimeout;
-
-  // Function to update dropdown content
-  const updateDropdownContent = () => {
-    const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-    searchHistoryDropdown.style.display = searches.length > 0 ? 'block' : 'none';
+  async selectCategory(categoryId) {
+    this.state.selectedCategory = categoryId;
     
-    if (searches.length > 0) {
-      searchHistoryDropdown.innerHTML = searches
-        .map(term => `
-          <div class="search-history-item">
-            <i class="fas fa-history"></i>
-            <span>${term}</span>
-            <button class="remove-search" aria-label="${i18nManager.translate('ui.buttons.remove')}">&times;</button>
-          </div>
-        `)
-        .join('');
+    // Clear search input
+    const searchInput = document.getElementById('product-search');
+    if (searchInput) {
+      searchInput.value = '';
+    }
+    
+    // Update UI to show active category
+    this.renderCategories();
+    
+    // Fetch products with category filter
+    try {
+      const currentLang = i18nManager.getCurrentLanguage();
+      const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+      const url = new URL(baseUrl);
       
-      // Add event listeners to new items
-      searchHistoryDropdown.querySelectorAll('.search-history-item').forEach((item, index) => {
-        const term = searches[index];
+      // Add language parameter
+      url.searchParams.append('lang', currentLang);
+      
+      // Add category filter if selected
+      if (categoryId) {
+        url.searchParams.append('categoryId', categoryId);
+      }
+
+      const response = await fetch(url.toString());
+      if (!response.ok) throw new Error('Failed to fetch products');
+      
+      const data = await response.json();
+      this.state.products = data.products || [];
+      
+      await this.renderProducts();
+    } catch (error) {
+      console.error('Category selection error:', error);
+      showNotification(error.message, 'error');
+    }
+  },
+
+  updateSearchHistory(term) {
+    try {
+      const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+      const index = searches.indexOf(term);
+      if (index > -1) {
+        searches.splice(index, 1);
+      }
+      searches.unshift(term);
+      searches.splice(5); // Keep only last 5 searches
+      localStorage.setItem('searchHistory', JSON.stringify(searches));
+    } catch (error) {
+      console.error('Error updating search history:', error);
+    }
+  },
+
+  updateSearchPlaceholder() {
+    const searchInput = document.getElementById('product-search');
+    if (searchInput) {
+      searchInput.placeholder = i18nManager.translate('ui.labels.search');
+    }
+  },
+// setupSearch() {
+//   const searchInput = document.getElementById('product-search');
+//   if (!searchInput) return;
+
+//   // Create search history dropdown
+//   const searchHistoryDropdown = document.createElement('div');
+//   searchHistoryDropdown.className = 'search-history-dropdown';
+//   searchInput.parentNode.appendChild(searchHistoryDropdown);
+
+//   let debounceTimeout;
+
+//   // Function to update dropdown content
+//   const updateDropdownContent = () => {
+//     const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+//     searchHistoryDropdown.style.display = searches.length > 0 ? 'block' : 'none';
+    
+//     if (searches.length > 0) {
+//       searchHistoryDropdown.innerHTML = searches
+//         .map(term => `
+//           <div class="search-history-item">
+//             <i class="fas fa-history"></i>
+//             <span>${term}</span>
+//             <button class="remove-search" aria-label="${i18nManager.translate('ui.buttons.remove')}">&times;</button>
+//           </div>
+//         `)
+//         .join('');
+      
+//       // Add event listeners to new items
+//       searchHistoryDropdown.querySelectorAll('.search-history-item').forEach((item, index) => {
+//         const term = searches[index];
         
-        // Click on item
-        item.addEventListener('click', (e) => {
-          if (!e.target.classList.contains('remove-search')) {
-            searchInput.value = term;
-            this.searchProducts(term);
-            searchHistoryDropdown.style.display = 'none';
+//         // Click on item
+//         item.addEventListener('click', (e) => {
+//           if (!e.target.classList.contains('remove-search')) {
+//             searchInput.value = term;
+//             this.searchProducts(term);
+//             searchHistoryDropdown.style.display = 'none';
             
-            // Update clear button visibility
-            const clearButton = searchInput.parentNode.querySelector('.clear-input');
-            if (clearButton) clearButton.style.display = 'block';
-          }
-        });
+//             // Update clear button visibility
+//             const clearButton = searchInput.parentNode.querySelector('.clear-input');
+//             if (clearButton) clearButton.style.display = 'block';
+//           }
+//         });
 
-        // Remove item
-        item.querySelector('.remove-search').addEventListener('click', async (e) => {
-          e.stopPropagation();
-          const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-          const filtered = searches.filter(t => t !== term);
-          localStorage.setItem('searchHistory', JSON.stringify(filtered));
+//         // Remove item
+//         item.querySelector('.remove-search').addEventListener('click', async (e) => {
+//           e.stopPropagation();
+//           const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+//           const filtered = searches.filter(t => t !== term);
+//           localStorage.setItem('searchHistory', JSON.stringify(filtered));
           
-          searchHistoryDropdown.style.display = 'none';
+//           searchHistoryDropdown.style.display = 'none';
           
-          setTimeout(() => {
-            if (filtered.length > 0) {
-              updateDropdownContent();
-            }
-          }, 50);
-        });
-      });
-    }
-  };
+//           setTimeout(() => {
+//             if (filtered.length > 0) {
+//               updateDropdownContent();
+//             }
+//           }, 50);
+//         });
+//       });
+//     }
+//   };
 
-  // Input event with debouncing
-  searchInput.addEventListener('input', (e) => {
-    clearTimeout(debounceTimeout);
-    debounceTimeout = setTimeout(() => {
-      this.searchProducts(e.target.value);
-    }, 300);
+//   // Input event with debouncing
+//   searchInput.addEventListener('input', (e) => {
+//     clearTimeout(debounceTimeout);
+//     debounceTimeout = setTimeout(() => {
+//       this.searchProducts(e.target.value);
+//     }, 300);
 
-    // Show/hide clear button
-    const clearButton = searchInput.parentNode.querySelector('.clear-input');
-    if (clearButton) {
-      clearButton.style.display = e.target.value ? 'block' : 'none';
-    }
-  });
+//     // Show/hide clear button
+//     const clearButton = searchInput.parentNode.querySelector('.clear-input');
+//     if (clearButton) {
+//       clearButton.style.display = e.target.value ? 'block' : 'none';
+//     }
+//   });
 
-  // Focus event
-  searchInput.addEventListener('focus', () => {
-    const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-    if (searches.length > 0) {
-      updateDropdownContent();
-    }
-  });
+//   // Focus event
+//   searchInput.addEventListener('focus', () => {
+//     const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+//     if (searches.length > 0) {
+//       updateDropdownContent();
+//     }
+//   });
 
-  // Add clear input button
-  const clearButton = document.createElement('button');
-  clearButton.innerHTML = '&times;';
-  clearButton.className = 'clear-input';
-  clearButton.setAttribute('aria-label', i18nManager.translate('ui.buttons.clear'));
-  clearButton.onclick = () => {
-    searchInput.value = '';
-    this.searchProducts('');
-    clearButton.style.display = 'none';
-    searchHistoryDropdown.style.display = 'none';
-  };
-  searchInput.parentNode.appendChild(clearButton);
+//   // Add clear input button
+//   const clearButton = document.createElement('button');
+//   clearButton.innerHTML = '&times;';
+//   clearButton.className = 'clear-input';
+//   clearButton.setAttribute('aria-label', i18nManager.translate('ui.buttons.clear'));
+//   clearButton.onclick = () => {
+//     searchInput.value = '';
+//     this.searchProducts('');
+//     clearButton.style.display = 'none';
+//     searchHistoryDropdown.style.display = 'none';
+//   };
+//   searchInput.parentNode.appendChild(clearButton);
 
-  // Hide dropdown when clicking outside
-  document.addEventListener('click', (e) => {
-    if (!searchInput.contains(e.target) && !searchHistoryDropdown.contains(e.target)) {
-      searchHistoryDropdown.style.display = 'none';
-    }
-  });
+//   // Hide dropdown when clicking outside
+//   document.addEventListener('click', (e) => {
+//     if (!searchInput.contains(e.target) && !searchHistoryDropdown.contains(e.target)) {
+//       searchHistoryDropdown.style.display = 'none';
+//     }
+//   });
 
-  // Add styles
-  if (!document.querySelector('#search-history-styles')) {
-    const style = document.createElement('style');
-    style.id = 'search-history-styles';
-    style.textContent = `
-      .search-history-dropdown {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: white;
-        border: 1px solid #ddd;
-        border-top: none;
-        border-radius: 0 0 4px 4px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        z-index: 1000;
-      }
+//   // Add styles
+//   if (!document.querySelector('#search-history-styles')) {
+//     const style = document.createElement('style');
+//     style.id = 'search-history-styles';
+//     style.textContent = `
+//       .search-history-dropdown {
+//         display: none;
+//         position: absolute;
+//         top: 100%;
+//         left: 0;
+//         right: 0;
+//         background: white;
+//         border: 1px solid #ddd;
+//         border-top: none;
+//         border-radius: 0 0 4px 4px;
+//         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+//         z-index: 1000;
+//       }
 
-      .search-history-item {
-        padding: 8px 12px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        cursor: pointer;
-      }
+//       .search-history-item {
+//         padding: 8px 12px;
+//         display: flex;
+//         align-items: center;
+//         gap: 8px;
+//         cursor: pointer;
+//       }
 
-      .search-history-item:hover {
-        background: #f5f5f5;
-      }
+//       .search-history-item:hover {
+//         background: #f5f5f5;
+//       }
 
-      .search-history-item button.remove-search {
-        margin-left: auto;
-        border: none;
-        background: none;
-        color: #999;
-        cursor: pointer;
-        padding: 4px 8px;
-      }
+//       .search-history-item button.remove-search {
+//         margin-left: auto;
+//         border: none;
+//         background: none;
+//         color: #999;
+//         cursor: pointer;
+//         padding: 4px 8px;
+//       }
 
-      .search-history-item button.remove-search:hover {
-        color: #666;
-      }
+//       .search-history-item button.remove-search:hover {
+//         color: #666;
+//       }
 
-      .clear-input {
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        border: none;
-        background: none;
-        color: #999;
-        cursor: pointer;
-        padding: 4px 8px;
-        display: none;
-        z-index: 2;
-      }
+//       .clear-input {
+//         position: absolute;
+//         right: 10px;
+//         top: 50%;
+//         transform: translateY(-50%);
+//         border: none;
+//         background: none;
+//         color: #999;
+//         cursor: pointer;
+//         padding: 4px 8px;
+//         display: none;
+//         z-index: 2;
+//       }
 
-      .clear-input:hover {
-        color: #666;
-      }
+//       .clear-input:hover {
+//         color: #666;
+//       }
 
-      .search-container {
-        position: relative;
-      }
-    `;
-    document.head.appendChild(style);
-  }
+//       .search-container {
+//         position: relative;
+//       }
+//     `;
+//     document.head.appendChild(style);
+//   }
 
-  // Update placeholder text
-  this.updateSearchPlaceholder();
-},
+//   // Update placeholder text
+//   this.updateSearchPlaceholder();
+// },
 
-updateSearchHistory(term) {
-  try {
-    const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-    // Remove existing term if present
-    const index = searches.indexOf(term);
-    if (index > -1) {
-      searches.splice(index, 1);
-    }
-    // Add new term at the beginning
-    searches.unshift(term);
-    // Keep only last 5 searches
-    searches.splice(5);
-    localStorage.setItem('searchHistory', JSON.stringify(searches));
-  } catch (error) {
-    console.error('Error updating search history:', error);
-  }
-},
+// updateSearchHistory(term) {
+//   try {
+//     const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+//     // Remove existing term if present
+//     const index = searches.indexOf(term);
+//     if (index > -1) {
+//       searches.splice(index, 1);
+//     }
+//     // Add new term at the beginning
+//     searches.unshift(term);
+//     // Keep only last 5 searches
+//     searches.splice(5);
+//     localStorage.setItem('searchHistory', JSON.stringify(searches));
+//   } catch (error) {
+//     console.error('Error updating search history:', error);
+//   }
+// },
 
-updateSearchPlaceholder() {
-  const searchInput = document.getElementById('product-search');
-  if (searchInput) {
-    searchInput.placeholder = i18nManager.translate('ui.labels.search');
-  }
-},
+// updateSearchPlaceholder() {
+//   const searchInput = document.getElementById('product-search');
+//   if (searchInput) {
+//     searchInput.placeholder = i18nManager.translate('ui.labels.search');
+//   }
+// },
  showSearchHistory() {
     if (!this.state.searchHistoryDropdown) return;
     
@@ -2740,28 +2778,28 @@ async fetchProducts(categoryId = null) {
 //     await this.fetchProducts(categoryId);
 //   }
 // ,
- async selectCategory(categoryId) {
-    this.state.selectedCategory = categoryId;
-    this.state.searchTerm = ''; // Clear search when changing categories
+//  async selectCategory(categoryId) {
+//     this.state.selectedCategory = categoryId;
+//     this.state.searchTerm = ''; // Clear search when changing categories
     
-    // Clear search input
-    const searchInput = document.getElementById('product-search');
-    if (searchInput) {
-      searchInput.value = '';
-    }
+//     // Clear search input
+//     const searchInput = document.getElementById('product-search');
+//     if (searchInput) {
+//       searchInput.value = '';
+//     }
 
-    // Update UI to show active category
-    this.renderCategories();
+//     // Update UI to show active category
+//     this.renderCategories();
     
-    // Fetch products with category filter
-    await this.fetchProducts(categoryId);
-  },
+//     // Fetch products with category filter
+//     await this.fetchProducts(categoryId);
+//   },
 
-  async searchProducts(searchTerm) {
-    this.state.searchTerm = searchTerm;
-    await this.fetchProducts(this.state.selectedCategory);
-  }
-,
+//   async searchProducts(searchTerm) {
+//     this.state.searchTerm = searchTerm;
+//     await this.fetchProducts(this.state.selectedCategory);
+//   }
+// ,
 ensureCategoryStylesExist() {
     if (!document.querySelector('#category-styles')) {
       const styles = document.createElement('style');
