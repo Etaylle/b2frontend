@@ -2484,7 +2484,7 @@ transformProductData(product) {
 };
 
 const categoryManager = {
-    state: {
+  state: {
     categories: [],
     selectedCategory: null,
     products: [],
@@ -2494,13 +2494,12 @@ const categoryManager = {
     debounceTimeout: null,
     initialized: false
   },
-async initialize() {
-    try {
-      // Ensure DOM is loaded
-      if (document.readyState === 'loading') {
-        await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve));
-      }
 
+  async initialize() {
+    try {
+      // Create necessary DOM elements
+      await this.createRequiredElements();
+      
       // Initialize search functionality
       await this.setupSearch();
       
@@ -2514,13 +2513,6 @@ async initialize() {
         await this.fetchProducts(this.state.selectedCategory);
       });
 
-      // Set up click listener for search history
-      document.addEventListener('click', (e) => {
-        if (!e.target.closest('#search-history') && !e.target.closest('#product-search')) {
-          this.hideSearchHistory();
-        }
-      });
-
       this.state.initialized = true;
       console.log('Category Manager initialized successfully');
     } catch (error) {
@@ -2528,6 +2520,118 @@ async initialize() {
       throw error;
     }
   },
+
+  async createRequiredElements() {
+    // Create search container if it doesn't exist
+    let searchContainer = document.querySelector('.search-container');
+    if (!searchContainer) {
+      searchContainer = document.createElement('div');
+      searchContainer.className = 'search-container';
+      
+      // Add it before the grid-container
+      const gridContainer = document.querySelector('.grid-container');
+      if (gridContainer) {
+        gridContainer.parentNode.insertBefore(searchContainer, gridContainer);
+      } else {
+        document.body.appendChild(searchContainer);
+      }
+    }
+
+    // Create search input if it doesn't exist
+    if (!document.getElementById('product-search')) {
+      const searchInput = document.createElement('input');
+      searchInput.type = 'text';
+      searchInput.id = 'product-search';
+      searchInput.className = 'search-input';
+      searchInput.placeholder = i18nManager.translate('ui.search.placeholder');
+      searchContainer.appendChild(searchInput);
+    }
+
+    // Create search history dropdown if it doesn't exist
+    if (!document.getElementById('search-history')) {
+      const searchHistory = document.createElement('div');
+      searchHistory.id = 'search-history';
+      searchHistory.className = 'search-history-dropdown';
+      searchContainer.appendChild(searchHistory);
+    }
+
+    // Create categories container if it doesn't exist
+    if (!document.querySelector('.categories')) {
+      const categoriesContainer = document.createElement('div');
+      categoriesContainer.className = 'categories';
+      searchContainer.after(categoriesContainer);
+    }
+
+    // Add necessary styles
+    this.ensureSearchStyles();
+  },
+
+  ensureSearchStyles() {
+    if (!document.querySelector('#search-styles')) {
+      const styles = document.createElement('style');
+      styles.id = 'search-styles';
+      styles.textContent = `
+        .search-container {
+          position: relative;
+          margin: 20px auto;
+          max-width: 600px;
+          padding: 0 20px;
+        }
+
+        .search-input {
+          width: 100%;
+          padding: 12px;
+          border: 1px solid #ddd;
+          border-radius: 24px;
+          font-size: 16px;
+          outline: none;
+          transition: border-color 0.2s ease;
+        }
+
+        .search-input:focus {
+          border-color: #007bff;
+          box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+        .search-history-dropdown {
+          position: absolute;
+          top: 100%;
+          left: 20px;
+          right: 20px;
+          background: white;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          margin-top: 4px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          display: none;
+          z-index: 1000;
+        }
+
+        .search-history-item {
+          padding: 10px 16px;
+          cursor: pointer;
+          transition: background-color 0.2s ease;
+        }
+
+        .search-history-item:hover {
+          background-color: #f5f5f5;
+        }
+
+        @media (max-width: 768px) {
+          .search-container {
+            padding: 0 10px;
+          }
+          
+          .search-input {
+            padding: 10px;
+            font-size: 14px;
+          }
+        }
+      `;
+      document.head.appendChild(styles);
+    }
+  },
+
   async setupSearch() {
     try {
       this.state.searchInput = document.getElementById('product-search');
@@ -2550,15 +2654,17 @@ async initialize() {
         this.showSearchHistory();
       });
 
+      // Set up click outside listener
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#search-history') && !e.target.closest('#product-search')) {
+          this.hideSearchHistory();
+        }
+      });
+
       await this.updateSearchPlaceholder();
     } catch (error) {
       console.error('Error setting up search:', error);
       throw error;
-    }
-  },
-  async updateSearchPlaceholder() {
-    if (this.state.searchInput) {
-      this.state.searchInput.placeholder = i18nManager.translate('ui.search.placeholder');
     }
   },
   // async searchProducts(searchTerm) {
