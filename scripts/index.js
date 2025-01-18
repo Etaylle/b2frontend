@@ -2293,7 +2293,7 @@ const i18nManager = {
   i18nManager.updateUI();
 
   // Update the search history dropdown content
-  categoryManager.setupSearch();
+  searchManager.setupSearch();
 
   // Update the category list with the translated category names
   categoryManager.renderCategories();
@@ -2454,7 +2454,7 @@ getProductName(product) {
       await categoryManager.fetchProducts(categoryManager.state.selectedCategory);
       
       // Update search setup
-      categoryManager.setupSearch();
+      searchManager.setupSearch();
     }
   },
 
@@ -2480,6 +2480,237 @@ transformProductData(product) {
       ...product,
       displayName: this.getProductName(product)
     };
+  }
+};
+const searchManager = {
+  state: {
+    searchInput: null,
+    searchHistoryDropdown: null,
+    debounceTimeout: null
+  },
+
+  initialize() {
+    // Initial setup
+    this.setupSearch();
+    
+    // Listen for language changes
+    window.addEventListener('languageChanged', () => {
+      this.updateSearchPlaceholder();
+    });
+    
+    return Promise.resolve();
+  },
+
+  setupSearch() {
+    const searchInput = document.getElementById('product-search');
+    if (!searchInput) return;
+
+    this.state.searchInput = searchInput;
+
+    // Remove any existing dropdowns first
+    const existingDropdown = document.querySelector('.search-history-dropdown');
+    if (existingDropdown) {
+      existingDropdown.remove();
+    }
+
+    // Create search history dropdown
+    const searchHistoryDropdown = document.createElement('div');
+    searchHistoryDropdown.className = 'search-history-dropdown';
+    searchHistoryDropdown.id = 'search-history-dropdown';
+    searchInput.parentNode.appendChild(searchHistoryDropdown);
+
+    this.state.searchHistoryDropdown = searchHistoryDropdown;
+
+    // Set up event listeners
+    this.setupEventListeners();
+    
+    // Setup styles
+    this.setupStyles();
+    
+    // Update placeholder for current language
+    this.updateSearchPlaceholder();
+  },
+
+  setupEventListeners() {
+    const { searchInput, searchHistoryDropdown } = this.state;
+
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(this.state.debounceTimeout);
+      this.state.debounceTimeout = setTimeout(() => {
+        categoryManager.searchProducts(e.target.value);
+      }, 300);
+
+      const clearButton = searchInput.parentNode.querySelector('.clear-input');
+      if (clearButton) {
+        clearButton.style.display = e.target.value ? 'block' : 'none';
+      }
+    });
+
+    searchInput.addEventListener('focus', () => {
+      const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+      if (searches.length > 0) {
+        this.updateDropdownContent();
+      }
+    });
+
+    // Setup clear button
+    this.setupClearButton();
+
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!searchInput.contains(e.target) && !searchHistoryDropdown.contains(e.target)) {
+        searchHistoryDropdown.style.display = 'none';
+      }
+    });
+  },
+
+  updateSearchPlaceholder() {
+    if (this.state.searchInput) {
+      this.state.searchInput.placeholder = i18nManager.translate('ui.labels.search');
+    }
+  },
+
+  updateDropdownContent() {
+    const { searchHistoryDropdown, searchInput } = this.state;
+    const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+    
+    if (searches.length === 0) {
+      searchHistoryDropdown.style.display = 'none';
+      searchHistoryDropdown.innerHTML = '';
+      return;
+    }
+
+    searchHistoryDropdown.innerHTML = searches
+      .map(term => `
+        <div class="search-history-item">
+          <i class="fas fa-history"></i>
+          <span>${term}</span>
+          <button class="remove-search" aria-label="Remove search term">×</button>
+        </div>
+      `)
+      .join('');
+    
+    // Add event listeners to new items
+    searchHistoryDropdown.querySelectorAll('.search-history-item').forEach((item, index) => {
+      const term = searches[index];
+      item.addEventListener('click', (e) => {
+        if (!e.target.classList.contains('remove-search')) {
+          searchInput.value = term;
+          categoryManager.searchProducts(term);
+          searchHistoryDropdown.style.display = 'none';
+          
+          const clearButton = searchInput.parentNode.querySelector('.clear-input');
+          if (clearButton) {
+            clearButton.style.display = 'block';
+          }
+        }
+      });
+
+      item.querySelector('.remove-search').addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+        const filtered = searches.filter(t => t !== term);
+        localStorage.setItem('searchHistory', JSON.stringify(filtered));
+        
+        if (filtered.length === 0) {
+          searchHistoryDropdown.style.display = 'none';
+        } else {
+          item.remove();
+        }
+      });
+    });
+
+    searchHistoryDropdown.style.display = 'block';
+  },
+
+  setupClearButton() {
+    const { searchInput } = this.state;
+    const existingClearButton = searchInput.parentNode.querySelector('.clear-input');
+    if (existingClearButton) {
+      existingClearButton.remove();
+    }
+
+    const clearButton = document.createElement('button');
+    clearButton.innerHTML = '×';
+    clearButton.className = 'clear-input';
+    clearButton.setAttribute('aria-label', 'Clear search input');
+    clearButton.onclick = () => {
+      searchInput.value = '';
+      categoryManager.searchProducts('');
+      clearButton.style.display = 'none';
+      this.state.searchHistoryDropdown.style.display = 'none';
+    };
+    searchInput.parentNode.appendChild(clearButton);
+  },
+
+  setupStyles() {
+    if (!document.querySelector('#search-history-styles')) {
+      const style = document.createElement('style');
+      style.id = 'search-history-styles';
+      style.textContent = `
+        .search-history-dropdown {
+          display: none;
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background: white;
+          border: 1px solid #ddd;
+          border-top: none;
+          border-radius: 0 0 4px 4px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          z-index: 1000;
+        }
+
+        .search-history-item {
+          padding: 8px 12px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+        }
+
+        .search-history-item:hover {
+          background: #f5f5f5;
+        }
+
+        .search-history-item button.remove-search {
+          margin-left: auto;
+          border: none;
+          background: none;
+          color: #999;
+          cursor: pointer;
+          padding: 4px 8px;
+        }
+
+        .search-history-item button.remove-search:hover {
+          color: #666;
+        }
+
+        .clear-input {
+          position: absolute;
+          right: 10px;
+          top: 50%;
+          transform: translateY(-50%);
+          border: none;
+          background: none;
+          color: #999;
+          cursor: pointer;
+          padding: 4px 8px;
+          display: none;
+          z-index: 2;
+        }
+
+        .clear-input:hover {
+          color: #666;
+        }
+
+        .search-container {
+          position: relative;
+        }
+      `;
+      document.head.appendChild(style);
+    }
   }
 };
 const categoryManager = {
@@ -2735,55 +2966,55 @@ const categoryManager = {
 //       document.head.appendChild(style);
 //     }
 // },
-async searchProducts(query) {
-  try {
-    // Get the current language from i18nManager
-    const currentLang = i18nManager.getCurrentLanguage();
+// async searchProducts(query) {
+//   try {
+//     // Get the current language from i18nManager
+//     const currentLang = i18nManager.getCurrentLanguage();
     
-    // Normalize the search query
-    const normalizedQuery = query.toLowerCase().trim();
+//     // Normalize the search query
+//     const normalizedQuery = query.toLowerCase().trim();
     
-    // If query is empty, return all products
-    if (!normalizedQuery) {
-      const response = await fetch('/api/products?lang=' + currentLang);
-      if (!response.ok) throw new Error('Failed to fetch products');
-      const data = await response.json();
-      return this.renderProducts(data.products);
-    }
+//     // If query is empty, return all products
+//     if (!normalizedQuery) {
+//       const response = await fetch('/api/products?lang=' + currentLang);
+//       if (!response.ok) throw new Error('Failed to fetch products');
+//       const data = await response.json();
+//       return this.renderProducts(data.products);
+//     }
 
-    // Save search term to history if not empty
-    if (normalizedQuery) {
-      const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-      if (!searches.includes(normalizedQuery)) {
-        searches.unshift(normalizedQuery);
-        // Keep only last 5 searches
-        searches.splice(5);
-        localStorage.setItem('searchHistory', JSON.stringify(searches));
-      }
-    }
+//     // Save search term to history if not empty
+//     if (normalizedQuery) {
+//       const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+//       if (!searches.includes(normalizedQuery)) {
+//         searches.unshift(normalizedQuery);
+//         // Keep only last 5 searches
+//         searches.splice(5);
+//         localStorage.setItem('searchHistory', JSON.stringify(searches));
+//       }
+//     }
 
-    // Fetch all products
-    const response = await fetch('/api/products?lang=' + currentLang);
-    if (!response.ok) throw new Error('Failed to fetch products');
-    const data = await response.json();
+//     // Fetch all products
+//     const response = await fetch('/api/products?lang=' + currentLang);
+//     if (!response.ok) throw new Error('Failed to fetch products');
+//     const data = await response.json();
     
-    // Filter products based on the current language
-    const filteredProducts = data.products.filter(product => {
-      // Get the appropriate product name based on current language
-      const productName = i18nManager.getProductTranslation(product, 'name').toLowerCase();
+//     // Filter products based on the current language
+//     const filteredProducts = data.products.filter(product => {
+//       // Get the appropriate product name based on current language
+//       const productName = i18nManager.getProductTranslation(product, 'name').toLowerCase();
       
-      // Check if the product name contains the search query
-      return productName.includes(normalizedQuery);
-    });
+//       // Check if the product name contains the search query
+//       return productName.includes(normalizedQuery);
+//     });
 
-    // Update the UI with filtered products
-    return this.renderProducts(filteredProducts);
+//     // Update the UI with filtered products
+//     return this.renderProducts(filteredProducts);
     
-  } catch (error) {
-    console.error('Search error:', error);
-    // Handle error appropriately in your UI
-  }
-},
+//   } catch (error) {
+//     console.error('Search error:', error);
+//     // Handle error appropriately in your UI
+//   }
+// },
  async fetchCategories() {
     try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/categories');
@@ -3703,6 +3934,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Initialize all managers in parallel with proper error handling
     await Promise.allSettled([
       i18nManager.initialize(),
+      searchManager.initialize(),
       cryptoManager.initialize(),
       ratingManager.initialize(),
       categoryManager.initialize(),
