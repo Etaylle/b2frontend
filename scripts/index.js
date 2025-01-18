@@ -2114,6 +2114,11 @@ async initialize() {
       savedLang || 
       (this.state.supportedLanguages.includes(browserLang) ? browserLang : this.state.defaultLanguage)
     );
+    if (this.state.selectedCategory) {
+        await this.fetchProducts(this.state.selectedCategory);
+    } else {
+        await this.fetchProducts(); // Fetch all products only if no category selected
+    }
     
     await this.createLanguageSwitcher();
     return this.refreshAllContent();
@@ -2875,29 +2880,24 @@ async fetchProducts(categoryId = null) {
         
         console.log('Raw API response:', data);
         
-        // Process the data more explicitly
+        // Process the data
         let products;
         if (Array.isArray(data)) {
             products = data;
         } else if (data.products) {
             products = data.products;
-        } else if (data.product_id) {  // Single product case
+        } else if (data.product_id) {
             products = [data];
         } else {
             products = [];
         }
         
-        // Transform products and update state properly
-        const transformedProducts = products.map(product => 
+        // Transform products and update state directly
+        this.state.products = products.map(product => 
             i18nManager.transformProductData(product)
         );
         
-        // Use setState instead of direct mutation
-        await this.setState({
-            products: transformedProducts
-        });
-        
-        console.log('Processed products:', transformedProducts);
+        console.log('Processed products:', this.state.products);
         
         await this.renderProducts();
     } catch (error) {
