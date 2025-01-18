@@ -2121,32 +2121,6 @@ const i18nManager = {
     this.fetchProducts();
   }
 ,
-//  refreshContent() {
-//   // Update the UI elements with the translated text
-//   i18nManager.updateUI();
-
-//   // Update the search history dropdown content
-//   categoryManager.setupSearch();
-
-//   // Update the category list with the translated category names
-//   categoryManager.renderCategories();
-
-//   // Update the product list with the translated product names and prices
-//   categoryManager.renderProducts();
-// },
-  // setLanguage(lang) {
-  //   if (!this.state.supportedLanguages.includes(lang)) {
-  //     console.warn(`Language ${lang} not supported, falling back to ${this.state.defaultLanguage}`);
-  //     lang = this.state.defaultLanguage;
-  //   }
-    
-  //   this.state.currentLanguage = lang;
-  //   localStorage.setItem('preferred_language', lang);
-  //   document.documentElement.lang = lang;
-    
-  //   // Dispatch a custom event when language changes
-  //   window.dispatchEvent(new CustomEvent('languageChanged', { detail: { language: lang } }));
-  // },
     setLanguage(lang) {
     if (!this.state.supportedLanguages.includes(lang)) {
       console.warn(`Language ${lang} not supported, falling back to ${this.state.defaultLanguage}`);
@@ -2235,24 +2209,6 @@ getProductName(product) {
     return product[field];
   },
 
-  // createLanguageSwitcher() {
-  //   const container = document.querySelector('.header-controls') || document.createElement('div');
-  //   container.innerHTML = `
-  //     <select class="language-switcher" aria-label="Select language">
-  //       ${this.state.supportedLanguages.map(lang => `
-  //         <option value="${lang}" ${lang === this.state.currentLanguage ? 'selected' : ''}>
-  //           ${lang.toUpperCase()}
-  //         </option>
-  //       `).join('')}
-  //     </select>
-  //   `;
-
-  //   container.querySelector('.language-switcher').addEventListener('change', (e) => {
-  //     this.setLanguage(e.target.value);
-  //     this.updateUI();
-  //     window.dispatchEvent(new CustomEvent('refreshContent'));
-  //   });
-  // },
   createLanguageSwitcher() {
     const container = document.querySelector('.header-controls') || document.createElement('div');
     container.innerHTML = `
@@ -2365,171 +2321,64 @@ initialize() {
       }
     });
   },
-  // async searchProducts(searchTerm) {
-  //   this.state.searchTerm = searchTerm.toLowerCase();
-    
-  //   try {
-  //     // Store search term in localStorage if not empty
-  //     if (searchTerm.trim()) {
-  //       const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-  //       if (!searches.includes(searchTerm)) {
-  //         searches.unshift(searchTerm); // Add to beginning of array
-  //         if (searches.length > 5) searches.pop(); // Keep only last 5 searches
-  //         localStorage.setItem('searchHistory', JSON.stringify(searches));
-  //       }
-  //     }
+//  async searchProducts(query) {
+//     try {
+//       // Normalize the search query
+//       const searchTerm = query.toLowerCase().trim();
+//       this.state.searchTerm = searchTerm;
 
-  //     // If search is cleared (empty), fetch all products or category products
-  //     if (!searchTerm.trim()) {
-  //       if (this.state.selectedCategory) {
-  //         await this.fetchProducts(this.state.selectedCategory);
-  //       } else {
-  //         await this.fetchProducts();
-  //       }
-  //       return;
-  //     }
-
-  //     let filteredProducts;
-      
-  //     if (this.state.selectedCategory) {
-  //       // If a category is selected, search within that category
-  //       const response = await fetch(`https://backend-3mvr.onrender.com/api/products/category/${this.state.selectedCategory}`);
-  //       if (!response.ok) throw new Error("Failed to fetch category products");
-  //       filteredProducts = await response.json();
-  //     } else {
-  //       // If no category is selected, search all products
-  //       const response = await fetch('https://backend-3mvr.onrender.com/api/products');
-  //       if (!response.ok) throw new Error("Failed to fetch products");
-  //       filteredProducts = await response.json();
-  //     }
-
-  //     // Filter products based on search term
-  //     filteredProducts = filteredProducts.filter(product => 
-  //       product.name.toLowerCase().includes(this.state.searchTerm) ||
-  //       product.price.toString().includes(this.state.searchTerm)
-  //     );
-
-  //     // Update the products display with filtered results
-  //     this.state.products = filteredProducts;
-  //     await this.renderProducts();
-      
-  //     // Show a message if no results found
-  //     if (filteredProducts.length === 0) {
-  //       showNotification('No products found matching your search', 'info');
-  //     }
-  //   } catch (error) {
-  //     console.error("Error searching products:", error);
-  //     showNotification(error.message, "error");
-  //   }
-  // },
-
-// async searchProducts(query) {
-//   try {
-//     // Get the current language from i18nManager
-//     const currentLang = i18nManager.getCurrentLanguage();
-    
-//     // Normalize the search query
-//     const normalizedQuery = query.toLowerCase().trim();
-    
-//     // If query is empty, return all products
-//     if (!normalizedQuery) {
-//       const response = await fetch('/api/products?lang=' + currentLang);
-//       if (!response.ok) throw new Error('Failed to fetch products');
-//       const data = await response.json();
-//       return this.renderProducts(data.products);
-//     }
-
-//     // Save search term to history if not empty
-//     if (normalizedQuery) {
-//       const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-//       if (!searches.includes(normalizedQuery)) {
-//         searches.unshift(normalizedQuery);
-//         // Keep only last 5 searches
-//         searches.splice(5);
-//         localStorage.setItem('searchHistory', JSON.stringify(searches));
+//       // Save search term to history if not empty
+//       if (searchTerm) {
+//         this.updateSearchHistory(searchTerm);
 //       }
+
+//       let productsToSearch;
+      
+//       if (this.state.selectedCategory) {
+//         // If category is selected, get products for that category
+//         const response = await fetch(`/api/products/category/${this.state.selectedCategory}?lang=${i18nManager.getCurrentLanguage()}`);
+//         if (!response.ok) throw new Error('Failed to fetch category products');
+//         productsToSearch = await response.json();
+//       } else {
+//         // Otherwise get all products
+//         const response = await fetch(`/api/products?lang=${i18nManager.getCurrentLanguage()}`);
+//         if (!response.ok) throw new Error('Failed to fetch products');
+//         productsToSearch = await response.json();
+//       }
+
+//       // If search is empty, show all products for current category
+//       if (!searchTerm) {
+//         this.state.products = productsToSearch;
+//         await this.renderProducts();
+//         return;
+//       }
+
+//       // Filter products based on search term
+//       const filteredProducts = productsToSearch.filter(product => {
+//         const productName = i18nManager.getProductTranslation(product, 'name').toLowerCase();
+//         const productDescription = i18nManager.getProductTranslation(product, 'description').toLowerCase();
+//         const price = product.price.toString();
+
+//         return productName.includes(searchTerm) || 
+//                productDescription.includes(searchTerm) || 
+//                price.includes(searchTerm);
+//       });
+
+//       // Update state and render
+//       this.state.products = filteredProducts;
+//       await this.renderProducts();
+
+//       // Show no results message if needed
+//       if (filteredProducts.length === 0) {
+//         const message = i18nManager.translate('ui.messages.noProductsFound');
+//         showNotification(message, 'info');
+//       }
+
+//     } catch (error) {
+//       console.error('Search error:', error);
+//       showNotification(error.message, 'error');
 //     }
-
-//     // Fetch all products
-//     const response = await fetch('/api/products?lang=' + currentLang);
-//     if (!response.ok) throw new Error('Failed to fetch products');
-//     const data = await response.json();
-    
-//     // Filter products based on the current language
-//     const filteredProducts = data.products.filter(product => {
-//       // Get the appropriate product name based on current language
-//       const productName = i18nManager.getProductTranslation(product, 'name').toLowerCase();
-      
-//       // Check if the product name contains the search query
-//       return productName.includes(normalizedQuery);
-//     });
-
-//     // Update the UI with filtered products
-//     return this.renderProducts(filteredProducts);
-    
-//   } catch (error) {
-//     console.error('Search error:', error);
-//     // Handle error appropriately in your UI
-//   }
-// },
- async searchProducts(query) {
-    try {
-      // Normalize the search query
-      const searchTerm = query.toLowerCase().trim();
-      this.state.searchTerm = searchTerm;
-
-      // Save search term to history if not empty
-      if (searchTerm) {
-        this.updateSearchHistory(searchTerm);
-      }
-
-      let productsToSearch;
-      
-      if (this.state.selectedCategory) {
-        // If category is selected, get products for that category
-        const response = await fetch(`/api/products/category/${this.state.selectedCategory}?lang=${i18nManager.getCurrentLanguage()}`);
-        if (!response.ok) throw new Error('Failed to fetch category products');
-        productsToSearch = await response.json();
-      } else {
-        // Otherwise get all products
-        const response = await fetch(`/api/products?lang=${i18nManager.getCurrentLanguage()}`);
-        if (!response.ok) throw new Error('Failed to fetch products');
-        productsToSearch = await response.json();
-      }
-
-      // If search is empty, show all products for current category
-      if (!searchTerm) {
-        this.state.products = productsToSearch;
-        await this.renderProducts();
-        return;
-      }
-
-      // Filter products based on search term
-      const filteredProducts = productsToSearch.filter(product => {
-        const productName = i18nManager.getProductTranslation(product, 'name').toLowerCase();
-        const productDescription = i18nManager.getProductTranslation(product, 'description').toLowerCase();
-        const price = product.price.toString();
-
-        return productName.includes(searchTerm) || 
-               productDescription.includes(searchTerm) || 
-               price.includes(searchTerm);
-      });
-
-      // Update state and render
-      this.state.products = filteredProducts;
-      await this.renderProducts();
-
-      // Show no results message if needed
-      if (filteredProducts.length === 0) {
-        const message = i18nManager.translate('ui.messages.noProductsFound');
-        showNotification(message, 'info');
-      }
-
-    } catch (error) {
-      console.error('Search error:', error);
-      showNotification(error.message, 'error');
-    }
-  },
+//   },
 updateSearchHistory(term) {
     try {
       const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
@@ -2604,77 +2453,6 @@ async fetchCategories() {
     }
   },
 
-// async fetchProducts(categoryId = null) {
-//     try {
-//       const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-//       const currentLang = i18nManager.state.currentLanguage;
-      
-//       // Add language parameter to URL
-//       const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
-//       url.searchParams.append('lang', currentLang);
-      
-//       const response = await fetch(url.toString(), {
-//         headers: {
-//           'Accept-Language': currentLang
-//         }
-//       });
-      
-//       if (!response.ok) throw new Error("Failed to fetch products");
-//       const data = await response.json();
-      
-//       // Transform the product data with translations
-//       const products = (data.success ? data.products : data).map(product => 
-//         i18nManager.transformProductData(product)
-//       );
-      
-//       this.state.products = products;
-//       await this.renderProducts();
-//     } catch (error) {
-//       console.error("Error fetching products:", error);
-//       showNotification(error.message, "error");
-//     }
-//   }
-// async fetchProducts(categoryId = null) {
-//     try {
-//       const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-//       const currentLang = i18nManager.state.currentLanguage;
-      
-//       const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
-//       url.searchParams.append('lang', currentLang);
-      
-//       const response = await fetch(url.toString(), {
-//         headers: {
-//           'Accept-Language': currentLang
-//         }
-//       });
-      
-//       if (!response.ok) throw new Error("Failed to fetch products");
-//       const data = await response.json();
-      
-//       // Log the response to debug
-//       console.log('Products response:', data);
-      
-//       // Ensure we're getting an array of products
-//       let products;
-//       if (Array.isArray(data)) {
-//         products = data;
-//       } else if (data.products && Array.isArray(data.products)) {
-//         products = data.products;
-//       } else {
-//         throw new Error("Invalid products data format");
-//       }
-      
-//       // Transform and filter products
-//       this.state.products = products
-//         .map(product => i18nManager.transformProductData(product))
-//         .filter(product => !categoryId || product.category_id === categoryId);
-      
-//       await this.renderProducts();
-//     } catch (error) {
-//       console.error("Error fetching products:", error);
-//       showNotification(error.message, "error");
-//     }
-// },
 async fetchProducts(categoryId = null) {
     try {
       const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
@@ -3279,77 +3057,7 @@ async updateRelatedManagers() {
   
   await ratingManager.fetchUserRatings();
   this.initializeImageSliders();
-},
-// async renderProducts() {
-//   const gridContainer = document.querySelector(".grid-container");
-//   if (!gridContainer) return;
-  
-//   // Clear container once
-//   gridContainer.innerHTML = "";
-  
-//   // Create document fragment for better performance
-//   const fragment = document.createDocumentFragment();
-  
-//   // Cache translations to avoid multiple lookups
-//   const translations = {
-//     addToCart: i18nManager.translate('ui.buttons.addToCart'),
-//     share: i18nManager.translate('ui.buttons.share'),
-//     rate: i18nManager.translate('ui.buttons.rate'),
-//     stock: i18nManager.translate('ui.labels.stock')
-//   };
-  
-//   // Create button template for reuse
-//   const buttonTemplate = document.createElement('button');
-  
-//   this.state.products.forEach((product) => {
-//     const gridItem = document.createElement("div");
-//     gridItem.className = "grid-item grid-item-xl";
-//     gridItem.dataset.productId = product.product_id;
-
-//     // Get translated product name using i18nManager
-//     const productName = i18nManager.getProductName(product);
-    
-//     const productContent = document.createElement("div");
-//     productContent.className = "product-content";
-    
-//     // Create image slider
-//     const imageSlider = this.createImageSlider(product, productName);
-    
-//     productContent.innerHTML = `
-//       ${imageSlider}
-//       <div class="overlay">
-//         ${productName} | 
-//         <span class="price-span" data-usd-price="${product.price}">
-//           ${cryptoManager.formatCryptoPrice(product.price)}
-//         </span>
-//         | ${translations.stock}: ${product.stock}
-//       </div>
-//     `;
-
-//     // Add product click handler
-//     productContent.addEventListener("click", () => {
-//       productPageManager.openProductPage(product);
-//     });
-    
-//     // Create buttons container with all buttons
-//     const buttonsContainer = this.createButtonsContainer(product, translations, buttonTemplate);
-    
-//     gridItem.append(productContent, buttonsContainer);
-//     fragment.appendChild(gridItem);
-//   });
-  
-//   // Append all items at once
-//   gridContainer.appendChild(fragment);
-//    // Initialize sliders after DOM is updated
-//   requestAnimationFrame(() => {
-//     this.initializeImageSliders();
-//   });
-//   // Add styles if needed
-//   this.ensureStylesExist();
-//   this.initializeImageSliders();
-//   // Update related managers
-//   await this.updateRelatedManagers();
-// }, 
+}, 
 async renderProducts(products) {
   const gridContainer = document.querySelector(".grid-container");
   if (!gridContainer) return;
@@ -3507,8 +3215,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     // Initialize all managers in parallel with proper error handling
     await Promise.allSettled([
-      categoryManager.initialize(),
       i18nManager.initialize(),
+      categoryManager.initialize(),
       cryptoManager.initialize(),
       ratingManager.initialize(),
       paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl'),
@@ -3556,31 +3264,6 @@ window.recommendationManager = recommendationManager;
 window.socialSharingManager = socialSharingManager;
 window.productPageManager = productPageManager;
 window.i18nManager = i18nManager;
-
-// async function fetchProducts(categoryId = null) {
-//   try {
-//     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-//     const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
-    
-//     // Add language parameter
-//     url.searchParams.append('lang', this.state.currentLanguage);
-    
-//     const response = await fetch(url.toString());
-    
-//     if (!response.ok) throw new Error("Failed to fetch products");
-//     const data = await response.json();
-    
-//     if (data.success) {
-//       this.state.products = data.data; 
-//       this.state.products = data;
-//     }
-    
-//     await this.renderProducts();
-//   } catch (error) {
-//     console.error("Error fetching products:", error);
-//     showNotification(error.message, "error");
-//   }
-// }
 
 function initializeImageSliders() {
   document.querySelectorAll('.image-slider').forEach(slider => {
