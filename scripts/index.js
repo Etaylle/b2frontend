@@ -2887,20 +2887,25 @@ async fetchProducts(categoryId = null) {
 
 async selectCategory(categoryId) {
     console.log('Selecting category:', categoryId);
-    console.log('Before setting selectedCategory:', this.state.selectedCategory);
-this.state.selectedCategory = categoryId;
-console.log('After setting selectedCategory:', this.state.selectedCategory);
-    this.state.searchTerm = '';
     
+    // Use setState instead of direct mutation
+    await this.setState({
+        selectedCategory: categoryId,
+        searchTerm: ''
+    });
+    
+    // Clear search input
     const searchInput = document.getElementById('product-search');
     if (searchInput) {
-      searchInput.value = '';
+        searchInput.value = '';
     }
-
-    await this.renderCategories();
+    
+    // Fetch products for this category
     await this.fetchProducts(categoryId);
     
-    // Add debug logging to verify state after fetch
+    // Render categories after state is updated
+    await this.renderCategories();
+    
     console.log('Current products after category selection:', this.state.products);
 },
 ensureCategoryStylesExist() {
