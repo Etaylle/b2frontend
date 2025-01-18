@@ -3131,7 +3131,7 @@ createButtonsContainer(product, translations, buttonTemplate) {
 
   // Add to Cart button
   const addToCartButton = buttonTemplate.cloneNode();
-  addToCartButton.innerHTML = '<i class="fas fa-shopping-cart"></i>';  // Cart icon
+  addToCartButton.innerHTML = '<i class="fas fa-shopping-cart"></i>'; 
   addToCartButton.className = "add-to-cart-btn";
   addToCartButton.title = translations.addToCart;
   addToCartButton.addEventListener("click", (e) => {
@@ -3141,7 +3141,7 @@ createButtonsContainer(product, translations, buttonTemplate) {
 
   // Share button
   const shareButton = buttonTemplate.cloneNode();
-  shareButton.innerHTML = '<i class="fas fa-share-alt"></i>';  // Share icon
+  shareButton.innerHTML = '<i class="fas fa-share-alt"></i>'; 
   shareButton.className = "share-btn";
   shareButton.title = translations.share;
   shareButton.addEventListener("click", (e) => {
@@ -3152,7 +3152,7 @@ createButtonsContainer(product, translations, buttonTemplate) {
 
   // Rate button
   const rateButton = buttonTemplate.cloneNode();
-  rateButton.innerHTML = '<i class="fas fa-star"></i>';  // Star icon
+  rateButton.innerHTML = '<i class="fas fa-star"></i>';  
   rateButton.className = "rate-btn";
   rateButton.title = translations.rate;
   rateButton.addEventListener("click", (e) => {
