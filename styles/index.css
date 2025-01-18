@@ -1539,20 +1539,19 @@ input:checked+.slider:before {
       right: 10px;
     }
 
-    /* Slider Dots */
-    .slider-dots {
-      position: absolute;
-      top: 60px;
-      
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 8px;
-      padding: 5px 10px;
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 12px;
-      z-index: 10;
-    }
+.slider-dots {
+  position: absolute;
+  top: 10px;
+  /* Changed from bottom to top */
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  padding: 5px 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  z-index: 10;
+}
 
     .slider-dot {
       width: 8px;
