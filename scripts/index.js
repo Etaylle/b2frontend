@@ -2748,6 +2748,7 @@ async fetchProducts(categoryId = null) {
 async selectCategory(categoryId) {
     console.log('Selecting category:', categoryId);
     this.state.selectedCategory = categoryId;
+    console.log('After setting:', this.state.selectedCategory);
     this.state.searchTerm = '';
     
     const searchInput = document.getElementById('product-search');
@@ -3504,10 +3505,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     // Initialize all managers in parallel with proper error handling
     await Promise.allSettled([
+      categoryManager.initialize(),
       i18nManager.initialize(),
       cryptoManager.initialize(),
       ratingManager.initialize(),
-      categoryManager.initialize(),
       paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl'),
       recommendationManager.initialize(),
       productPageManager.initialize(),
@@ -3645,15 +3646,6 @@ function setupEventListeners() {
   uiManager.updateButtonVisibility(currentUser);
 };
 
-// Make managers available globally
-window.authManager = authManager;
-window.cartManager = cartManager;
-window.paymentManager = paymentManager;
-window.uiManager = uiManager;
-window.categoryManager = categoryManager;
-window.ratingManager = ratingManager;
-window.socialSharingManager =socialSharingManager;
-window.productPageManager = productPageManager;
 
 function showNotification(message, type = 'success',) {
   const notification = document.createElement('div');
