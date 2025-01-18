@@ -2092,7 +2092,7 @@ const i18nManager = {
       }
     }
   },
-  initialize() {
+ initialize() {
     const savedLang = localStorage.getItem('preferred_language');
     const browserLang = navigator.language.split('-')[0];
     
@@ -2108,10 +2108,26 @@ const i18nManager = {
   },
 
   getCurrentLanguage() {
-    console.log('Current language:', i18nManager.state.currentLanguage);
-    console.log('Available languages:', i18nManager.state.supportedLanguages);
     return i18nManager.state.currentLanguage;
   },
+
+  setLanguage(lang) {
+    if (!this.state.supportedLanguages.includes(lang)) {
+      console.warn(`Language ${lang} not supported, falling back to ${this.state.defaultLanguage}`);
+      lang = this.state.defaultLanguage;
+    }
+    
+    this.state.currentLanguage = lang;
+    localStorage.setItem('preferred_language', lang);
+    document.documentElement.lang = lang;
+    
+    window.dispatchEvent(new CustomEvent('languageChanged', { detail: { language: lang } }));
+  },
+  // getCurrentLanguage() {
+  //   console.log('Current language:', i18nManager.state.currentLanguage);
+  //   console.log('Available languages:', i18nManager.state.supportedLanguages);
+  //   return i18nManager.state.currentLanguage;
+  // },
   
   forceLanguage(lang) {
     i18nManager.setLanguage(lang);
@@ -2230,7 +2246,7 @@ getProductName(product) {
       await this.refreshAllContent();
     });
   },
-   async refreshAllContent() {
+  async refreshAllContent() {
     // Update UI elements with translated text
     this.updateUI();
 
@@ -2241,10 +2257,9 @@ getProductName(product) {
       
       // Then fetch products based on current category selection
       await categoryManager.fetchProducts(categoryManager.state.selectedCategory);
+      
+      // Render products only if we have a selected category or we're showing all
       await categoryManager.renderProducts(categoryManager.state.products);
-      console.log('Calling renderProducts from:', new Error().stack);
-      // Update search setup
-      categoryManager.setupSearch();
     }
   },
 
@@ -2288,10 +2303,10 @@ initialize() {
     
     // Listen for language changes
     window.addEventListener('languageChanged', async () => {
-  // Await all operations to ensure sequential execution
-  await categoryManager.renderCategories();
-  await categoryManager.fetchProducts(categoryManager.state.selectedCategory);
-});
+      await this.renderCategories();
+      await this.fetchProducts(this.state.selectedCategory);
+      await this.renderProducts(this.state.products);
+    });
     
     return Promise.resolve();
   },
@@ -2432,7 +2447,7 @@ updateSearchHistory(term) {
       this.state.searchHistoryDropdown.style.display = 'none';
     }
   }, 
-async fetchCategories() {
+  async fetchCategories() {
     try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/categories');
       if (!response.ok) throw new Error(`Failed to fetch categories: ${response.statusText}`);
@@ -2440,21 +2455,60 @@ async fetchCategories() {
       const categories = await response.json();
       if (!Array.isArray(categories)) throw new Error("Categories data is not an array");
 
-      // Transform categories with proper translations
       this.state.categories = categories.map(category => ({
         ...category,
         displayName: i18nManager.getCategoryName(category)
       }));
 
       await this.renderCategories();
-      await this.fetchProducts(); 
     } catch (error) {
       console.error("Error fetching categories:", error);
       showNotification(error.message, "error");
     }
   },
 
-async fetchProducts(categoryId = null) {
+// async fetchProducts(categoryId = null) {
+//     try {
+//       const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+//       const currentLang = i18nManager.state.currentLanguage;
+      
+//       const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
+//       url.searchParams.append('lang', currentLang);
+      
+//       console.log('Fetching products from URL:', url.toString()); // Debug log
+      
+//       const response = await fetch(url.toString(), {
+//         headers: {
+//           'Accept-Language': currentLang
+//         }
+//       });
+      
+//       if (!response.ok) throw new Error("Failed to fetch products");
+//       const data = await response.json();
+      
+//       console.log('Raw API response:', data); // Debug log
+      
+//       // Clear existing products first
+//       this.state.products = [];
+      
+//       // Use only the products from this response
+//       const products = Array.isArray(data) ? data : 
+//                       data.products ? data.products : 
+//                       [data];
+      
+//       this.state.products = products.map(product => 
+//         i18nManager.transformProductData(product)
+//       );
+      
+//       console.log('Processed products:', this.state.products); // Debug log
+      
+//       await this.renderProducts();
+//     } catch (error) {
+//       console.error("Error fetching products:", error);
+//       showNotification(error.message, "error");
+//     }
+// },
+ async fetchProducts(categoryId = null) {
     try {
       const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
       const currentLang = i18nManager.state.currentLanguage;
@@ -2489,13 +2543,12 @@ async fetchProducts(categoryId = null) {
       
       console.log('Processed products:', this.state.products); // Debug log
       
-      await this.renderProducts();
     } catch (error) {
       console.error("Error fetching products:", error);
       showNotification(error.message, "error");
     }
-},
-  renderCategories() {
+  },  
+renderCategories() {
     const container = document.querySelector(".categories");
     if (!container) {
       console.error("Categories container not found");
@@ -2526,22 +2579,33 @@ async fetchProducts(categoryId = null) {
     this.ensureCategoryStylesExist();
   },
 
-async selectCategory(categoryId) {
+// async selectCategory(categoryId) {
+//     console.log('Selecting category:', categoryId);
+//     this.state.selectedCategory = categoryId;
+//     console.log('After setting:', this.state.selectedCategory);
+//     await this.renderCategories();
+//     await this.fetchProducts(categoryId);
+//   const products = this.state.products;
+//  // Ensure this only contains the category-specific products
+// await this.renderProducts(this.state.products);
+
+//   // ... rest of the method
+
+    
+   
+    
+//     // Add debug logging to verify state after fetch
+//     console.log('Current products after category selection:', this.state.products);
+// },
+ async selectCategory(categoryId) {
     console.log('Selecting category:', categoryId);
     this.state.selectedCategory = categoryId;
     console.log('After setting:', this.state.selectedCategory);
     await this.renderCategories();
     await this.fetchProducts(categoryId);
-  const products = this.state.products; // Ensure this only contains the category-specific products
-  await this.renderProducts(products); // Pass the filtered products
-  // ... rest of the method
-
-    
-   
-    
-    // Add debug logging to verify state after fetch
-    console.log('Current products after category selection:', this.state.products);
-},
+    console.log('Fetched products for category:', this.state.products);
+    await this.renderProducts(this.state.products);
+  },
 ensureCategoryStylesExist() {
     if (!document.querySelector('#category-styles')) {
       const styles = document.createElement('style');
@@ -3048,143 +3112,243 @@ ensureStylesExist() {
   }
 },
 
-async renderProducts(products) {
-  const gridContainer = document.querySelector(".grid-container");
-  if (!gridContainer) return;
+// async renderProducts(products) {
+//   const gridContainer = document.querySelector(".grid-container");
+//   if (!gridContainer) return;
   
-  // Update state with provided products or fetch them if not provided
-  if (products) {
-    this.state.products = products;
-  } else {
-    try {
-      const currentLang = i18nManager.getCurrentLanguage();
-      const response = await fetch('/api/products?lang=' + currentLang);
-      if (!response.ok) throw new Error('Failed to fetch products');
-      const data = await response.json();
-      this.state.products = data.products;
-    } catch (error) {
-      console.error('Error fetching products:', error);
+//   // Update state with provided products or fetch them if not provided
+//   if (products) {
+//     this.state.products = products;
+//   } else {
+//     try {
+//       const currentLang = i18nManager.getCurrentLanguage();
+//       const response = await fetch('/api/products?lang=' + currentLang);
+//       if (!response.ok) throw new Error('Failed to fetch products');
+//       const data = await response.json();
+//       this.state.products = data.products;
+//     } catch (error) {
+//       console.error('Error fetching products:', error);
+//       return;
+//     }
+//   }
+  
+//   // Clear container
+//   gridContainer.innerHTML = "";
+  
+//   // Create document fragment for better performance
+//   const fragment = document.createDocumentFragment();
+  
+//   // Cache translations
+//   const translations = {
+//     addToCart: i18nManager.translate('ui.buttons.addToCart'),
+//     share: i18nManager.translate('ui.buttons.share'),
+//     rate: i18nManager.translate('ui.buttons.rate'),
+//     stock: i18nManager.translate('ui.labels.stock')
+//   };
+  
+//   // Create button template
+//   const buttonTemplate = document.createElement('button');
+  
+//   // Handle empty state
+//   if (!this.state.products.length) {
+//     const emptyState = document.createElement('div');
+//     emptyState.className = 'empty-state';
+//     emptyState.textContent = 'No products found';
+//     gridContainer.appendChild(emptyState);
+//     return;
+//   }
+
+//   // Render each product
+//   this.state.products.forEach((product) => {
+//     const gridItem = document.createElement("div");
+//     gridItem.className = "grid-item grid-item-xl";
+//     gridItem.dataset.productId = product.product_id;
+
+//     // Get translated product name using i18nManager's getProductTranslation
+//     const productName = i18nManager.getProductTranslation(product, 'name');
+    
+//     const productContent = document.createElement("div");
+//     productContent.className = "product-content";
+    
+//     // Create image slider with error handling
+//     const imageSlider = this.createImageSlider(product, productName);
+    
+//     // Format price using crypto manager if available, fallback to regular formatting
+//     const formattedPrice = window.cryptoManager ? 
+//       cryptoManager.formatCryptoPrice(product.price) : 
+//       new Intl.NumberFormat(i18nManager.getCurrentLanguage(), {
+//         style: 'currency',
+//         currency: 'USD'
+//       }).format(product.price);
+    
+//     productContent.innerHTML = `
+//       ${imageSlider}
+//       <div class="overlay">
+//         <span class="product-name">${productName}</span> | 
+//         <span class="price-span" data-usd-price="${product.price}">
+//           ${formattedPrice}
+//         </span>
+//         | ${translations.stock}: ${product.stock}
+//       </div>
+//     `;
+
+//     // Add product click handler with error boundary
+//     productContent.addEventListener("click", (e) => {
+//       try {
+//         if (window.productPageManager) {
+//           productPageManager.openProductPage(product);
+//         }
+//       } catch (error) {
+//         console.error('Error opening product page:', error);
+//       }
+//     });
+    
+//     // Create buttons container
+//     const buttonsContainer = this.createButtonsContainer(product, translations, buttonTemplate);
+    
+//     gridItem.append(productContent, buttonsContainer);
+//     fragment.appendChild(gridItem);
+//   });
+  
+//   // Append all items at once
+//   gridContainer.appendChild(fragment);
+
+//   // Initialize sliders after DOM is updated
+//   requestAnimationFrame(() => {
+//     try {
+//       this.initializeImageSliders();
+//     } catch (error) {
+//       console.error('Error initializing image sliders:', error);
+//     }
+//   });
+
+//   // Ensure styles exist
+//   this.ensureStylesExist();
+
+//   // Update related managers if needed
+//   try {
+//     await this.updateRelatedManagers();
+//   } catch (error) {
+//     console.error('Error updating related managers:', error);
+//   }
+// },
+ async renderProducts(products) {
+    const gridContainer = document.querySelector(".grid-container");
+    if (!gridContainer) return;
+
+    // Clear container
+    gridContainer.innerHTML = "";
+    
+    // Handle empty state
+    if (!products || products.length === 0) {
+      const emptyState = document.createElement('div');
+      emptyState.className = 'empty-state';
+      emptyState.textContent = 'No products found';
+      gridContainer.appendChild(emptyState);
       return;
     }
-  }
-  
-  // Clear container
-  gridContainer.innerHTML = "";
-  
-  // Create document fragment for better performance
-  const fragment = document.createDocumentFragment();
-  
-  // Cache translations
-  const translations = {
-    addToCart: i18nManager.translate('ui.buttons.addToCart'),
-    share: i18nManager.translate('ui.buttons.share'),
-    rate: i18nManager.translate('ui.buttons.rate'),
-    stock: i18nManager.translate('ui.labels.stock')
-  };
-  
-  // Create button template
-  const buttonTemplate = document.createElement('button');
-  
-  // Handle empty state
-  if (!this.state.products.length) {
-    const emptyState = document.createElement('div');
-    emptyState.className = 'empty-state';
-    emptyState.textContent = 'No products found';
-    gridContainer.appendChild(emptyState);
-    return;
-  }
 
-  // Render each product
-  this.state.products.forEach((product) => {
-    const gridItem = document.createElement("div");
-    gridItem.className = "grid-item grid-item-xl";
-    gridItem.dataset.productId = product.product_id;
+    // Create document fragment for better performance
+    const fragment = document.createDocumentFragment();
+    
+    // Cache translations
+    const translations = {
+      addToCart: i18nManager.translate('ui.buttons.addToCart'),
+      share: i18nManager.translate('ui.buttons.share'),
+      rate: i18nManager.translate('ui.buttons.rate'),
+      stock: i18nManager.translate('ui.labels.stock')
+    };
+    
+    // Create button template
+    const buttonTemplate = document.createElement('button');
 
-    // Get translated product name using i18nManager's getProductTranslation
-    const productName = i18nManager.getProductTranslation(product, 'name');
-    
-    const productContent = document.createElement("div");
-    productContent.className = "product-content";
-    
-    // Create image slider with error handling
-    const imageSlider = this.createImageSlider(product, productName);
-    
-    // Format price using crypto manager if available, fallback to regular formatting
-    const formattedPrice = window.cryptoManager ? 
-      cryptoManager.formatCryptoPrice(product.price) : 
-      new Intl.NumberFormat(i18nManager.getCurrentLanguage(), {
-        style: 'currency',
-        currency: 'USD'
-      }).format(product.price);
-    
-    productContent.innerHTML = `
-      ${imageSlider}
-      <div class="overlay">
-        <span class="product-name">${productName}</span> | 
-        <span class="price-span" data-usd-price="${product.price}">
-          ${formattedPrice}
-        </span>
-        | ${translations.stock}: ${product.stock}
-      </div>
-    `;
+    // Render each product
+    products.forEach((product) => {
+      const gridItem = document.createElement("div");
+      gridItem.className = "grid-item grid-item-xl";
+      gridItem.dataset.productId = product.product_id;
 
-    // Add product click handler with error boundary
-    productContent.addEventListener("click", (e) => {
-      try {
-        if (window.productPageManager) {
-          productPageManager.openProductPage(product);
+      const productName = i18nManager.getProductTranslation(product, 'name');
+      
+      const productContent = document.createElement("div");
+      productContent.className = "product-content";
+      
+      const imageSlider = this.createImageSlider(product, productName);
+      
+      const formattedPrice = window.cryptoManager ? 
+        cryptoManager.formatCryptoPrice(product.price) : 
+        new Intl.NumberFormat(i18nManager.getCurrentLanguage(), {
+          style: 'currency',
+          currency: 'USD'
+        }).format(product.price);
+      
+      productContent.innerHTML = `
+        ${imageSlider}
+        <div class="overlay">
+          <span class="product-name">${productName}</span> | 
+          <span class="price-span" data-usd-price="${product.price}">
+            ${formattedPrice}
+          </span>
+          | ${translations.stock}: ${product.stock}
+        </div>
+      `;
+
+      // Add product click handler with error boundary
+      productContent.addEventListener("click", (e) => {
+        try {
+          if (window.productPageManager) {
+            productPageManager.openProductPage(product);
+          }
+        } catch (error) {
+          console.error('Error opening product page:', error);
         }
+      });
+      
+      const buttonsContainer = this.createButtonsContainer(product, translations, buttonTemplate);
+      
+      gridItem.append(productContent, buttonsContainer);
+      fragment.appendChild(gridItem);
+    });
+    
+    // Append all items at once
+    gridContainer.appendChild(fragment);
+
+    // Initialize sliders after DOM is updated
+    requestAnimationFrame(() => {
+      try {
+        this.initializeImageSliders();
       } catch (error) {
-        console.error('Error opening product page:', error);
+        console.error('Error initializing image sliders:', error);
       }
     });
-    
-    // Create buttons container
-    const buttonsContainer = this.createButtonsContainer(product, translations, buttonTemplate);
-    
-    gridItem.append(productContent, buttonsContainer);
-    fragment.appendChild(gridItem);
-  });
-  
-  // Append all items at once
-  gridContainer.appendChild(fragment);
 
-  // Initialize sliders after DOM is updated
-  requestAnimationFrame(() => {
+    // Ensure styles exist
+    this.ensureStylesExist();
+
+    // Update related managers if needed
     try {
-      this.initializeImageSliders();
+      await this.updateRelatedManagers();
     } catch (error) {
-      console.error('Error initializing image sliders:', error);
+      console.error('Error updating related managers:', error);
     }
-  });
-
-  // Ensure styles exist
-  this.ensureStylesExist();
-
-  // Update related managers if needed
-  try {
-    await this.updateRelatedManagers();
-  } catch (error) {
-    console.error('Error updating related managers:', error);
-  }
-},
-async initialize() {
-    await this.fetchCategories();
-    await this.setupSearch();
   },
-  initializeImageSliders() {
-    document.querySelectorAll('.image-slider').forEach(slider => {
-      const images = slider.querySelectorAll('img');
-      if (images.length <= 1) return;
+// async initialize() {
+//     await this.fetchCategories();
+//     await this.setupSearch();
+//   },
+//   initializeImageSliders() {
+//     document.querySelectorAll('.image-slider').forEach(slider => {
+//       const images = slider.querySelectorAll('img');
+//       if (images.length <= 1) return;
 
-      let currentIndex = 0;
-      setInterval(() => {
-        images[currentIndex].classList.remove('active');
-        currentIndex = (currentIndex + 1) % images.length;
-        images[currentIndex].classList.add('active');
-      }, 3000);
-    });
-  },
+//       let currentIndex = 0;
+//       setInterval(() => {
+//         images[currentIndex].classList.remove('active');
+//         currentIndex = (currentIndex + 1) % images.length;
+//         images[currentIndex].classList.add('active');
+//       }, 3000);
+//     });
+//   },
 
   highlightSelectedCategory() {
   // Remove 'active' class from all buttons
