@@ -2500,7 +2500,77 @@ const searchManager = {
     
     return Promise.resolve();
   },
+async searchProducts(searchTerm) {
+    this.state.searchTerm = searchTerm.toLowerCase();
+    
+    try {
+        // Store search term in localStorage if not empty
+        if (searchTerm.trim()) {
+            const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+            if (!searches.includes(searchTerm)) {
+                searches.unshift(searchTerm); // Add to beginning of array
+                if (searches.length > 5) searches.pop(); // Keep only last 5 searches
+                localStorage.setItem('searchHistory', JSON.stringify(searches));
+            }
+        }
 
+        // If search is cleared (empty), fetch all products or category products
+        if (!searchTerm.trim()) {
+            if (this.state.selectedCategory) {
+                await this.fetchProducts(this.state.selectedCategory);
+            } else {
+                await this.fetchProducts();
+            }
+            return;
+        }
+
+        let filteredProducts = [];
+        
+        try {
+            if (this.state.selectedCategory) {
+                // If a category is selected, search within that category
+                const response = await fetch(`https://backend-3mvr.onrender.com/api/products/category/${this.state.selectedCategory}`);
+                if (!response.ok) throw new Error("Failed to fetch category products");
+                const data = await response.json();
+                // Ensure data is an array
+                filteredProducts = Array.isArray(data) ? data : data.products || [];
+            } else {
+                // If no category is selected, search all products
+                const response = await fetch('https://backend-3mvr.onrender.com/api/products');
+                if (!response.ok) throw new Error("Failed to fetch products");
+                const data = await response.json();
+                // Ensure data is an array
+                filteredProducts = Array.isArray(data) ? data : data.products || [];
+            }
+
+            // Filter products based on search term
+            if (Array.isArray(filteredProducts)) {
+                filteredProducts = filteredProducts.filter(product => 
+                    product.name.toLowerCase().includes(this.state.searchTerm) ||
+                    product.price.toString().includes(this.state.searchTerm)
+                );
+            } else {
+                filteredProducts = [];
+            }
+
+            // Update the products display with filtered results
+            this.state.products = filteredProducts;
+            await this.renderProducts();
+            
+            // Show a message if no results found
+            if (filteredProducts.length === 0) {
+                showNotification('No products found matching your search', 'info');
+            }
+        } catch (error) {
+            console.error("Error processing products:", error);
+            filteredProducts = [];
+            showNotification("Error processing products data", "error");
+        }
+    } catch (error) {
+        console.error("Error searching products:", error);
+        showNotification(error.message, "error");
+    }
+},
   setupSearch() {
     const searchInput = document.getElementById('product-search');
     if (!searchInput) return;
@@ -2537,7 +2607,7 @@ const searchManager = {
     searchInput.addEventListener('input', (e) => {
       clearTimeout(this.state.debounceTimeout);
       this.state.debounceTimeout = setTimeout(() => {
-        categoryManager.searchProducts(e.target.value);
+        searchManager.searchProducts(e.target.value);
       }, 300);
 
       const clearButton = searchInput.parentNode.querySelector('.clear-input');
@@ -2596,7 +2666,7 @@ const searchManager = {
       item.addEventListener('click', (e) => {
         if (!e.target.classList.contains('remove-search')) {
           searchInput.value = term;
-          categoryManager.searchProducts(term);
+          searchManager.searchProducts(term);
           searchHistoryDropdown.style.display = 'none';
           
           const clearButton = searchInput.parentNode.querySelector('.clear-input');
@@ -2636,7 +2706,7 @@ const searchManager = {
     clearButton.setAttribute('aria-label', 'Clear search input');
     clearButton.onclick = () => {
       searchInput.value = '';
-      categoryManager.searchProducts('');
+      searchManager.searchProducts('');
       clearButton.style.display = 'none';
       this.state.searchHistoryDropdown.style.display = 'none';
     };
@@ -2720,77 +2790,7 @@ const categoryManager = {
     products: [],
     searchTerm: ''
   },
-async searchProducts(searchTerm) {
-    this.state.searchTerm = searchTerm.toLowerCase();
-    
-    try {
-        // Store search term in localStorage if not empty
-        if (searchTerm.trim()) {
-            const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-            if (!searches.includes(searchTerm)) {
-                searches.unshift(searchTerm); // Add to beginning of array
-                if (searches.length > 5) searches.pop(); // Keep only last 5 searches
-                localStorage.setItem('searchHistory', JSON.stringify(searches));
-            }
-        }
 
-        // If search is cleared (empty), fetch all products or category products
-        if (!searchTerm.trim()) {
-            if (this.state.selectedCategory) {
-                await this.fetchProducts(this.state.selectedCategory);
-            } else {
-                await this.fetchProducts();
-            }
-            return;
-        }
-
-        let filteredProducts = [];
-        
-        try {
-            if (this.state.selectedCategory) {
-                // If a category is selected, search within that category
-                const response = await fetch(`https://backend-3mvr.onrender.com/api/products/category/${this.state.selectedCategory}`);
-                if (!response.ok) throw new Error("Failed to fetch category products");
-                const data = await response.json();
-                // Ensure data is an array
-                filteredProducts = Array.isArray(data) ? data : data.products || [];
-            } else {
-                // If no category is selected, search all products
-                const response = await fetch('https://backend-3mvr.onrender.com/api/products');
-                if (!response.ok) throw new Error("Failed to fetch products");
-                const data = await response.json();
-                // Ensure data is an array
-                filteredProducts = Array.isArray(data) ? data : data.products || [];
-            }
-
-            // Filter products based on search term
-            if (Array.isArray(filteredProducts)) {
-                filteredProducts = filteredProducts.filter(product => 
-                    product.name.toLowerCase().includes(this.state.searchTerm) ||
-                    product.price.toString().includes(this.state.searchTerm)
-                );
-            } else {
-                filteredProducts = [];
-            }
-
-            // Update the products display with filtered results
-            this.state.products = filteredProducts;
-            await this.renderProducts();
-            
-            // Show a message if no results found
-            if (filteredProducts.length === 0) {
-                showNotification('No products found matching your search', 'info');
-            }
-        } catch (error) {
-            console.error("Error processing products:", error);
-            filteredProducts = [];
-            showNotification("Error processing products data", "error");
-        }
-    } catch (error) {
-        console.error("Error searching products:", error);
-        showNotification(error.message, "error");
-    }
-},
   // async searchProducts(searchTerm) {
   //   this.state.searchTerm = searchTerm.toLowerCase();
     
