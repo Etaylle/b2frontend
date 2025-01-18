@@ -2992,167 +2992,280 @@ async renderProducts() {
   
   // Append all items at once
   gridContainer.appendChild(fragment);
-  
+   // Initialize sliders after DOM is updated
+  requestAnimationFrame(() => {
+    this.initializeImageSliders();
+  });
   // Add styles if needed
   this.ensureStylesExist();
-  this.initializeImageSliders();
+  
   // Update related managers
   await this.updateRelatedManagers();
 },
 
+// createImageSlider(product, productName) {
+//   // Add fallback for product name
+//   const safeProductName = productName || product.name || 'Product';
+  
+//   let sliderHtml = '<div class="image-slider">';
+  
+//   // Add defensive check for images
+//   const images = Array.isArray(product.images) && product.images.length > 0 ? product.images : 
+//                 product.image_url ? [product.image_url] :
+//                 ['/images/default-product-image.jpg'];
+  
+//   // Log for debugging
+//   console.debug('Creating slider for product:', {
+//     id: product.product_id,
+//     name: safeProductName,
+//     imageCount: images.length
+//   });
+  
+//   // Add navigation buttons if there are multiple images
+//   if (images.length > 1) {
+//     sliderHtml += `
+//       <button class="slider-nav prev" aria-label="${i18nManager.translate('ui.buttons.previous') || 'Previous image'}">‹</button>
+//       <button class="slider-nav next" aria-label="${i18nManager.translate('ui.buttons.next') || 'Next image'}">›</button>
+//       <div class="slider-dots">
+//         ${images.map((_, i) => `<button class="slider-dot${i === 0 ? ' active' : ''}" 
+//           aria-label="${i18nManager.translate('ui.buttons.goToImage', { number: i + 1 }) || `Go to image ${i + 1}`}">
+//           </button>`).join('')}
+//       </div>
+//     `;
+//   }
+  
+//   // Add images within slider track
+//   sliderHtml += '<div class="slider-track">';
+//   images.forEach((img, index) => {
+//     // Add error handling for image loading
+//     sliderHtml += `
+//       <div class="slider-slide${index === 0 ? ' active' : ''}" style="--slide-index: ${index}">
+//         <img 
+//           src="${img}" 
+//           alt="${safeProductName}${images.length > 1 ? ` - ${i18nManager.translate('ui.labels.image', { number: index + 1 }) || `Image ${index + 1}`}` : ''}" 
+//           loading="lazy"
+//           onerror="this.onerror=null; this.src='/images/default-product-image.jpg';"
+//         >
+//       </div>
+//     `;
+//   });
+  
+//   return sliderHtml + '</div></div>';
+// },
+// Update the initializeImageSliders function to handle both manual and automatic sliding
+// initializeImageSliders() {
+//   const sliders = document.querySelectorAll('.image-slider');
+  
+//   sliders.forEach(slider => {
+//     const track = slider.querySelector('.slider-track');
+//     if (!track) return;
+
+//     const slides = slider.querySelectorAll('.slider-slide');
+//     if (slides.length <= 1) return;
+
+//     const dots = slider.querySelectorAll('.slider-dot');
+//     let currentIndex = 0;
+//     let autoSlideInterval;
+    
+//     // Function to update active slide and dot
+//     const updateSlider = (newIndex) => {
+//       // Remove active class from current slide and dot
+//       slides[currentIndex].classList.remove('active');
+//       dots[currentIndex].classList.remove('active');
+      
+//       // Add active class to new slide and dot
+//       currentIndex = newIndex;
+//       slides[currentIndex].classList.add('active');
+//       dots[currentIndex].classList.add('active');
+//     };
+
+//     // Function to start auto-sliding
+//     const startAutoSlide = () => {
+//       autoSlideInterval = setInterval(() => {
+//         const newIndex = (currentIndex + 1) % slides.length;
+//         updateSlider(newIndex);
+//       }, 5000); // Change slide every 5 seconds
+//     };
+
+//     // Function to stop auto-sliding
+//     const stopAutoSlide = () => {
+//       if (autoSlideInterval) {
+//         clearInterval(autoSlideInterval);
+//       }
+//     };
+
+//     // Previous button click handler
+//     slider.querySelector('.prev')?.addEventListener('click', (e) => {
+//       e.stopPropagation(); // Prevent product click
+//       stopAutoSlide();
+//       const newIndex = (currentIndex - 1 + slides.length) % slides.length;
+//       updateSlider(newIndex);
+//       startAutoSlide();
+//     });
+
+//     // Next button click handler
+//     slider.querySelector('.next')?.addEventListener('click', (e) => {
+//       e.stopPropagation(); // Prevent product click
+//       stopAutoSlide();
+//       const newIndex = (currentIndex + 1) % slides.length;
+//       updateSlider(newIndex);
+//       startAutoSlide();
+//     });
+
+//     // Dot click handlers
+//     dots.forEach((dot, index) => {
+//       dot.addEventListener('click', (e) => {
+//         e.stopPropagation(); // Prevent product click
+//         stopAutoSlide();
+//         updateSlider(index);
+//         startAutoSlide();
+//       });
+//     });
+
+//     // Touch/swipe support
+//     let touchStartX = 0;
+//     let touchEndX = 0;
+
+//     slider.addEventListener('touchstart', (e) => {
+//       stopAutoSlide();
+//       touchStartX = e.changedTouches[0].screenX;
+//     }, { passive: true });
+
+//     slider.addEventListener('touchend', (e) => {
+//       touchEndX = e.changedTouches[0].screenX;
+//       const diff = touchStartX - touchEndX;
+      
+//       if (Math.abs(diff) > 50) { // Minimum swipe distance
+//         if (diff > 0) { // Swipe left
+//           const newIndex = (currentIndex + 1) % slides.length;
+//           updateSlider(newIndex);
+//         } else { // Swipe right
+//           const newIndex = (currentIndex - 1 + slides.length) % slides.length;
+//           updateSlider(newIndex);
+//         }
+//       }
+//       startAutoSlide();
+//     }, { passive: true });
+
+//     // Start auto-sliding
+//     startAutoSlide();
+
+//     // Pause auto-sliding when hovering over the slider
+//     slider.addEventListener('mouseenter', stopAutoSlide);
+//     slider.addEventListener('mouseleave', startAutoSlide);
+//   });
+// },
 createImageSlider(product, productName) {
-  // Add fallback for product name
+  console.log('Creating slider for:', product); // Debug log to check product data
   const safeProductName = productName || product.name || 'Product';
   
   let sliderHtml = '<div class="image-slider">';
   
-  // Add defensive check for images
-  const images = Array.isArray(product.images) && product.images.length > 0 ? product.images : 
-                product.image_url ? [product.image_url] :
-                ['/images/default-product-image.jpg'];
+  // Handle both single image_url and images array
+  const images = Array.isArray(product.images) && product.images.length > 0 
+    ? product.images 
+    : product.image_url 
+      ? [product.image_url] 
+      : ['/images/default-product-image.jpg'];
+
+  console.log('Images to display:', images); // Debug log to check image array
   
-  // Log for debugging
-  console.debug('Creating slider for product:', {
-    id: product.product_id,
-    name: safeProductName,
-    imageCount: images.length
-  });
-  
-  // Add navigation buttons if there are multiple images
-  if (images.length > 1) {
-    sliderHtml += `
-      <button class="slider-nav prev" aria-label="${i18nManager.translate('ui.buttons.previous') || 'Previous image'}">‹</button>
-      <button class="slider-nav next" aria-label="${i18nManager.translate('ui.buttons.next') || 'Next image'}">›</button>
-      <div class="slider-dots">
-        ${images.map((_, i) => `<button class="slider-dot${i === 0 ? ' active' : ''}" 
-          aria-label="${i18nManager.translate('ui.buttons.goToImage', { number: i + 1 }) || `Go to image ${i + 1}`}">
-          </button>`).join('')}
-      </div>
-    `;
-  }
-  
-  // Add images within slider track
+  // Add slider track first
   sliderHtml += '<div class="slider-track">';
+  
   images.forEach((img, index) => {
-    // Add error handling for image loading
     sliderHtml += `
       <div class="slider-slide${index === 0 ? ' active' : ''}" style="--slide-index: ${index}">
         <img 
           src="${img}" 
-          alt="${safeProductName}${images.length > 1 ? ` - ${i18nManager.translate('ui.labels.image', { number: index + 1 }) || `Image ${index + 1}`}` : ''}" 
+          alt="${safeProductName}${images.length > 1 ? ` - Image ${index + 1}` : ''}" 
           loading="lazy"
           onerror="this.onerror=null; this.src='/images/default-product-image.jpg';"
         >
       </div>
     `;
   });
-  
-  return sliderHtml + '</div></div>';
+  sliderHtml += '</div>';
+
+  // Only add navigation if there are multiple images
+  if (images.length > 1) {
+    sliderHtml += `
+      <button class="slider-nav prev" aria-label="Previous image">‹</button>
+      <button class="slider-nav next" aria-label="Next image">›</button>
+      <div class="slider-dots">
+        ${images.map((_, i) => `
+          <button class="slider-dot${i === 0 ? ' active' : ''}" 
+            aria-label="Go to image ${i + 1}">
+          </button>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  sliderHtml += '</div>';
+  return sliderHtml;
 },
-// Update the initializeImageSliders function to handle both manual and automatic sliding
 initializeImageSliders() {
-  const sliders = document.querySelectorAll('.image-slider');
-  
-  sliders.forEach(slider => {
-    const track = slider.querySelector('.slider-track');
-    if (!track) return;
-
-    const slides = slider.querySelectorAll('.slider-slide');
-    if (slides.length <= 1) return;
-
-    const dots = slider.querySelectorAll('.slider-dot');
-    let currentIndex = 0;
-    let autoSlideInterval;
+  // Clean up any existing sliders
+  document.querySelectorAll('.image-slider').forEach(slider => {
+    if (slider.dataset.initialized) return; // Skip if already initialized
     
-    // Function to update active slide and dot
-    const updateSlider = (newIndex) => {
-      // Remove active class from current slide and dot
+    const slides = slider.querySelectorAll('.slider-slide');
+    if (slides.length <= 1) return; // Skip if only one slide
+
+    let currentIndex = 0;
+    const dots = slider.querySelectorAll('.slider-dot');
+    
+    // Function to update slides
+    const updateSlides = (newIndex) => {
       slides[currentIndex].classList.remove('active');
-      dots[currentIndex].classList.remove('active');
+      if (dots[currentIndex]) dots[currentIndex].classList.remove('active');
       
-      // Add active class to new slide and dot
       currentIndex = newIndex;
       slides[currentIndex].classList.add('active');
-      dots[currentIndex].classList.add('active');
+      if (dots[currentIndex]) dots[currentIndex].classList.add('active');
     };
 
-    // Function to start auto-sliding
-    const startAutoSlide = () => {
-      autoSlideInterval = setInterval(() => {
-        const newIndex = (currentIndex + 1) % slides.length;
-        updateSlider(newIndex);
-      }, 5000); // Change slide every 5 seconds
-    };
-
-    // Function to stop auto-sliding
-    const stopAutoSlide = () => {
-      if (autoSlideInterval) {
-        clearInterval(autoSlideInterval);
-      }
-    };
-
-    // Previous button click handler
+    // Navigation buttons
     slider.querySelector('.prev')?.addEventListener('click', (e) => {
-      e.stopPropagation(); // Prevent product click
-      stopAutoSlide();
+      e.stopPropagation();
       const newIndex = (currentIndex - 1 + slides.length) % slides.length;
-      updateSlider(newIndex);
-      startAutoSlide();
+      updateSlides(newIndex);
     });
 
-    // Next button click handler
     slider.querySelector('.next')?.addEventListener('click', (e) => {
-      e.stopPropagation(); // Prevent product click
-      stopAutoSlide();
+      e.stopPropagation();
       const newIndex = (currentIndex + 1) % slides.length;
-      updateSlider(newIndex);
-      startAutoSlide();
+      updateSlides(newIndex);
     });
 
-    // Dot click handlers
+    // Dot navigation
     dots.forEach((dot, index) => {
       dot.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent product click
-        stopAutoSlide();
-        updateSlider(index);
-        startAutoSlide();
+        e.stopPropagation();
+        updateSlides(index);
       });
     });
 
-    // Touch/swipe support
-    let touchStartX = 0;
-    let touchEndX = 0;
+    // Auto-advance slides every 5 seconds
+    const autoAdvance = setInterval(() => {
+      const newIndex = (currentIndex + 1) % slides.length;
+      updateSlides(newIndex);
+    }, 5000);
 
-    slider.addEventListener('touchstart', (e) => {
-      stopAutoSlide();
-      touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
+    // Stop auto-advance on hover
+    slider.addEventListener('mouseenter', () => clearInterval(autoAdvance));
+    slider.addEventListener('mouseleave', () => {
+      setInterval(() => {
+        const newIndex = (currentIndex + 1) % slides.length;
+        updateSlides(newIndex);
+      }, 5000);
+    });
 
-    slider.addEventListener('touchend', (e) => {
-      touchEndX = e.changedTouches[0].screenX;
-      const diff = touchStartX - touchEndX;
-      
-      if (Math.abs(diff) > 50) { // Minimum swipe distance
-        if (diff > 0) { // Swipe left
-          const newIndex = (currentIndex + 1) % slides.length;
-          updateSlider(newIndex);
-        } else { // Swipe right
-          const newIndex = (currentIndex - 1 + slides.length) % slides.length;
-          updateSlider(newIndex);
-        }
-      }
-      startAutoSlide();
-    }, { passive: true });
-
-    // Start auto-sliding
-    startAutoSlide();
-
-    // Pause auto-sliding when hovering over the slider
-    slider.addEventListener('mouseenter', stopAutoSlide);
-    slider.addEventListener('mouseleave', startAutoSlide);
+    // Mark as initialized
+    slider.dataset.initialized = 'true';
   });
 },
-
 createButtonsContainer(product, translations, buttonTemplate) {
   const container = document.createElement("div");
   container.className = "product-buttons";
@@ -3513,8 +3626,7 @@ async function fetchProducts(categoryId = null) {
     const data = await response.json();
     
     if (data.success) {
-      this.state.products = data.products;
-    } else {
+      this.state.products = data.data; 
       this.state.products = data;
     }
     
