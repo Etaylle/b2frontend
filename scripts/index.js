@@ -2821,10 +2821,53 @@ async fetchProducts(categoryId = null) {
     this.ensureCategoryStylesExist();
   },
 
+// In i18nManager
+async initialize() {
+    try {
+        // Other initialization code...
+        
+        // Use categoryManager instead of this
+        if (window.categoryManager) {
+            await categoryManager.fetchProducts();
+        }
+        
+        // Rest of initialization...
+    } catch (error) {
+        console.error('Error during initialization:', error);
+        throw error;
+    }
+}
+
+// In categoryManager
+async refreshAllContent() {
+    try {
+        // Update UI elements
+        this.updateUI();
+        
+        // Fetch categories first
+        await this.fetchCategories();
+        
+        // Then fetch products based on selected category
+        const currentCategory = this.state.selectedCategory;
+        if (currentCategory) {
+            await this.fetchProducts(currentCategory);
+        } else {
+            await this.fetchProducts();
+        }
+        
+        // Dispatch content refresh event
+        window.dispatchEvent(new CustomEvent('contentRefreshed'));
+        
+    } catch (error) {
+        console.error('Error refreshing content:', error);
+        throw error;
+    }
+},
+
 async selectCategory(categoryId) {
     console.log('Selecting category:', categoryId);
     
-    // Update state directly for vanilla JS
+    // Update state directly
     this.state.selectedCategory = categoryId;
     this.state.searchTerm = '';
     
@@ -2834,13 +2877,18 @@ async selectCategory(categoryId) {
         searchInput.value = '';
     }
     
-    // Fetch products for this category
-    await this.fetchProducts(categoryId);
-    
-    // Render categories after state is updated
-    await this.renderCategories();
-    
-    console.log('Current products after category selection:', this.state.products);
+    try {
+        // Fetch products for this category
+        await this.fetchProducts(categoryId);
+        
+        // Render categories after state is updated
+        await this.renderCategories();
+        
+        console.log('Current products after category selection:', this.state.products);
+    } catch (error) {
+        console.error('Error in selectCategory:', error);
+        throw error;
+    }
 },
 ensureCategoryStylesExist() {
     if (!document.querySelector('#category-styles')) {
