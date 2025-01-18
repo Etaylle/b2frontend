@@ -2337,83 +2337,8 @@ initialize() {
   //   });
   // },
 
- async searchProducts(query) {
-    try {
-      // Normalize the search query
-      const searchTerm = query.toLowerCase().trim();
-      this.state.searchTerm = searchTerm;
 
-      // Save search term to history if not empty
-      if (searchTerm) {
-        this.updateSearchHistory(searchTerm);
-      }
-
-      // Determine which products to search
-      let productsToSearch = [];
-      const currentLang = i18nManager.getCurrentLanguage();
-      
-      try {
-        const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-        const url = new URL(this.state.selectedCategory ? 
-          `${baseUrl}/category/${this.state.selectedCategory}` : 
-          baseUrl
-        );
-        
-        // Add language parameter
-        url.searchParams.append('lang', currentLang);
-        
-        const response = await fetch(url.toString(), {
-          headers: {
-            'Accept-Language': currentLang
-          }
-        });
-        
-        if (!response.ok) throw new Error('Failed to fetch products');
-        const data = await response.json();
-        productsToSearch = Array.isArray(data) ? data : (data.products || []);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-        throw new Error('Failed to fetch products for search');
-      }
-
-      // If search is empty, show all products
-      if (!searchTerm) {
-        this.state.products = productsToSearch;
-        await this.renderProducts();
-        return;
-      }
-
-      // Filter products based on translated content
-      const filteredProducts = productsToSearch.filter(product => {
-        // Get translated name and description
-        const productName = i18nManager.getProductTranslation(product, 'name').toLowerCase();
-        const productDescription = i18nManager.getProductTranslation(product, 'description')?.toLowerCase() || '';
-        const price = product.price.toString();
-        
-        // Search in translated content
-        return productName.includes(searchTerm) || 
-               productDescription.includes(searchTerm) || 
-               price.includes(searchTerm);
-      });
-
-      // Update state and render
-      this.state.products = filteredProducts;
-      await this.renderProducts();
-
-      // Show no results message if needed
-      if (filteredProducts.length === 0) {
-        const noResultsMessage = i18nManager.translate('ui.messages.noProductsFound') || 'No products found';
-        showNotification(noResultsMessage, 'info');
-      }
-
-    } catch (error) {
-      console.error('Search error:', error);
-      const errorMessage = i18nManager.translate('ui.messages.searchError') || 'Error searching products';
-      showNotification(errorMessage, 'error');
-    }
-  },
-
-  setupSearch() {
+setupSearch() {
     // Get search elements
     this.state.searchInput = document.getElementById('product-search');
     this.state.searchHistoryDropdown = document.getElementById('search-history');
@@ -2442,6 +2367,79 @@ initialize() {
         this.hideSearchHistory();
       }
     });
+  },
+
+  async searchProducts(query) {
+    try {
+      // Normalize the search query
+      const searchTerm = query.toLowerCase().trim();
+      this.state.searchTerm = searchTerm;
+
+      // If search is empty, show all products for current category
+      if (!searchTerm) {
+        await this.fetchProducts(this.state.selectedCategory);
+        return;
+      }
+
+      // Save search term to history
+      this.updateSearchHistory(searchTerm);
+
+      // Get current language for translations
+      const currentLang = i18nManager.getCurrentLanguage();
+
+      // Fetch products for current category or all products
+      const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+      const url = new URL(this.state.selectedCategory ? 
+        `${baseUrl}/category/${this.state.selectedCategory}` : 
+        baseUrl
+      );
+      
+      // Add language parameter
+      url.searchParams.append('lang', currentLang);
+      url.searchParams.append('search', searchTerm); // Add search term to URL
+
+      const response = await fetch(url.toString(), {
+        headers: {
+          'Accept-Language': currentLang
+        }
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch products');
+      
+      const data = await response.json();
+      const products = Array.isArray(data) ? data : (data.products || []);
+
+      // Filter products locally based on translated content
+      const filteredProducts = products.filter(product => {
+        const productName = i18nManager.getProductTranslation(product, 'name').toLowerCase();
+        const productDescription = i18nManager.getProductTranslation(product, 'description')?.toLowerCase() || '';
+        const price = product.price.toString();
+        
+        return productName.includes(searchTerm) || 
+               productDescription.includes(searchTerm) || 
+               price.includes(searchTerm);
+      });
+
+      // Transform products with translations
+      const transformedProducts = filteredProducts.map(product => 
+        i18nManager.transformProductData(product)
+      );
+
+      // Update state and render
+      this.state.products = transformedProducts;
+      await this.renderProducts();
+
+      // Show no results message if needed
+      if (transformedProducts.length === 0) {
+        const noResultsMessage = i18nManager.translate('ui.messages.noProductFound');
+        showNotification(noResultsMessage, 'info');
+      }
+
+    } catch (error) {
+      console.error('Search error:', error);
+      const errorMessage = i18nManager.translate('ui.messages.searchError');
+      showNotification(errorMessage, 'error');
+    }
   },
 
   updateSearchPlaceholder() {
