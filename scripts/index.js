@@ -2481,7 +2481,7 @@ async fetchProducts(categoryId = null) {
       const products = Array.isArray(data) ? data : 
                       data.products ? data.products : 
                       [data];
-      this.state.products = [];
+      
       this.state.products = products.map(product => 
         i18nManager.transformProductData(product)
       );
@@ -2529,10 +2529,14 @@ async selectCategory(categoryId) {
     console.log('Selecting category:', categoryId);
     this.state.selectedCategory = categoryId;
     console.log('After setting:', this.state.selectedCategory);
-    
-
     await this.renderCategories();
     await this.fetchProducts(categoryId);
+  const products = this.state.products; // Ensure this only contains the category-specific products
+  await this.renderProducts(products); // Pass the filtered products
+  // ... rest of the method
+
+    
+   
     
     // Add debug logging to verify state after fetch
     console.log('Current products after category selection:', this.state.products);
@@ -3044,7 +3048,7 @@ ensureStylesExist() {
 },
 async updateRelatedManagers() {
   productPageManager.updateProducts(this.state.products);
-  
+  console.log("ovo je to", this.state.products);
   if (!window.ratingManagerInitialized) {
     ratingManager.initialize();
     window.ratingManagerInitialized = true;
