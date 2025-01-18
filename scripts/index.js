@@ -2525,14 +2525,14 @@ async fetchProducts(categoryId = null) {
     this.ensureCategoryStylesExist();
   },
 
-selectCategory(categoryId) {
+async selectCategory(categoryId) {
     console.log('Selecting category:', categoryId);
     this.state.selectedCategory = categoryId;
     console.log('After setting:', this.state.selectedCategory);
     
 
-    
-    this.fetchProducts(categoryId);
+    await this.renderCategories();
+    await this.fetchProducts(categoryId);
     
     // Add debug logging to verify state after fetch
     console.log('Current products after category selection:', this.state.products);
