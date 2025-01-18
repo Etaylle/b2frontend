@@ -2707,43 +2707,79 @@ async fetchCategories() {
 //       showNotification(error.message, "error");
 //     }
 //   },
+// async fetchProducts(categoryId = null) {
+//     try {
+//       const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+//       const currentLang = i18nManager.getCurrentLanguage();
+      
+//       // Build URL with parameters
+//       const url = new URL(baseUrl);
+//       url.searchParams.append('lang', currentLang);
+      
+//       if (categoryId) {
+//         url.searchParams.append('categoryId', categoryId);
+//       }
+      
+//       if (this.state.searchTerm) {
+//         url.searchParams.append('search', this.state.searchTerm);
+//       }
+      
+//       const response = await fetch(url.toString(), {
+//         headers: {
+//           'Accept-Language': currentLang
+//         }
+//       });
+      
+//       if (!response.ok) throw new Error("Failed to fetch products");
+//       const data = await response.json();
+      
+//       // Transform the product data with translations
+//       this.state.products = data.products.map(product => 
+//         i18nManager.transformProductData(product)
+//       );
+      
+//       await this.renderProducts();
+//     } catch (error) {
+//       console.error("Error fetching products:", error);
+//       showNotification(error.message, "error");
+//     }
+//   }
 async fetchProducts(categoryId = null) {
-    try {
-      const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-      const currentLang = i18nManager.getCurrentLanguage();
-      
-      // Build URL with parameters
-      const url = new URL(baseUrl);
-      url.searchParams.append('lang', currentLang);
-      
-      if (categoryId) {
-        url.searchParams.append('categoryId', categoryId);
-      }
-      
-      if (this.state.searchTerm) {
-        url.searchParams.append('search', this.state.searchTerm);
-      }
-      
-      const response = await fetch(url.toString(), {
-        headers: {
-          'Accept-Language': currentLang
-        }
-      });
-      
-      if (!response.ok) throw new Error("Failed to fetch products");
-      const data = await response.json();
-      
-      // Transform the product data with translations
-      this.state.products = data.products.map(product => 
-        i18nManager.transformProductData(product)
-      );
-      
-      await this.renderProducts();
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      showNotification(error.message, "error");
+  try {
+    const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+    const currentLang = i18nManager.getCurrentLanguage();
+    
+    // Build URL with parameters
+    const url = new URL(baseUrl);
+    url.searchParams.append('lang', currentLang);
+    
+    if (categoryId) {
+      url.searchParams.append('categoryId', categoryId);
     }
-  },
+    
+    if (this.state.searchTerm) {
+      url.searchParams.append('search', this.state.searchTerm);
+    }
+    
+    const response = await fetch(url.toString(), {
+      headers: {
+        'Accept-Language': currentLang
+      }
+    });
+    
+    if (!response.ok) throw new Error("Failed to fetch products");
+    const data = await response.json();
+    
+    this.state.products = data.products.map(product => 
+      i18nManager.transformProductData(product)
+    );
+    
+    await this.renderProducts();
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    showNotification(error.message, "error");
+  }
+}  ,
   renderCategories() {
     const container = document.querySelector(".categories");
     if (!container) {
@@ -3604,57 +3640,57 @@ window.socialSharingManager = socialSharingManager;
 window.productPageManager = productPageManager;
 window.i18nManager = i18nManager;
 
-async function fetchProducts(categoryId = null) {
-  try {
-    const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-    const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
+// async function fetchProducts(categoryId = null) {
+//   try {
+//     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+//     const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
     
-    // Add language parameter
-    url.searchParams.append('lang', this.state.currentLanguage);
+//     // Add language parameter
+//     url.searchParams.append('lang', this.state.currentLanguage);
     
-    const response = await fetch(url.toString());
+//     const response = await fetch(url.toString());
     
-    if (!response.ok) throw new Error("Failed to fetch products");
-    const data = await response.json();
+//     if (!response.ok) throw new Error("Failed to fetch products");
+//     const data = await response.json();
     
-    if (data.success) {
-      this.state.products = data.data; 
-      this.state.products = data;
-    }
+//     if (data.success) {
+//       this.state.products = data.data; 
+//       this.state.products = data;
+//     }
     
-    await this.renderProducts();
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    showNotification(error.message, "error");
-  }
-}
-function initializeImageSliders() {
-  document.querySelectorAll('.image-slider').forEach(slider => {
-    const images = slider.querySelectorAll('img');
-    if (images.length <= 1) return;
+//     await this.renderProducts();
+//   } catch (error) {
+//     console.error("Error fetching products:", error);
+//     showNotification(error.message, "error");
+//   }
+// }
+// function initializeImageSliders() {
+//   document.querySelectorAll('.image-slider').forEach(slider => {
+//     const images = slider.querySelectorAll('img');
+//     if (images.length <= 1) return;
 
-    let currentIndex = 0;
-    const interval = setInterval(() => {
-      images[currentIndex].classList.remove('active');
-      currentIndex = (currentIndex + 1) % images.length;
-      images[currentIndex].classList.add('active');
-    }, 3000);
+//     let currentIndex = 0;
+//     const interval = setInterval(() => {
+//       images[currentIndex].classList.remove('active');
+//       currentIndex = (currentIndex + 1) % images.length;
+//       images[currentIndex].classList.add('active');
+//     }, 3000);
 
-    // Clean up interval when slider is removed
-    slider.dataset.sliderId = interval;
-  });
-}
+//     // Clean up interval when slider is removed
+//     slider.dataset.sliderId = interval;
+//   });
+// }
 
-function attachCartEventListeners() {
-  document.querySelectorAll(".add-to-cart-btn").forEach((button) => {
-    button.addEventListener("click", () => {
-      const productId = button.parentElement.getAttribute("data-product-id");
-      if (productId) {
-        cartManager.addItem(productId);
-      }
-    });
-  });
-}
+// function attachCartEventListeners() {
+//   document.querySelectorAll(".add-to-cart-btn").forEach((button) => {
+//     button.addEventListener("click", () => {
+//       const productId = button.parentElement.getAttribute("data-product-id");
+//       if (productId) {
+//         cartManager.addItem(productId);
+//       }
+//     });
+//   });
+// }
 
 function setupEventListeners() {
   const elements = {
@@ -3694,15 +3730,15 @@ function setupEventListeners() {
   uiManager.updateButtonVisibility(currentUser);
 };
 
-// Make managers available globally
-window.authManager = authManager;
-window.cartManager = cartManager;
-window.paymentManager = paymentManager;
-window.uiManager = uiManager;
-window.categoryManager = categoryManager;
-window.ratingManager = ratingManager;
-window.socialSharingManager =socialSharingManager;
-window.productPageManager = productPageManager;
+// // Make managers available globally
+// window.authManager = authManager;
+// window.cartManager = cartManager;
+// window.paymentManager = paymentManager;
+// window.uiManager = uiManager;
+// window.categoryManager = categoryManager;
+// window.ratingManager = ratingManager;
+// window.socialSharingManager =socialSharingManager;
+// window.productPageManager = productPageManager;
 
 function showNotification(message, type = 'success',) {
   const notification = document.createElement('div');
