@@ -4083,7 +4083,7 @@ window.categoryManager = categoryManager;
 window.ratingManager = ratingManager;
 window.socialSharingManager =socialSharingManager;
 window.productPageManager = productPageManager;
-
+window.searchManager = searchManager;
 function showNotification(message, type = 'success',) {
   const notification = document.createElement('div');
   notification.textContent = message;
