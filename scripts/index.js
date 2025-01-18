@@ -2617,11 +2617,7 @@ updateSearchPlaceholder() {
     searchInput.placeholder = i18nManager.translate('ui.labels.search');
   }
 },
- 
-
-
-
-  showSearchHistory() {
+ showSearchHistory() {
     if (!this.state.searchHistoryDropdown) return;
     
     try {
@@ -2676,110 +2672,29 @@ async fetchCategories() {
       showNotification(error.message, "error");
     }
   },
-
-// async fetchProducts(categoryId = null) {
-//     try {
-//       const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-//       const currentLang = i18nManager.state.currentLanguage;
-      
-//       // Add language parameter to URL
-//       const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
-//       url.searchParams.append('lang', currentLang);
-      
-//       const response = await fetch(url.toString(), {
-//         headers: {
-//           'Accept-Language': currentLang
-//         }
-//       });
-      
-//       if (!response.ok) throw new Error("Failed to fetch products");
-//       const data = await response.json();
-      
-//       // Transform the product data with translations
-//       const products = (data.success ? data.products : data).map(product => 
-//         i18nManager.transformProductData(product)
-//       );
-      
-//       this.state.products = products;
-//       await this.renderProducts();
-//     } catch (error) {
-//       console.error("Error fetching products:", error);
-//       showNotification(error.message, "error");
-//     }
-//   },
-// async fetchProducts(categoryId = null) {
-//     try {
-//       const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-//       const currentLang = i18nManager.getCurrentLanguage();
-      
-//       // Build URL with parameters
-//       const url = new URL(baseUrl);
-//       url.searchParams.append('lang', currentLang);
-      
-//       if (categoryId) {
-//         url.searchParams.append('categoryId', categoryId);
-//       }
-      
-//       if (this.state.searchTerm) {
-//         url.searchParams.append('search', this.state.searchTerm);
-//       }
-      
-//       const response = await fetch(url.toString(), {
-//         headers: {
-//           'Accept-Language': currentLang
-//         }
-//       });
-      
-//       if (!response.ok) throw new Error("Failed to fetch products");
-//       const data = await response.json();
-      
-//       // Transform the product data with translations
-//       this.state.products = data.products.map(product => 
-//         i18nManager.transformProductData(product)
-//       );
-      
-//       await this.renderProducts();
-//     } catch (error) {
-//       console.error("Error fetching products:", error);
-//       showNotification(error.message, "error");
-//     }
-//   }
 async fetchProducts(categoryId = null) {
   try {
     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-    const currentLang = i18nManager.getCurrentLanguage();
-    
-    // Build URL with parameters
-    const url = new URL(baseUrl);
-    url.searchParams.append('lang', currentLang);
-    
-    if (categoryId) {
-      url.searchParams.append('categoryId', categoryId);
-    }
-    
-    if (this.state.searchTerm) {
-      url.searchParams.append('search', this.state.searchTerm);
-    }
-    
-    const response = await fetch(url.toString(), {
-      headers: {
-        'Accept-Language': currentLang
-      }
-    });
+    const url = categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl;
+    const response = await fetch(url);
     
     if (!response.ok) throw new Error("Failed to fetch products");
     const data = await response.json();
     
-    this.state.products = data.products.map(product => 
-      i18nManager.transformProductData(product)
-    );
+    // Check if the response has the new format with success property
+    if (data.success) {
+      this.state.products = data.products ? data.products : data; 
+    } else {productPageManager.updateProducts(this.state.products);
+      this.state.products = data; // Fallback for old format
+    }
     
     await this.renderProducts();
   } catch (error) {
     console.error("Error fetching products:", error);
     showNotification(error.message, "error");
   }
-}  ,
+
+} ,
   renderCategories() {
     const container = document.querySelector(".categories");
     if (!container) {
