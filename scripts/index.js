@@ -3046,17 +3046,31 @@ ensureStylesExist() {
     document.head.appendChild(styles);
   }
 },
-// async updateRelatedManagers() {
-//   productPageManager.updateProducts(this.state.products);
-//   console.log("ovo je to", this.state.products);
-//   if (!window.ratingManagerInitialized) {
-//     ratingManager.initialize();
-//     window.ratingManagerInitialized = true;
-//   }
+async updateRelatedManagers() {
+  // Check if there's a selected category
+  if (this.state.selectedCategory !== null) {
+    // Update only with products from the selected category
+    const categoryProducts = this.state.products.filter(p => p.category_id === this.state.selectedCategory);
+    productPageManager.updateProducts(categoryProducts);
+    console.log("Updated productPageManager with category products:", categoryProducts);
+  } else {
+    // If 'All' is selected, update with all products
+    productPageManager.updateProducts(this.state.products);
+    console.log("Updated productPageManager with all products:", this.state.products);
+  }
+
+  // Initialize rating manager if not done yet
+  if (!window.ratingManagerInitialized) {
+    ratingManager.initialize();
+    window.ratingManagerInitialized = true;
+  }
   
-//   await ratingManager.fetchUserRatings();
-//   this.initializeImageSliders();
-// }, 
+  // Fetch user ratings which can be used across all or specific products
+  await ratingManager.fetchUserRatings();
+
+  // Initialize image sliders for the products currently displayed
+  this.initializeImageSliders();
+},
 async renderProducts(products) {
   const gridContainer = document.querySelector(".grid-container");
   if (!gridContainer) return;
