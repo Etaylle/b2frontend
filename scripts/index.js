@@ -3023,6 +3023,11 @@ createImageSlider(product, productName) {
 // },
 initializeImageSliders() {
   document.querySelectorAll('.image-slider').forEach(slider => {
+    const gridItem = slider.closest('.grid-item');
+    const productId = gridItem?.dataset.productId;
+    const product = this.state.products.find(p => p.product_id.toString() === productId);
+    
+    if (!product) return;
     // Skip if already initialized or has only one image
     if (slider.dataset.initialized === 'true') return;
     
@@ -3207,6 +3212,22 @@ ensureStylesExist() {
   height: 100%;
   object-fit: cover;
 }
+  .slider-nav, .slider-dot {
+      pointer-events: auto;
+    }
+    
+    .product-content {
+      position: relative;
+      cursor: pointer;
+    }
+    
+    .image-slider {
+      pointer-events: none;  /* Prevent slider from catching clicks */
+    }
+    
+    .slider-nav, .slider-dot, .product-buttons button {
+      pointer-events: auto;  /* Re-enable clicks for controls */
+    }
 .product-buttons {
         position: absolute;
         top: 10px;
