@@ -2339,6 +2339,8 @@ initialize() {
 
 
 async searchProducts(searchTerm) {
+  // Clear previous search results
+  this.state.products = [];
   try {
     // Normalize the search term
     this.state.searchTerm = searchTerm.toLowerCase().trim();
@@ -2675,14 +2677,52 @@ async fetchCategories() {
     }
   },
 
+// async fetchProducts(categoryId = null) {
+//     try {
+//       const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+//       const currentLang = i18nManager.state.currentLanguage;
+      
+//       // Add language parameter to URL
+//       const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
+//       url.searchParams.append('lang', currentLang);
+      
+//       const response = await fetch(url.toString(), {
+//         headers: {
+//           'Accept-Language': currentLang
+//         }
+//       });
+      
+//       if (!response.ok) throw new Error("Failed to fetch products");
+//       const data = await response.json();
+      
+//       // Transform the product data with translations
+//       const products = (data.success ? data.products : data).map(product => 
+//         i18nManager.transformProductData(product)
+//       );
+      
+//       this.state.products = products;
+//       await this.renderProducts();
+//     } catch (error) {
+//       console.error("Error fetching products:", error);
+//       showNotification(error.message, "error");
+//     }
+//   },
 async fetchProducts(categoryId = null) {
     try {
       const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-      const currentLang = i18nManager.state.currentLanguage;
+      const currentLang = i18nManager.getCurrentLanguage();
       
-      // Add language parameter to URL
-      const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
+      // Build URL with parameters
+      const url = new URL(baseUrl);
       url.searchParams.append('lang', currentLang);
+      
+      if (categoryId) {
+        url.searchParams.append('categoryId', categoryId);
+      }
+      
+      if (this.state.searchTerm) {
+        url.searchParams.append('search', this.state.searchTerm);
+      }
       
       const response = await fetch(url.toString(), {
         headers: {
@@ -2694,11 +2734,10 @@ async fetchProducts(categoryId = null) {
       const data = await response.json();
       
       // Transform the product data with translations
-      const products = (data.success ? data.products : data).map(product => 
+      this.state.products = data.products.map(product => 
         i18nManager.transformProductData(product)
       );
       
-      this.state.products = products;
       await this.renderProducts();
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -2736,7 +2775,21 @@ async fetchProducts(categoryId = null) {
     this.ensureCategoryStylesExist();
   },
 
-   async selectCategory(categoryId) {
+//    async selectCategory(categoryId) {
+//     this.state.selectedCategory = categoryId;
+//     this.state.searchTerm = ''; // Clear search when changing categories
+    
+//     // Clear search input
+//     const searchInput = document.getElementById('product-search');
+//     if (searchInput) {
+//       searchInput.value = '';
+//     }
+
+//     await this.renderCategories(); // Update active states
+//     await this.fetchProducts(categoryId);
+//   }
+// ,
+ async selectCategory(categoryId) {
     this.state.selectedCategory = categoryId;
     this.state.searchTerm = ''; // Clear search when changing categories
     
@@ -2746,8 +2799,16 @@ async fetchProducts(categoryId = null) {
       searchInput.value = '';
     }
 
-    await this.renderCategories(); // Update active states
+    // Update UI to show active category
+    this.renderCategories();
+    
+    // Fetch products with category filter
     await this.fetchProducts(categoryId);
+  },
+
+  async searchProducts(searchTerm) {
+    this.state.searchTerm = searchTerm;
+    await this.fetchProducts(this.state.selectedCategory);
   }
 ,
 ensureCategoryStylesExist() {
