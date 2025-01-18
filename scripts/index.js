@@ -2893,76 +2893,7 @@ ensureCategoryStylesExist() {
   },
 
 // Helper methods to keep the main render method clean
-async renderProducts() {
-  const gridContainer = document.querySelector(".grid-container");
-  if (!gridContainer) return;
-  
-  // Clear container once
-  gridContainer.innerHTML = "";
-  
-  // Create document fragment for better performance
-  const fragment = document.createDocumentFragment();
-  
-  // Cache translations to avoid multiple lookups
-  const translations = {
-    addToCart: i18nManager.translate('ui.buttons.addToCart'),
-    share: i18nManager.translate('ui.buttons.share'),
-    rate: i18nManager.translate('ui.buttons.rate'),
-    stock: i18nManager.translate('ui.labels.stock')
-  };
-  
-  // Create button template for reuse
-  const buttonTemplate = document.createElement('button');
-  
-  this.state.products.forEach((product) => {
-    const gridItem = document.createElement("div");
-    gridItem.className = "grid-item grid-item-xl";
-    gridItem.dataset.productId = product.product_id;
 
-    // Get translated product name using i18nManager
-    const productName = i18nManager.getProductName(product);
-    
-    const productContent = document.createElement("div");
-    productContent.className = "product-content";
-    
-    // Create image slider
-    const imageSlider = this.createImageSlider(product, productName);
-    
-    productContent.innerHTML = `
-      ${imageSlider}
-      <div class="overlay">
-        ${productName} | 
-        <span class="price-span" data-usd-price="${product.price}">
-          ${cryptoManager.formatCryptoPrice(product.price)}
-        </span>
-        | ${translations.stock}: ${product.stock}
-      </div>
-    `;
-
-    // Add product click handler
-    productContent.addEventListener("click", () => {
-      productPageManager.openProductPage(product);
-    });
-    
-    // Create buttons container with all buttons
-    const buttonsContainer = this.createButtonsContainer(product, translations, buttonTemplate);
-    
-    gridItem.append(productContent, buttonsContainer);
-    fragment.appendChild(gridItem);
-  });
-  
-  // Append all items at once
-  gridContainer.appendChild(fragment);
-   // Initialize sliders after DOM is updated
-  requestAnimationFrame(() => {
-    this.initializeImageSliders();
-  });
-  // Add styles if needed
-  this.ensureStylesExist();
-  this.initializeImageSliders();
-  // Update related managers
-  await this.updateRelatedManagers();
-},
 createImageSlider(product, productName) {
   const safeProductName = productName || product.name || 'Product';
   
@@ -3474,6 +3405,76 @@ async updateRelatedManagers() {
   
   await ratingManager.fetchUserRatings();
   this.initializeImageSliders();
+},
+async renderProducts() {
+  const gridContainer = document.querySelector(".grid-container");
+  if (!gridContainer) return;
+  
+  // Clear container once
+  gridContainer.innerHTML = "";
+  
+  // Create document fragment for better performance
+  const fragment = document.createDocumentFragment();
+  
+  // Cache translations to avoid multiple lookups
+  const translations = {
+    addToCart: i18nManager.translate('ui.buttons.addToCart'),
+    share: i18nManager.translate('ui.buttons.share'),
+    rate: i18nManager.translate('ui.buttons.rate'),
+    stock: i18nManager.translate('ui.labels.stock')
+  };
+  
+  // Create button template for reuse
+  const buttonTemplate = document.createElement('button');
+  
+  this.state.products.forEach((product) => {
+    const gridItem = document.createElement("div");
+    gridItem.className = "grid-item grid-item-xl";
+    gridItem.dataset.productId = product.product_id;
+
+    // Get translated product name using i18nManager
+    const productName = i18nManager.getProductName(product);
+    
+    const productContent = document.createElement("div");
+    productContent.className = "product-content";
+    
+    // Create image slider
+    const imageSlider = this.createImageSlider(product, productName);
+    
+    productContent.innerHTML = `
+      ${imageSlider}
+      <div class="overlay">
+        ${productName} | 
+        <span class="price-span" data-usd-price="${product.price}">
+          ${cryptoManager.formatCryptoPrice(product.price)}
+        </span>
+        | ${translations.stock}: ${product.stock}
+      </div>
+    `;
+
+    // Add product click handler
+    productContent.addEventListener("click", () => {
+      productPageManager.openProductPage(product);
+    });
+    
+    // Create buttons container with all buttons
+    const buttonsContainer = this.createButtonsContainer(product, translations, buttonTemplate);
+    
+    gridItem.append(productContent, buttonsContainer);
+    fragment.appendChild(gridItem);
+  });
+  
+  // Append all items at once
+  gridContainer.appendChild(fragment);
+   // Initialize sliders after DOM is updated
+  requestAnimationFrame(() => {
+    this.initializeImageSliders();
+  });
+  // Add styles if needed
+  this.ensureStylesExist();
+  this.initializeImageSliders();
+  // Update related managers
+  await this.updateRelatedManagers();
 }, 
 async initialize() {
     await this.fetchCategories();
