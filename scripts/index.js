@@ -2529,12 +2529,7 @@ async selectCategory(categoryId) {
     console.log('Selecting category:', categoryId);
     this.state.selectedCategory = categoryId;
     console.log('After setting:', this.state.selectedCategory);
-    this.state.searchTerm = '';
     
-    const searchInput = document.getElementById('product-search');
-    if (searchInput) {
-      searchInput.value = '';
-    }
 
     await this.renderCategories();
     await this.fetchProducts(categoryId);
