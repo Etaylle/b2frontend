@@ -369,25 +369,6 @@ body {
 main {
 
 
-  /* Success/Error Messages */
-  .message {
-    padding: 0.8rem;
-    border-radius: 6px;
-    margin-top: 1rem;
-    animation: slideDown 0.3s ease-out;
-  }
-
-  .message.success {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-  }
-
-  .message.error {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-  }
 
   @keyframes slideDown {
     from {
@@ -468,6 +449,9 @@ main {
   .grid-item:hover {
     border-radius: 10px;
     filter: drop-shadow(0px 0px 5px rgba(132, 0, 255, 0.644));
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
   }
 
   .product-content {
@@ -777,24 +761,7 @@ main {
     transform: scale(1);
   }
 }
-  .notification {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 10px 20px;
-      border-radius: 4px;
-      z-index: 1000;
-    }
   
-  .success-message {
-      background: #4CAF50;
-      color: white;
-    }
-  
-  .error-message {
-      background: #f44336;
-      color: white;
-    }
   
     @keyframes slideIn {
       from {
@@ -838,28 +805,8 @@ main {
         transform: translateY(-100%);
         opacity: 0;
       }
-    }
-  
-    .notification {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 15px 25px;
-      border-radius: 4px;
-      z-index: 1000;
-    }
-  
-    .success-message {
-      background-color: #4CAF50;
-      color: white;
-    }
-  
-    .error-message {
-      background-color: #f44336;
-      color: white;
-    }
-  
-    .checkout-btn {
+    }  
+  .checkout-btn {
       background-color: #4CAF50;
       color: white;
       border: none;
@@ -868,7 +815,7 @@ main {
       border-radius: 4px;
     }
   
-    .empty-cart-btn {
+  .empty-cart-btn {
       background-color: #f44336;
       color: white;
       border: none;
@@ -877,14 +824,14 @@ main {
       border-radius: 4px;
     }
   
-    .cart-icon {
+  .cart-icon {
       width: 64px;
       height: 64px;
       vertical-align: middle;
       margin-right: 8px;
     }
   
-    .categories {
+  .categories {
       display: flex;
       justify-content: center;
       flex-wrap: wrap;
@@ -1043,10 +990,65 @@ main {
   padding: 10px 20px;
   cursor: pointer;
   border-radius: 4px;
+}.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px 25px;
+  border-radius: 4px;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  animation: fadeInOut 3s ease forwards;
+}
+
+.success-message {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.error-message {
+  background-color: #f44336;
+  color: white;
+}
+
+.info-message {
+  background-color: #4c98af;
+  color: white;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+    visibility: visible;
+  }
+
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  90% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-20px);
+    visibility: hidden;
+  }
 }
   /* Utility Classes */
-  .hidden {
-    display: none !important;
+  .visible {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  
+.hidden {
+opacity: 0 !important;
+visibility: hidden !important;
   }
 
   .no-scroll {
