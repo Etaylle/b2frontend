@@ -2831,7 +2831,7 @@ async fetchProducts(categoryId = null) {
       
       if (!response.ok) throw new Error("Failed to fetch products");
       const data = await response.json();
-      this.state.products = i18nManager.transformProductData(products);
+      
       console.log('Raw API response:', data); // Debug log
       
       // Clear existing products first
