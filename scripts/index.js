@@ -2092,7 +2092,21 @@ const i18nManager = {
       }
     }
   },
-  initialize() {
+  // initialize() {
+  //   const savedLang = localStorage.getItem('preferred_language');
+  //   const browserLang = navigator.language.split('-')[0];
+    
+  //   this.setLanguage(
+  //     savedLang || 
+  //     (this.state.supportedLanguages.includes(browserLang) ? browserLang : this.state.defaultLanguage)
+  //   );
+    
+  //   this.createLanguageSwitcher();
+    
+  //   // Initial content refresh
+  //   return this.refreshAllContent();
+  // },
+async initialize() {
     const savedLang = localStorage.getItem('preferred_language');
     const browserLang = navigator.language.split('-')[0];
     
@@ -2101,12 +2115,9 @@ const i18nManager = {
       (this.state.supportedLanguages.includes(browserLang) ? browserLang : this.state.defaultLanguage)
     );
     
-    this.createLanguageSwitcher();
-    
-    // Initial content refresh
+    await this.createLanguageSwitcher();
     return this.refreshAllContent();
   },
-
   getCurrentLanguage() {
     console.log('Current language:', i18nManager.state.currentLanguage);
     console.log('Available languages:', i18nManager.state.supportedLanguages);
@@ -2213,27 +2224,46 @@ getProductName(product) {
     return result || key;
   },
   getProductTranslation(product, field = 'name') {
-    const currentLang = this.state.currentLanguage;
+    if (!product) return '';
     
-    // If current language is English, return the default name
-    if (currentLang === 'en') {
-      return product[field];
+    const currentLang = this.state.currentLanguage;
+    const langField = `${field}_${currentLang}`;
+    
+    // First try direct language field
+    if (currentLang !== 'en' && product[langField]) {
+      return product[langField];
     }
     
-    // Try to get translation from translations object first
-    if (product.translations?.[currentLang]?.[field]) {
+    // Then try translations object
+    if (currentLang !== 'en' && product.translations?.[currentLang]?.[field]) {
       return product.translations[currentLang][field];
     }
     
-    // Try to get translation from direct field (name_srb, name_de)
-    const translatedField = `${field}_${currentLang}`;
-    if (product[translatedField]) {
-      return product[translatedField];
-    }
-    
-    // Fallback to English
-    return product[field];
+    // Finally fallback to default field
+    return product[field] || '';
   },
+  // getProductTranslation(product, field = 'name') {
+  //   const currentLang = this.state.currentLanguage;
+    
+  //   // If current language is English, return the default name
+  //   if (currentLang === 'en') {
+  //     return product[field];
+  //   }
+    
+  //   // Try to get translation from translations object first
+  //   if (product.translations?.[currentLang]?.[field]) {
+  //     return product.translations[currentLang][field];
+  //   }
+    
+  //   // Try to get translation from direct field (name_srb, name_de)
+  //   const translatedField = `${field}_${currentLang}`;
+  //   if (product[translatedField]) {
+  //     return product[translatedField];
+  //   }
+    
+  //   // Fallback to English
+  //   return product[field];
+  // },
 
   // createLanguageSwitcher() {
   //   const container = document.querySelector('.header-controls') || document.createElement('div');
@@ -2253,42 +2283,159 @@ getProductName(product) {
   //     window.dispatchEvent(new CustomEvent('refreshContent'));
   //   });
   // },
-  createLanguageSwitcher() {
-    const container = document.querySelector('.header-controls') || document.createElement('div');
-    container.innerHTML = `
-      <select class="language-switcher" aria-label="Select language">
-        ${this.state.supportedLanguages.map(lang => `
-          <option value="${lang}" ${lang === this.state.currentLanguage ? 'selected' : ''}>
-            ${lang.toUpperCase()}
-          </option>
-        `).join('')}
-      </select>
-    `;
+  // createLanguageSwitcher() {
+  //   const container = document.querySelector('.header-controls') || document.createElement('div');
+  //   container.innerHTML = `
+  //     <select class="language-switcher" aria-label="Select language">
+  //       ${this.state.supportedLanguages.map(lang => `
+  //         <option value="${lang}" ${lang === this.state.currentLanguage ? 'selected' : ''}>
+  //           ${lang.toUpperCase()}
+  //         </option>
+  //       `).join('')}
+  //     </select>
+  //   `;
 
-    container.querySelector('.language-switcher').addEventListener('change', async (e) => {
-      const newLang = e.target.value;
-      this.setLanguage(newLang);
+  //   container.querySelector('.language-switcher').addEventListener('change', async (e) => {
+  //     const newLang = e.target.value;
+  //     this.setLanguage(newLang);
+  //     this.updateUI();
+      
+  //     // Refresh all content that depends on language
+  //     await this.refreshAllContent();
+  //   });
+  // },
+  //  async refreshAllContent() {
+  //   // Update UI elements with translated text
+  //   this.updateUI();
+
+  //   // Refresh categories and products
+  //   if (categoryManager) {
+  //     // First fetch and render categories
+  //     await categoryManager.fetchCategories();
+      
+  //     // Then fetch products based on current category selection
+  //     await categoryManager.fetchProducts(categoryManager.state.selectedCategory);
+      
+  //     // Update search setup
+  //     categoryManager.setupSearch();
+  //   }
+  // },
+
+  // updateUI() {
+  //   document.querySelectorAll('[data-i18n]').forEach(element => {
+  //     const key = element.getAttribute('data-i18n');
+  //     const translation = this.translate(key);
+      
+  //     if (element.tagName === 'INPUT') {
+  //       if (element.type === 'button' || element.type === 'submit') {
+  //         element.value = translation;
+  //       } else {
+  //         element.placeholder = translation;
+  //       }
+  //     } else {
+  //       element.textContent = translation;
+  //     }
+  //   });
+  // },
+// transformProductData(product) {
+    
+//     return {
+//       ...product,
+//       displayName: this.getProductName(product)
+//     };
+//   }
+// };
+transformProductData(products) {
+    if (!Array.isArray(products)) {
+      products = [products];
+    }
+    
+    return products.map(product => ({
+      ...product,
+      displayName: this.getProductTranslation(product, 'name'),
+      displayDescription: this.getProductTranslation(product, 'description'),
+      displayPrice: this.formatPrice(product.price)
+    }));
+  },
+
+  formatPrice(price) {
+    return new Intl.NumberFormat(this.state.currentLanguage, {
+      style: 'currency',
+      currency: 'USD'
+    }).format(price);
+  },
+
+  async refreshAllContent() {
+    try {
+      // Update UI elements
       this.updateUI();
       
-      // Refresh all content that depends on language
-      await this.refreshAllContent();
-    });
-  },
-   async refreshAllContent() {
-    // Update UI elements with translated text
-    this.updateUI();
-
-    // Refresh categories and products
-    if (categoryManager) {
-      // First fetch and render categories
-      await categoryManager.fetchCategories();
+      // If category manager exists, refresh its content
+      if (window.categoryManager) {
+        await categoryManager.fetchCategories();
+        if (categoryManager.state.selectedCategory) {
+          await categoryManager.fetchProducts(categoryManager.state.selectedCategory);
+        } else {
+          await categoryManager.fetchProducts();
+        }
+      }
       
-      // Then fetch products based on current category selection
-      await categoryManager.fetchProducts(categoryManager.state.selectedCategory);
+      // Dispatch content refresh event
+      window.dispatchEvent(new CustomEvent('contentRefreshed'));
       
-      // Update search setup
-      categoryManager.setupSearch();
+    } catch (error) {
+      console.error('Error refreshing content:', error);
+      throw error;
     }
+  },
+
+  setLanguage(lang) {
+    if (!this.state.supportedLanguages.includes(lang)) {
+      console.warn(`Language ${lang} not supported, falling back to ${this.state.defaultLanguage}`);
+      lang = this.state.defaultLanguage;
+    }
+    
+    this.state.currentLanguage = lang;
+    localStorage.setItem('preferred_language', lang);
+    document.documentElement.lang = lang;
+    
+    // Update HTML dir attribute for RTL languages if needed
+    document.documentElement.dir = ['ar', 'he', 'fa'].includes(lang) ? 'rtl' : 'ltr';
+    
+    window.dispatchEvent(new CustomEvent('languageChanged', { 
+      detail: { language: lang } 
+    }));
+  },
+
+  createLanguageSwitcher() {
+    const container = document.querySelector('.header-controls') || document.createElement('div');
+    
+    const select = document.createElement('select');
+    select.className = 'language-switcher';
+    select.setAttribute('aria-label', 'Select language');
+    
+    this.state.supportedLanguages.forEach(lang => {
+      const option = document.createElement('option');
+      option.value = lang;
+      option.textContent = lang.toUpperCase();
+      option.selected = lang === this.state.currentLanguage;
+      select.appendChild(option);
+    });
+    
+    select.addEventListener('change', async (e) => {
+      try {
+        const newLang = e.target.value;
+        this.setLanguage(newLang);
+        await this.refreshAllContent();
+      } catch (error) {
+        console.error('Error changing language:', error);
+        // Revert to previous selection if there's an error
+        e.target.value = this.state.currentLanguage;
+      }
+    });
+    
+    container.appendChild(select);
+    return select;
   },
 
   updateUI() {
@@ -2306,13 +2453,6 @@ getProductName(product) {
         element.textContent = translation;
       }
     });
-  },
-transformProductData(product) {
-    
-    return {
-      ...product,
-      displayName: this.getProductName(product)
-    };
   }
 };
 
@@ -2691,7 +2831,7 @@ async fetchProducts(categoryId = null) {
       
       if (!response.ok) throw new Error("Failed to fetch products");
       const data = await response.json();
-      
+      this.state.products = i18nManager.transformProductData(products);
       console.log('Raw API response:', data); // Debug log
       
       // Clear existing products first
