@@ -202,6 +202,42 @@ main {
         opacity: 1;
       }
     }
+  .search-container {
+          display: flex;
+          align-items: center;
+          margin: 1rem auto;
+          max-width: 600px;
+          position: relative;
+        }
+    
+  #product-search {
+          width: 100%;
+          padding: 0.5rem 2rem 0.5rem 1rem;
+          border: 2px solid #ddd;
+          border-radius: 20px;
+          font-size: 1rem;
+          transition: border-color 0.3s ease;
+        }
+    
+  #product-search:focus {
+          outline: none;
+          border-color: #007bff;
+        }
+    
+  .clear-search {
+          position: absolute;
+          right: 10px;
+          background: none;
+          border: none;
+          font-size: 1.2rem;
+          color: #c91a1a;
+          cursor: pointer;
+          padding: 0 5px;
+        }
+    
+  .clear-search:hover {
+          color: #bb3131;
+        }
 * {
   margin: 0;
   padding: 0;
