@@ -3513,7 +3513,7 @@ async function fetchProducts(categoryId = null) {
     const data = await response.json();
     
     if (data.success) {
-      this.state.products = data.data.products;
+      this.state.products = data.data;
     } else {
       this.state.products = data;
     }
