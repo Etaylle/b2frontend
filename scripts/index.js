@@ -2486,7 +2486,10 @@ const searchManager = {
   state: {
     searchInput: null,
     searchHistoryDropdown: null,
-    debounceTimeout: null
+    debounceTimeout: null,
+    products: [],
+    searchTerm: '',
+    selectedCategory: null
   },
 
   initialize() {
@@ -2500,7 +2503,8 @@ const searchManager = {
     
     return Promise.resolve();
   },
-async searchProducts(searchTerm) {
+
+  async searchProducts(searchTerm) {
     this.state.searchTerm = searchTerm.toLowerCase();
     
     try {
@@ -2508,8 +2512,8 @@ async searchProducts(searchTerm) {
         if (searchTerm.trim()) {
             const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
             if (!searches.includes(searchTerm)) {
-                searches.unshift(searchTerm); // Add to beginning of array
-                if (searches.length > 5) searches.pop(); // Keep only last 5 searches
+                searches.unshift(searchTerm);
+                if (searches.length > 5) searches.pop();
                 localStorage.setItem('searchHistory', JSON.stringify(searches));
             }
         }
@@ -2528,22 +2532,17 @@ async searchProducts(searchTerm) {
         
         try {
             if (this.state.selectedCategory) {
-                // If a category is selected, search within that category
                 const response = await fetch(`https://backend-3mvr.onrender.com/api/products/category/${this.state.selectedCategory}`);
                 if (!response.ok) throw new Error("Failed to fetch category products");
                 const data = await response.json();
-                // Ensure data is an array
                 filteredProducts = Array.isArray(data) ? data : data.products || [];
             } else {
-                // If no category is selected, search all products
                 const response = await fetch('https://backend-3mvr.onrender.com/api/products');
                 if (!response.ok) throw new Error("Failed to fetch products");
                 const data = await response.json();
-                // Ensure data is an array
                 filteredProducts = Array.isArray(data) ? data : data.products || [];
             }
 
-            // Filter products based on search term
             if (Array.isArray(filteredProducts)) {
                 filteredProducts = filteredProducts.filter(product => 
                     product.name.toLowerCase().includes(this.state.searchTerm) ||
@@ -2553,11 +2552,9 @@ async searchProducts(searchTerm) {
                 filteredProducts = [];
             }
 
-            // Update the products display with filtered results
             this.state.products = filteredProducts;
             await this.renderProducts();
             
-            // Show a message if no results found
             if (filteredProducts.length === 0) {
                 showNotification('No products found matching your search', 'info');
             }
@@ -2570,7 +2567,103 @@ async searchProducts(searchTerm) {
         console.error("Error searching products:", error);
         showNotification(error.message, "error");
     }
-},
+  },
+
+  async renderProducts() {
+    const gridContainer = document.querySelector(".grid-container");
+    if (!gridContainer) return;
+
+    // Clear container
+    gridContainer.innerHTML = "";
+    
+    // Create document fragment for better performance
+    const fragment = document.createDocumentFragment();
+    
+    // Cache translations
+    const translations = {
+      addToCart: i18nManager.translate('ui.buttons.addToCart'),
+      share: i18nManager.translate('ui.buttons.share'),
+      rate: i18nManager.translate('ui.buttons.rate'),
+      stock: i18nManager.translate('ui.labels.stock')
+    };
+    
+    // Create button template
+    const buttonTemplate = document.createElement('button');
+    
+    // Handle empty state
+    if (!this.state.products.length) {
+      const emptyState = document.createElement('div');
+      emptyState.className = 'empty-state';
+      emptyState.textContent = 'No products found';
+      gridContainer.appendChild(emptyState);
+      return;
+    }
+
+    // Render each product
+    this.state.products.forEach((product) => {
+      const gridItem = document.createElement("div");
+      gridItem.className = "grid-item grid-item-xl";
+      gridItem.dataset.productId = product.product_id;
+
+      const productName = i18nManager.getProductTranslation(product, 'name');
+      
+      const productContent = document.createElement("div");
+      productContent.className = "product-content";
+      
+      const imageSlider = this.createImageSlider(product, productName);
+      
+      const formattedPrice = window.cryptoManager ? 
+        cryptoManager.formatCryptoPrice(product.price) : 
+        new Intl.NumberFormat(i18nManager.getCurrentLanguage(), {
+          style: 'currency',
+          currency: 'USD'
+        }).format(product.price);
+      
+      productContent.innerHTML = `
+        ${imageSlider}
+        <div class="overlay">
+          <span class="product-name">${productName}</span> | 
+          <span class="price-span" data-usd-price="${product.price}">
+            ${formattedPrice}
+          </span>
+          | ${translations.stock}: ${product.stock}
+        </div>
+      `;
+
+      productContent.addEventListener("click", (e) => {
+        try {
+          if (window.productPageManager) {
+            productPageManager.openProductPage(product);
+          }
+        } catch (error) {
+          console.error('Error opening product page:', error);
+        }
+      });
+      
+      const buttonsContainer = this.createButtonsContainer(product, translations, buttonTemplate);
+      
+      gridItem.append(productContent, buttonsContainer);
+      fragment.appendChild(gridItem);
+    });
+    
+    gridContainer.appendChild(fragment);
+
+    requestAnimationFrame(() => {
+      try {
+        this.initializeImageSliders();
+      } catch (error) {
+        console.error('Error initializing image sliders:', error);
+      }
+    });
+
+    this.ensureStylesExist();
+
+    try {
+      await this.updateRelatedManagers();
+    } catch (error) {
+      console.error('Error updating related managers:', error);
+    }
+  },
   setupSearch() {
     const searchInput = document.getElementById('product-search');
     if (!searchInput) return;
