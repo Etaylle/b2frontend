@@ -2330,9 +2330,11 @@ initialize() {
     this.setupSearch();
     
     // Listen for language changes
-    window.addEventListener('languageChanged', () => {
-      this.updateSearchPlaceholder();
-    });
+    window.addEventListener('languageChanged', async () => {
+  // Await all operations to ensure sequential execution
+  await categoryManager.renderCategories();
+  await categoryManager.fetchProducts(categoryManager.state.selectedCategory);
+});
     
     return Promise.resolve();
   },
