@@ -370,17 +370,6 @@ main {
 
 
 
-  @keyframes slideDown {
-    from {
-      transform: translateY(-10px);
-      opacity: 0;
-    }
-
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
 
   .search-container {
     display: flex;
@@ -763,49 +752,6 @@ main {
 }
   
   
-    @keyframes slideIn {
-      from {
-        transform: translateX(100%);
-      }
-  
-      to {
-        transform: translateX(0);
-      }
-    }
-  
-    @keyframes slideOut {
-      from {
-        transform: translateX(0);
-      }
-  
-      to {
-        transform: translateX(100%);
-      }
-    }
-  
-    @keyframes slideIn {
-      from {
-        transform: translateY(-100%);
-        opacity: 0;
-      }
-  
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
-  
-    @keyframes slideOut {
-      from {
-        transform: translateY(0);
-        opacity: 1;
-      }
-  
-      to {
-        transform: translateY(-100%);
-        opacity: 0;
-      }
-    }  
   .checkout-btn {
       background-color: #4CAF50;
       color: white;
@@ -831,16 +777,6 @@ main {
       margin-right: 8px;
     }
   
-  .categories {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-      padding: 1rem;
-      background: #f8f9fa;
-      border-radius: 0.5rem;
-      margin-bottom: 2rem;
-    }
   /* Categories Section */
   .categories {
     display: flex;
@@ -934,55 +870,6 @@ main {
     }
   }
 
-  /* Error State */
-  .error-message {
-    color: #dc3545;
-    text-align: center;
-    padding: 20px;
-    font-size: 16px;
-  }
-.success-message,
-.error-message {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 1rem;
-  border-radius: 4px;
-  animation: fadeIn 0.3s, fadeOut 0.3s 1.7s;
-}
-
-.success-message {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.info-message {
-  background-color: #4c98af;
-  color: white;
-}
-
-.error-message {
-  background-color: #f44336;
-  color: white;
-}.notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 15px 25px;
-  border-radius: 4px;
-  z-index: 1000;
-}
-
-.success-message {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.error-message {
-  background-color: #f44336;
-  color: white;
-}
-
 .checkout-btn {
   background-color: #4CAF50;
   color: white;
@@ -1000,21 +887,6 @@ main {
   opacity: 0;
   visibility: hidden;
   animation: fadeInOut 3s ease forwards;
-}
-
-.success-message {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.error-message {
-  background-color: #f44336;
-  color: white;
-}
-
-.info-message {
-  background-color: #4c98af;
-  color: white;
 }
 
 @keyframes fadeInOut {
