@@ -2045,7 +2045,11 @@ const i18nManager = {
             price: "Price",
             categories: "Categories",
             search: "Search products..."
-          }
+          },
+          messages: {
+            noProductFound: "No products found",
+            searchError: "Error searching products",  
+    
         }
       },
       srb: {
