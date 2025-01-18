@@ -2020,174 +2020,7 @@ const socialSharingManager = {
     });
   }
 };
-// const i18nManager = {
-//   state: {
-//     currentLanguage: 'en', // Default language
-//     translations: { en: {
-//     buttons: {
-//       addToCart: "Add to Cart",
-//       login: "Login",
-//       register: "Register"
-//     },
-//     labels: {
-//       price: "Price",
-//       stock: "Stock"
-//     }
-//   },
-//   srb: {
-//     buttons: {
-//       addToCart: "Додај у корпу",
-//       login: "Пријава",
-//       register: "Регистрација"
-//     },
-//     labels: {
-//       price: "Цена",
-//       stock: "Стање"
-//     }
-//   }},
-//     supportedLanguages: ['en', 'srb', 'de'], 
 
-//   async initialize() {
-//     try {
-//       // Load saved language preference from localStorage
-//       const savedLang = localStorage.getItem('preferred_language');
-//       if (savedLang && this.state.supportedLanguages.includes(savedLang)) {
-//         this.state.currentLanguage = savedLang;
-//       }
-
-//       // Load translations for current language
-//       await this.loadTranslations();
-      
-//       // Update UI language
-//       this.updateUILanguage();
-      
-//       // Setup language switcher
-//       this.setupLanguageSwitcher();
-//     } catch (error) {
-//       console.error('Error initializing i18nManager:', error);
-//       showNotification('Error loading translations', 'error');
-//     }
-//   },
-
-//   async loadTranslations() {
-//     try {
-//       // In production, you would fetch this from your backend
-//       // For now, we'll load them from a static object
-//       this.state.translations = {
-//         en: {
-//           buttons: {
-//             addToCart: '💰',
-//             share: '🚀',
-//             rate: '⭐',
-//             login: 'Login',
-//             register: 'Register',
-//             logout: 'Logout',
-//             // Add more button translations
-//           },
-//           common: {
-//             price: 'Price',
-//             stock: 'Stock',
-//             all: 'All',
-//             // Add more common translations
-//           }
-//         },
-//         srb: {
-//           buttons: {
-//             addToCart: '💰',
-//             share: '🚀',
-//             rate: '⭐',
-//             login: 'Prijava',
-//             register: 'Registracija',
-//             logout: 'Odjava',
-//           },
-//           common: {
-//             price: 'Cena',
-//             stock: 'Stanje',
-//             all: 'Sve',
-//           }
-//         },
-//         // Add more languages
-//       };
-//     } catch (error) {
-//       console.error('Error loading translations:', error);
-//       throw error;
-//     }
-//   },
-
-//   setupLanguageSwitcher() {
-//     const container = document.querySelector('.header-controls') || document.body;
-    
-//     const switcher = document.createElement('select');
-//     switcher.className = 'language-switcher';
-    
-//     this.state.supportedLanguages.forEach(lang => {
-//       const option = document.createElement('option');
-//       option.value = lang;
-//       option.textContent = lang.toUpperCase();
-//       option.selected = lang === this.state.currentLanguage;
-//       switcher.appendChild(option);
-//     });
-
-//     switcher.addEventListener('change', (e) => {
-//       this.changeLanguage(e.target.value);
-//     });
-
-//     container.appendChild(switcher);
-//   },
-
-//   async changeLanguage(language) {
-//     if (!this.state.supportedLanguages.includes(language)) {
-//       console.error(`Language ${language} is not supported`);
-//       return;
-//     }
-
-//     this.state.currentLanguage = language;
-//     localStorage.setItem('preferred_language', language);
-    
-//     // Reload products and categories in new language
-//     await categoryManager.fetchCategories();
-//     await categoryManager.fetchProducts(categoryManager.state.selectedCategory);
-    
-//     // Update UI elements
-//     this.updateUILanguage();
-//   },
-
-//   updateUILanguage() {
-//     const translations = this.state.translations[this.state.currentLanguage];
-//     if (!translations) return;
-
-//     // Update static UI elements
-//     document.querySelectorAll('[data-i18n]').forEach(element => {
-//       const key = element.getAttribute('data-i18n');
-//       const translation = this.getTranslation(key);
-//       if (translation) {
-//         if (element.tagName === 'INPUT' && element.type === 'button') {
-//           element.value = translation;
-//         } else {
-//           element.textContent = translation;
-//         }
-//       }
-//     });
-//   },
-
-//   getTranslation(key) {
-//     const keys = key.split('.');
-//     let translation = this.state.translations[this.state.currentLanguage];
-    
-//     for (const k of keys) {
-//       if (!translation[k]) return key;
-//       translation = translation[k];
-//     }
-    
-//     return translation;
-//   },
-
-//   // Helper method to get product name in current language
-//   getProductName(product) {
-//     const langKey = this.state.currentLanguage === 'en' ? 'name' : `name_${this.state.currentLanguage}`;
-//     return product[langKey] || product.name; // Fallback to default name if translation doesn't exist
-//   }
-//   }};
 const i18nManager = {
    state: {
     currentLanguage: 'en',
@@ -2259,7 +2092,7 @@ const i18nManager = {
       }
     }
   },
- initialize() {
+  initialize() {
     const savedLang = localStorage.getItem('preferred_language');
     const browserLang = navigator.language.split('-')[0];
     
@@ -2288,19 +2121,19 @@ const i18nManager = {
     this.fetchProducts();
   }
 ,
- refreshContent() {
-  // Update the UI elements with the translated text
-  i18nManager.updateUI();
+//  refreshContent() {
+//   // Update the UI elements with the translated text
+//   i18nManager.updateUI();
 
-  // Update the search history dropdown content
-  categoryManager.setupSearch();
+//   // Update the search history dropdown content
+//   categoryManager.setupSearch();
 
-  // Update the category list with the translated category names
-  categoryManager.renderCategories();
+//   // Update the category list with the translated category names
+//   categoryManager.renderCategories();
 
-  // Update the product list with the translated product names and prices
-  categoryManager.renderProducts();
-},
+//   // Update the product list with the translated product names and prices
+//   categoryManager.renderProducts();
+// },
   // setLanguage(lang) {
   //   if (!this.state.supportedLanguages.includes(lang)) {
   //     console.warn(`Language ${lang} not supported, falling back to ${this.state.defaultLanguage}`);
