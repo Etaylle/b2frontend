@@ -1217,7 +1217,7 @@ html {
   background-color: #666;
 }
 .product-actions {
-  position: absolute;
+  position: aligned vertically;
   bottom: 60px;
   /* Position above the overlay */
   left: 10px;
