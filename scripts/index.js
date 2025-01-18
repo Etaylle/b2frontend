@@ -2049,8 +2049,7 @@ const i18nManager = {
           messages: {
             noProductFound: "No products found",
             searchError: "Error searching products",  
-    
-        }
+          },
       },
       srb: {
         ui: {
@@ -2288,7 +2287,7 @@ transformProductData(product) {
       displayName: this.getProductName(product)
     };
   }
-};
+}};
 
 const categoryManager = {
   state: {
