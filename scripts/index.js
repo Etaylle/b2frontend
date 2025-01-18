@@ -3156,45 +3156,43 @@ async renderProducts() {
 //   });
 // },
 createImageSlider(product, productName) {
-  console.log('Creating slider for:', product); // Debug log to check product data
   const safeProductName = productName || product.name || 'Product';
   
-  let sliderHtml = '<div class="image-slider">';
-  
-  // Handle both single image_url and images array
+  // Ensure we have an array of images
   const images = Array.isArray(product.images) && product.images.length > 0 
     ? product.images 
-    : product.image_url 
-      ? [product.image_url] 
-      : ['/images/default-product-image.jpg'];
+    : [product.image_url || '/images/default-product-image.jpg'];
 
-  console.log('Images to display:', images); // Debug log to check image array
+  let sliderHtml = `
+    <div class="image-slider" data-product-id="${product.product_id}">
+      <div class="slider-track">
+  `;
   
-  // Add slider track first
-  sliderHtml += '<div class="slider-track">';
-  
+  // Add all images
   images.forEach((img, index) => {
     sliderHtml += `
-      <div class="slider-slide${index === 0 ? ' active' : ''}" style="--slide-index: ${index}">
+      <div class="slider-slide${index === 0 ? ' active' : ''}" data-index="${index}">
         <img 
           src="${img}" 
-          alt="${safeProductName}${images.length > 1 ? ` - Image ${index + 1}` : ''}" 
+          alt="${safeProductName}${images.length > 1 ? ` - Image ${index + 1}` : ''}"
           loading="lazy"
           onerror="this.onerror=null; this.src='/images/default-product-image.jpg';"
         >
       </div>
     `;
   });
-  sliderHtml += '</div>';
+  
+  sliderHtml += '</div>'; // Close slider-track
 
   // Only add navigation if there are multiple images
   if (images.length > 1) {
     sliderHtml += `
-      <button class="slider-nav prev" aria-label="Previous image">‹</button>
-      <button class="slider-nav next" aria-label="Next image">›</button>
+      <button class="slider-nav prev" aria-label="Previous image">❮</button>
+      <button class="slider-nav next" aria-label="Next image">❯</button>
       <div class="slider-dots">
         ${images.map((_, i) => `
           <button class="slider-dot${i === 0 ? ' active' : ''}" 
+            data-index="${i}" 
             aria-label="Go to image ${i + 1}">
           </button>
         `).join('')}
@@ -3202,65 +3200,83 @@ createImageSlider(product, productName) {
     `;
   }
 
-  sliderHtml += '</div>';
+  sliderHtml += '</div>'; // Close image-slider
   return sliderHtml;
 },
 initializeImageSliders() {
-  // Clean up any existing sliders
   document.querySelectorAll('.image-slider').forEach(slider => {
-    if (slider.dataset.initialized) return; // Skip if already initialized
+    // Skip if already initialized or has only one image
+    if (slider.dataset.initialized === 'true') return;
     
     const slides = slider.querySelectorAll('.slider-slide');
-    if (slides.length <= 1) return; // Skip if only one slide
+    if (slides.length <= 1) return;
 
     let currentIndex = 0;
-    const dots = slider.querySelectorAll('.slider-dot');
-    
-    // Function to update slides
-    const updateSlides = (newIndex) => {
+    let autoPlayInterval;
+
+    // Function to update active slide
+    const updateSlide = (newIndex) => {
       slides[currentIndex].classList.remove('active');
-      if (dots[currentIndex]) dots[currentIndex].classList.remove('active');
+      slider.querySelector(`.slider-dot[data-index="${currentIndex}"]`)?.classList.remove('active');
       
       currentIndex = newIndex;
+      
       slides[currentIndex].classList.add('active');
-      if (dots[currentIndex]) dots[currentIndex].classList.add('active');
+      slider.querySelector(`.slider-dot[data-index="${currentIndex}"]`)?.classList.add('active');
     };
 
-    // Navigation buttons
+    // Function to start autoplay
+    const startAutoPlay = () => {
+      stopAutoPlay(); // Clear any existing interval
+      autoPlayInterval = setInterval(() => {
+        const nextIndex = (currentIndex + 1) % slides.length;
+        updateSlide(nextIndex);
+      }, 5000);
+    };
+
+    // Function to stop autoplay
+    const stopAutoPlay = () => {
+      if (autoPlayInterval) {
+        clearInterval(autoPlayInterval);
+        autoPlayInterval = null;
+      }
+    };
+
+    // Previous button click handler
     slider.querySelector('.prev')?.addEventListener('click', (e) => {
       e.stopPropagation();
-      const newIndex = (currentIndex - 1 + slides.length) % slides.length;
-      updateSlides(newIndex);
+      const prevIndex = (currentIndex - 1 + slides.length) % slides.length;
+      updateSlide(prevIndex);
+      stopAutoPlay();
+      startAutoPlay();
     });
 
+    // Next button click handler
     slider.querySelector('.next')?.addEventListener('click', (e) => {
       e.stopPropagation();
-      const newIndex = (currentIndex + 1) % slides.length;
-      updateSlides(newIndex);
+      const nextIndex = (currentIndex + 1) % slides.length;
+      updateSlide(nextIndex);
+      stopAutoPlay();
+      startAutoPlay();
     });
 
     // Dot navigation
-    dots.forEach((dot, index) => {
+    slider.querySelectorAll('.slider-dot').forEach(dot => {
       dot.addEventListener('click', (e) => {
         e.stopPropagation();
-        updateSlides(index);
+        const newIndex = parseInt(dot.dataset.index);
+        updateSlide(newIndex);
+        stopAutoPlay();
+        startAutoPlay();
       });
     });
 
-    // Auto-advance slides every 5 seconds
-    const autoAdvance = setInterval(() => {
-      const newIndex = (currentIndex + 1) % slides.length;
-      updateSlides(newIndex);
-    }, 5000);
+    // Start/stop autoplay on hover
+    slider.addEventListener('mouseenter', stopAutoPlay);
+    slider.addEventListener('mouseleave', startAutoPlay);
 
-    // Stop auto-advance on hover
-    slider.addEventListener('mouseenter', () => clearInterval(autoAdvance));
-    slider.addEventListener('mouseleave', () => {
-      setInterval(() => {
-        const newIndex = (currentIndex + 1) % slides.length;
-        updateSlides(newIndex);
-      }, 5000);
-    });
+    // Start autoplay initially
+    startAutoPlay();
 
     // Mark as initialized
     slider.dataset.initialized = 'true';
@@ -3321,11 +3337,38 @@ ensureStylesExist() {
         z-index: 10;
       }
  .image-slider {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-      }
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.slider-track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.slider-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.slider-slide.active {
+  opacity: 1;
+  z-index: 1;
+}
+
+.slider-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 .product-buttons {
         position: absolute;
         top: 10px;
