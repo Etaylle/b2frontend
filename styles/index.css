@@ -157,7 +157,9 @@ html {
   .grid-item:hover img {
     scale: 1.1;
   }
-  
+    .grid-item button {
+     
+    }
   
   
   .h-scroll-container {
