@@ -2092,20 +2092,7 @@ const i18nManager = {
       }
     }
   },
-  // initialize() {
-  //   const savedLang = localStorage.getItem('preferred_language');
-  //   const browserLang = navigator.language.split('-')[0];
-    
-  //   this.setLanguage(
-  //     savedLang || 
-  //     (this.state.supportedLanguages.includes(browserLang) ? browserLang : this.state.defaultLanguage)
-  //   );
-    
-  //   this.createLanguageSwitcher();
-    
-  //   // Initial content refresh
-  //   return this.refreshAllContent();
-  // },
+
 async initialize() {
     const savedLang = localStorage.getItem('preferred_language');
     const browserLang = navigator.language.split('-')[0];
@@ -2114,10 +2101,10 @@ async initialize() {
       savedLang || 
       (this.state.supportedLanguages.includes(browserLang) ? browserLang : this.state.defaultLanguage)
     );
-    if (this.state.selectedCategory) {
-        await this.fetchProducts(this.state.selectedCategory);
+    if (window.categoryManager) {
+        await categoryManager.fetchProducts();
     } else {
-        await this.fetchProducts(); // Fetch all products only if no category selected
+        await categoryManager.fetchProducts(); 
     }
     
     await this.createLanguageSwitcher();
@@ -2247,109 +2234,6 @@ getProductName(product) {
     // Finally fallback to default field
     return product[field] || '';
   },
-  // getProductTranslation(product, field = 'name') {
-  //   const currentLang = this.state.currentLanguage;
-    
-  //   // If current language is English, return the default name
-  //   if (currentLang === 'en') {
-  //     return product[field];
-  //   }
-    
-  //   // Try to get translation from translations object first
-  //   if (product.translations?.[currentLang]?.[field]) {
-  //     return product.translations[currentLang][field];
-  //   }
-    
-  //   // Try to get translation from direct field (name_srb, name_de)
-  //   const translatedField = `${field}_${currentLang}`;
-  //   if (product[translatedField]) {
-  //     return product[translatedField];
-  //   }
-    
-  //   // Fallback to English
-  //   return product[field];
-  // },
-
-  // createLanguageSwitcher() {
-  //   const container = document.querySelector('.header-controls') || document.createElement('div');
-  //   container.innerHTML = `
-  //     <select class="language-switcher" aria-label="Select language">
-  //       ${this.state.supportedLanguages.map(lang => `
-  //         <option value="${lang}" ${lang === this.state.currentLanguage ? 'selected' : ''}>
-  //           ${lang.toUpperCase()}
-  //         </option>
-  //       `).join('')}
-  //     </select>
-  //   `;
-
-  //   container.querySelector('.language-switcher').addEventListener('change', (e) => {
-  //     this.setLanguage(e.target.value);
-  //     this.updateUI();
-  //     window.dispatchEvent(new CustomEvent('refreshContent'));
-  //   });
-  // },
-  // createLanguageSwitcher() {
-  //   const container = document.querySelector('.header-controls') || document.createElement('div');
-  //   container.innerHTML = `
-  //     <select class="language-switcher" aria-label="Select language">
-  //       ${this.state.supportedLanguages.map(lang => `
-  //         <option value="${lang}" ${lang === this.state.currentLanguage ? 'selected' : ''}>
-  //           ${lang.toUpperCase()}
-  //         </option>
-  //       `).join('')}
-  //     </select>
-  //   `;
-
-  //   container.querySelector('.language-switcher').addEventListener('change', async (e) => {
-  //     const newLang = e.target.value;
-  //     this.setLanguage(newLang);
-  //     this.updateUI();
-      
-  //     // Refresh all content that depends on language
-  //     await this.refreshAllContent();
-  //   });
-  // },
-  //  async refreshAllContent() {
-  //   // Update UI elements with translated text
-  //   this.updateUI();
-
-  //   // Refresh categories and products
-  //   if (categoryManager) {
-  //     // First fetch and render categories
-  //     await categoryManager.fetchCategories();
-      
-  //     // Then fetch products based on current category selection
-  //     await categoryManager.fetchProducts(categoryManager.state.selectedCategory);
-      
-  //     // Update search setup
-  //     categoryManager.setupSearch();
-  //   }
-  // },
-
-  // updateUI() {
-  //   document.querySelectorAll('[data-i18n]').forEach(element => {
-  //     const key = element.getAttribute('data-i18n');
-  //     const translation = this.translate(key);
-      
-  //     if (element.tagName === 'INPUT') {
-  //       if (element.type === 'button' || element.type === 'submit') {
-  //         element.value = translation;
-  //       } else {
-  //         element.placeholder = translation;
-  //       }
-  //     } else {
-  //       element.textContent = translation;
-  //     }
-  //   });
-  // },
-// transformProductData(product) {
-    
-//     return {
-//       ...product,
-//       displayName: this.getProductName(product)
-//     };
-//   }
-// };
 transformProductData(products) {
     if (!Array.isArray(products)) {
       products = [products];
@@ -2375,17 +2259,15 @@ async refreshAllContent() {
         // Update UI elements
         this.updateUI();
         
-        // If category manager exists, refresh its content
-        if (window.categoryManager) {
-            await categoryManager.fetchCategories();
-            
-            // Check if there's a selected category and fetch accordingly
-            const currentCategory = categoryManager.state.selectedCategory;
-            if (currentCategory) {
-                await categoryManager.fetchProducts(currentCategory);
-            } else {
-                await categoryManager.fetchProducts();
-            }
+        // Fetch categories first
+        await this.fetchCategories();
+        
+        // Then fetch products based on selected category
+        const currentCategory = this.state.selectedCategory;
+        if (currentCategory) {
+            await this.fetchProducts(currentCategory);
+        } else {
+            await this.fetchProducts();
         }
         
         // Dispatch content refresh event
