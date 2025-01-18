@@ -2887,7 +2887,9 @@ async fetchProducts(categoryId = null) {
 
 async selectCategory(categoryId) {
     console.log('Selecting category:', categoryId);
-    this.state.selectedCategory = categoryId;
+    console.log('Before setting selectedCategory:', this.state.selectedCategory);
+this.state.selectedCategory = categoryId;
+console.log('After setting selectedCategory:', this.state.selectedCategory);
     this.state.searchTerm = '';
     
     const searchInput = document.getElementById('product-search');
