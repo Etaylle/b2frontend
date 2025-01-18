@@ -2293,7 +2293,7 @@ const i18nManager = {
   i18nManager.updateUI();
 
   // Update the search history dropdown content
-  searchManager.setupSearch();
+  categoryManager.setupSearch();
 
   // Update the category list with the translated category names
   categoryManager.renderCategories();
@@ -2454,7 +2454,7 @@ getProductName(product) {
       await categoryManager.fetchProducts(categoryManager.state.selectedCategory);
       
       // Update search setup
-      searchManager.setupSearch();
+      categoryManager.setupSearch();
     }
   },
 
@@ -2482,18 +2482,18 @@ transformProductData(product) {
     };
   }
 };
-const searchManager = {
+
+const categoryManager = {
   state: {
-    searchInput: null,
-    searchHistoryDropdown: null,
-    debounceTimeout: null,
+    categories: [],
+    selectedCategory: null,
     products: [],
     searchTerm: '',
-    selectedCategory: null
+    searchInput: null,
+    searchHistoryDropdown: null,
+    debounceTimeout: null
   },
-
-  initialize() {
-    // Initial setup
+initialize() {
     this.setupSearch();
     
     // Listen for language changes
@@ -2503,387 +2503,33 @@ const searchManager = {
     
     return Promise.resolve();
   },
-
-  async searchProducts(searchTerm) {
-    this.state.searchTerm = searchTerm.toLowerCase();
-    
-    try {
-        // Store search term in localStorage if not empty
-        if (searchTerm.trim()) {
-            const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-            if (!searches.includes(searchTerm)) {
-                searches.unshift(searchTerm);
-                if (searches.length > 5) searches.pop();
-                localStorage.setItem('searchHistory', JSON.stringify(searches));
-            }
-        }
-
-        // If search is cleared (empty), fetch all products or category products
-        if (!searchTerm.trim()) {
-            if (this.state.selectedCategory) {
-                await this.fetchProducts(this.state.selectedCategory);
-            } else {
-                await this.fetchProducts();
-            }
-            return;
-        }
-
-        let filteredProducts = [];
-        
-        try {
-            if (this.state.selectedCategory) {
-                const response = await fetch(`https://backend-3mvr.onrender.com/api/products/category/${this.state.selectedCategory}`);
-                if (!response.ok) throw new Error("Failed to fetch category products");
-                const data = await response.json();
-                filteredProducts = Array.isArray(data) ? data : data.products || [];
-            } else {
-                const response = await fetch('https://backend-3mvr.onrender.com/api/products');
-                if (!response.ok) throw new Error("Failed to fetch products");
-                const data = await response.json();
-                filteredProducts = Array.isArray(data) ? data : data.products || [];
-            }
-
-            if (Array.isArray(filteredProducts)) {
-                filteredProducts = filteredProducts.filter(product => 
-                    product.name.toLowerCase().includes(this.state.searchTerm) ||
-                    product.price.toString().includes(this.state.searchTerm)
-                );
-            } else {
-                filteredProducts = [];
-            }
-
-            this.state.products = filteredProducts;
-            await this.renderProducts();
-            
-            if (filteredProducts.length === 0) {
-                showNotification('No products found matching your search', 'info');
-            }
-        } catch (error) {
-            console.error("Error processing products:", error);
-            filteredProducts = [];
-            showNotification("Error processing products data", "error");
-        }
-    } catch (error) {
-        console.error("Error searching products:", error);
-        showNotification(error.message, "error");
-    }
-  },
-
-  async renderProducts() {
-    const gridContainer = document.querySelector(".grid-container");
-    if (!gridContainer) return;
-
-    // Clear container
-    gridContainer.innerHTML = "";
-    
-    // Create document fragment for better performance
-    const fragment = document.createDocumentFragment();
-    
-    // Cache translations
-    const translations = {
-      addToCart: i18nManager.translate('ui.buttons.addToCart'),
-      share: i18nManager.translate('ui.buttons.share'),
-      rate: i18nManager.translate('ui.buttons.rate'),
-      stock: i18nManager.translate('ui.labels.stock')
-    };
-    
-    // Create button template
-    const buttonTemplate = document.createElement('button');
-    
-    // Handle empty state
-    if (!this.state.products.length) {
-      const emptyState = document.createElement('div');
-      emptyState.className = 'empty-state';
-      emptyState.textContent = 'No products found';
-      gridContainer.appendChild(emptyState);
-      return;
-    }
-
-    // Render each product
-    this.state.products.forEach((product) => {
-      const gridItem = document.createElement("div");
-      gridItem.className = "grid-item grid-item-xl";
-      gridItem.dataset.productId = product.product_id;
-
-      const productName = i18nManager.getProductTranslation(product, 'name');
-      
-      const productContent = document.createElement("div");
-      productContent.className = "product-content";
-      
-      const imageSlider = this.createImageSlider(product, productName);
-      
-      const formattedPrice = window.cryptoManager ? 
-        cryptoManager.formatCryptoPrice(product.price) : 
-        new Intl.NumberFormat(i18nManager.getCurrentLanguage(), {
-          style: 'currency',
-          currency: 'USD'
-        }).format(product.price);
-      
-      productContent.innerHTML = `
-        ${imageSlider}
-        <div class="overlay">
-          <span class="product-name">${productName}</span> | 
-          <span class="price-span" data-usd-price="${product.price}">
-            ${formattedPrice}
-          </span>
-          | ${translations.stock}: ${product.stock}
-        </div>
-      `;
-
-      productContent.addEventListener("click", (e) => {
-        try {
-          if (window.productPageManager) {
-            productPageManager.openProductPage(product);
-          }
-        } catch (error) {
-          console.error('Error opening product page:', error);
-        }
-      });
-      
-      const buttonsContainer = this.createButtonsContainer(product, translations, buttonTemplate);
-      
-      gridItem.append(productContent, buttonsContainer);
-      fragment.appendChild(gridItem);
-    });
-    
-    gridContainer.appendChild(fragment);
-
-    requestAnimationFrame(() => {
-      try {
-        this.initializeImageSliders();
-      } catch (error) {
-        console.error('Error initializing image sliders:', error);
-      }
-    });
-
-    this.ensureStylesExist();
-
-    try {
-      await this.updateRelatedManagers();
-    } catch (error) {
-      console.error('Error updating related managers:', error);
-    }
-  },
   setupSearch() {
-    const searchInput = document.getElementById('product-search');
-    if (!searchInput) return;
-
-    this.state.searchInput = searchInput;
-
-    // Remove any existing dropdowns first
-    const existingDropdown = document.querySelector('.search-history-dropdown');
-    if (existingDropdown) {
-      existingDropdown.remove();
-    }
-
-    // Create search history dropdown
-    const searchHistoryDropdown = document.createElement('div');
-    searchHistoryDropdown.className = 'search-history-dropdown';
-    searchHistoryDropdown.id = 'search-history-dropdown';
-    searchInput.parentNode.appendChild(searchHistoryDropdown);
-
-    this.state.searchHistoryDropdown = searchHistoryDropdown;
-
-    // Set up event listeners
-    this.setupEventListeners();
+    // Get search elements
+    this.state.searchInput = document.getElementById('product-search');
+    this.state.searchHistoryDropdown = document.getElementById('search-history');
     
-    // Setup styles
-    this.setupStyles();
-    
-    // Update placeholder for current language
-    this.updateSearchPlaceholder();
-  },
+    if (!this.state.searchInput) return;
 
-  setupEventListeners() {
-    const { searchInput, searchHistoryDropdown } = this.state;
-
-    searchInput.addEventListener('input', (e) => {
+    // Setup search input event listener with debouncing
+    this.state.searchInput.addEventListener('input', (e) => {
       clearTimeout(this.state.debounceTimeout);
       this.state.debounceTimeout = setTimeout(() => {
-        searchManager.searchProducts(e.target.value);
-      }, 300);
-
-      const clearButton = searchInput.parentNode.querySelector('.clear-input');
-      if (clearButton) {
-        clearButton.style.display = e.target.value ? 'block' : 'none';
-      }
+        this.searchProducts(e.target.value);
+      }, 300); // 300ms debounce delay
     });
 
-    searchInput.addEventListener('focus', () => {
-      const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-      if (searches.length > 0) {
-        this.updateDropdownContent();
-      }
+    // Setup search history display
+    this.state.searchInput.addEventListener('focus', () => {
+      this.showSearchHistory();
     });
 
-    // Setup clear button
-    this.setupClearButton();
-
-    // Hide dropdown when clicking outside
+    // Close search history when clicking outside
     document.addEventListener('click', (e) => {
-      if (!searchInput.contains(e.target) && !searchHistoryDropdown.contains(e.target)) {
-        searchHistoryDropdown.style.display = 'none';
+      if (!e.target.closest('#search-history') && !e.target.closest('#product-search')) {
+        this.hideSearchHistory();
       }
     });
   },
-
-  updateSearchPlaceholder() {
-    if (this.state.searchInput) {
-      this.state.searchInput.placeholder = i18nManager.translate('ui.labels.search');
-    }
-  },
-
-  updateDropdownContent() {
-    const { searchHistoryDropdown, searchInput } = this.state;
-    const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-    
-    if (searches.length === 0) {
-      searchHistoryDropdown.style.display = 'none';
-      searchHistoryDropdown.innerHTML = '';
-      return;
-    }
-
-    searchHistoryDropdown.innerHTML = searches
-      .map(term => `
-        <div class="search-history-item">
-          <i class="fas fa-history"></i>
-          <span>${term}</span>
-          <button class="remove-search" aria-label="Remove search term">×</button>
-        </div>
-      `)
-      .join('');
-    
-    // Add event listeners to new items
-    searchHistoryDropdown.querySelectorAll('.search-history-item').forEach((item, index) => {
-      const term = searches[index];
-      item.addEventListener('click', (e) => {
-        if (!e.target.classList.contains('remove-search')) {
-          searchInput.value = term;
-          searchManager.searchProducts(term);
-          searchHistoryDropdown.style.display = 'none';
-          
-          const clearButton = searchInput.parentNode.querySelector('.clear-input');
-          if (clearButton) {
-            clearButton.style.display = 'block';
-          }
-        }
-      });
-
-      item.querySelector('.remove-search').addEventListener('click', async (e) => {
-        e.stopPropagation();
-        const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-        const filtered = searches.filter(t => t !== term);
-        localStorage.setItem('searchHistory', JSON.stringify(filtered));
-        
-        if (filtered.length === 0) {
-          searchHistoryDropdown.style.display = 'none';
-        } else {
-          item.remove();
-        }
-      });
-    });
-
-    searchHistoryDropdown.style.display = 'block';
-  },
-
-  setupClearButton() {
-    const { searchInput } = this.state;
-    const existingClearButton = searchInput.parentNode.querySelector('.clear-input');
-    if (existingClearButton) {
-      existingClearButton.remove();
-    }
-
-    const clearButton = document.createElement('button');
-    clearButton.innerHTML = '×';
-    clearButton.className = 'clear-input';
-    clearButton.setAttribute('aria-label', 'Clear search input');
-    clearButton.onclick = () => {
-      searchInput.value = '';
-      searchManager.searchProducts('');
-      clearButton.style.display = 'none';
-      this.state.searchHistoryDropdown.style.display = 'none';
-    };
-    searchInput.parentNode.appendChild(clearButton);
-  },
-
-  setupStyles() {
-    if (!document.querySelector('#search-history-styles')) {
-      const style = document.createElement('style');
-      style.id = 'search-history-styles';
-      style.textContent = `
-        .search-history-dropdown {
-          display: none;
-          position: absolute;
-          top: 100%;
-          left: 0;
-          right: 0;
-          background: white;
-          border: 1px solid #ddd;
-          border-top: none;
-          border-radius: 0 0 4px 4px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-          z-index: 1000;
-        }
-
-        .search-history-item {
-          padding: 8px 12px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          cursor: pointer;
-        }
-
-        .search-history-item:hover {
-          background: #f5f5f5;
-        }
-
-        .search-history-item button.remove-search {
-          margin-left: auto;
-          border: none;
-          background: none;
-          color: #999;
-          cursor: pointer;
-          padding: 4px 8px;
-        }
-
-        .search-history-item button.remove-search:hover {
-          color: #666;
-        }
-
-        .clear-input {
-          position: absolute;
-          right: 10px;
-          top: 50%;
-          transform: translateY(-50%);
-          border: none;
-          background: none;
-          color: #999;
-          cursor: pointer;
-          padding: 4px 8px;
-          display: none;
-          z-index: 2;
-        }
-
-        .clear-input:hover {
-          color: #666;
-        }
-
-        .search-container {
-          position: relative;
-        }
-      `;
-      document.head.appendChild(style);
-    }
-  }
-};
-const categoryManager = {
-  state: {
-    categories: [],
-    selectedCategory: null,
-    products: [],
-    searchTerm: ''
-  },
-
   // async searchProducts(searchTerm) {
   //   this.state.searchTerm = searchTerm.toLowerCase();
     
@@ -2941,194 +2587,7 @@ const categoryManager = {
   //     showNotification(error.message, "error");
   //   }
   // },
-// async setupSearch() {
-//     const searchInput = document.getElementById('product-search');
-//     if (!searchInput) return;
 
-//     // Remove any existing dropdowns first
-//     const existingDropdown = document.querySelector('.search-history-dropdown');
-//     if (existingDropdown) {
-//       existingDropdown.remove();
-//     }
-
-//     // Create search history dropdown
-//     const searchHistoryDropdown = document.createElement('div');
-//     searchHistoryDropdown.className = 'search-history-dropdown';
-//     searchHistoryDropdown.id = 'search-history-dropdown';
-//     searchInput.parentNode.appendChild(searchHistoryDropdown);
-
-//     let debounceTimeout;
-
-//     // Function to update dropdown content
-//     const updateDropdownContent = () => {
-//       const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-      
-//       // If no searches, hide dropdown and reset
-//       if (searches.length === 0) {
-//         searchHistoryDropdown.style.display = 'none';
-//         searchHistoryDropdown.innerHTML = '';
-//         return;
-//       }
-
-//       searchHistoryDropdown.innerHTML = searches
-//         .map(term => `
-//           <div class="search-history-item">
-//             <i class="fas fa-history"></i>
-//             <span>${term}</span>
-//             <button class="remove-search" aria-label="Remove search term">×</button>
-//           </div>
-//         `)
-//         .join('');
-      
-//       // Add event listeners to new items
-//       searchHistoryDropdown.querySelectorAll('.search-history-item').forEach((item, index) => {
-//         const term = searches[index];
-//         item.addEventListener('click', (e) => {
-//           if (!e.target.classList.contains('remove-search')) {
-//             searchInput.value = term;
-//             this.searchProducts(term);
-//             searchHistoryDropdown.style.display = 'none';
-            
-//             // Update clear button visibility
-//             const clearButton = searchInput.parentNode.querySelector('.clear-input');
-//             if (clearButton) {
-//               clearButton.style.display = 'block';
-//             }
-//           }
-//         });
-
-//         item.querySelector('.remove-search').addEventListener('click', async (e) => {
-//           e.stopPropagation();
-//           const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-//           const filtered = searches.filter(t => t !== term);
-//           localStorage.setItem('searchHistory', JSON.stringify(filtered));
-          
-//           // Update the dropdown immediately
-//           if (filtered.length === 0) {
-//             searchHistoryDropdown.style.display = 'none';
-//           } else {
-//             // Just remove the clicked item from DOM
-//             item.remove();
-//           }
-//         });
-//       });
-
-//       searchHistoryDropdown.style.display = 'block';
-//     };
-
-//     searchInput.addEventListener('input', (e) => {
-//       clearTimeout(debounceTimeout);
-//       debounceTimeout = setTimeout(() => {
-//         this.searchProducts(e.target.value);
-//       }, 300);
-
-//       const clearButton = searchInput.parentNode.querySelector('.clear-input');
-//       if (clearButton) {
-//         clearButton.style.display = e.target.value ? 'block' : 'none';
-//       }
-//     });
-
-//     searchInput.addEventListener('focus', () => {
-//       const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-//       if (searches.length > 0) {
-//         updateDropdownContent();
-//       }
-//     });
-
-//     // Clear button setup
-//     const existingClearButton = searchInput.parentNode.querySelector('.clear-input');
-//     if (existingClearButton) {
-//       existingClearButton.remove();
-//     }
-
-//     const clearButton = document.createElement('button');
-//     clearButton.innerHTML = '×';
-//     clearButton.className = 'clear-input';
-//     clearButton.setAttribute('aria-label', 'Clear search input');
-//     clearButton.onclick = () => {
-//       searchInput.value = '';
-//       this.searchProducts('');
-//       clearButton.style.display = 'none';
-//       searchHistoryDropdown.style.display = 'none';
-//     };
-//     searchInput.parentNode.appendChild(clearButton);
-
-//     // Hide dropdown when clicking outside
-//     document.addEventListener('click', (e) => {
-//       if (!searchInput.contains(e.target) && !searchHistoryDropdown.contains(e.target)) {
-//         searchHistoryDropdown.style.display = 'none';
-//       }
-//     });
-
-//     // Update styles
-//     if (!document.querySelector('#search-history-styles')) {
-//       const style = document.createElement('style');
-//       style.id = 'search-history-styles';
-//       style.textContent = `
-//         .search-history-dropdown {
-//           display: none;
-//           position: absolute;
-//           top: 100%;
-//           left: 0;
-//           right: 0;
-//           background: white;
-//           border: 1px solid #ddd;
-//           border-top: none;
-//           border-radius: 0 0 4px 4px;
-//           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-//           z-index: 1000;
-//         }
-
-//         .search-history-item {
-//           padding: 8px 12px;
-//           display: flex;
-//           align-items: center;
-//           gap: 8px;
-//           cursor: pointer;
-//         }
-
-//         .search-history-item:hover {
-//           background: #f5f5f5;
-//         }
-
-//         .search-history-item button.remove-search {
-//           margin-left: auto;
-//           border: none;
-//           background: none;
-//           color: #999;
-//           cursor: pointer;
-//           padding: 4px 8px;
-//         }
-
-//         .search-history-item button.remove-search:hover {
-//           color: #666;
-//         }
-
-//         .clear-input {
-//           position: absolute;
-//           right: 10px;
-//           top: 50%;
-//           transform: translateY(-50%);
-//           border: none;
-//           background: none;
-//           color: #999;
-//           cursor: pointer;
-//           padding: 4px 8px;
-//           display: none;
-//           z-index: 2;
-//         }
-
-//         .clear-input:hover {
-//           color: #666;
-//         }
-
-//         .search-container {
-//           position: relative;
-//         }
-//       `;
-//       document.head.appendChild(style);
-//     }
-// },
 // async searchProducts(query) {
 //   try {
 //     // Get the current language from i18nManager
@@ -3178,7 +2637,117 @@ const categoryManager = {
 //     // Handle error appropriately in your UI
 //   }
 // },
- async fetchCategories() {
+ async searchProducts(query) {
+    try {
+      // Normalize the search query
+      const searchTerm = query.toLowerCase().trim();
+      this.state.searchTerm = searchTerm;
+
+      // Save search term to history if not empty
+      if (searchTerm) {
+        this.updateSearchHistory(searchTerm);
+      }
+
+      let productsToSearch;
+      
+      if (this.state.selectedCategory) {
+        // If category is selected, get products for that category
+        const response = await fetch(`/api/products/category/${this.state.selectedCategory}?lang=${i18nManager.getCurrentLanguage()}`);
+        if (!response.ok) throw new Error('Failed to fetch category products');
+        productsToSearch = await response.json();
+      } else {
+        // Otherwise get all products
+        const response = await fetch(`/api/products?lang=${i18nManager.getCurrentLanguage()}`);
+        if (!response.ok) throw new Error('Failed to fetch products');
+        productsToSearch = await response.json();
+      }
+
+      // If search is empty, show all products for current category
+      if (!searchTerm) {
+        this.state.products = productsToSearch;
+        await this.renderProducts();
+        return;
+      }
+
+      // Filter products based on search term
+      const filteredProducts = productsToSearch.filter(product => {
+        const productName = i18nManager.getProductTranslation(product, 'name').toLowerCase();
+        const productDescription = i18nManager.getProductTranslation(product, 'description').toLowerCase();
+        const price = product.price.toString();
+
+        return productName.includes(searchTerm) || 
+               productDescription.includes(searchTerm) || 
+               price.includes(searchTerm);
+      });
+
+      // Update state and render
+      this.state.products = filteredProducts;
+      await this.renderProducts();
+
+      // Show no results message if needed
+      if (filteredProducts.length === 0) {
+        const message = i18nManager.translate('ui.messages.noProductsFound');
+        showNotification(message, 'info');
+      }
+
+    } catch (error) {
+      console.error('Search error:', error);
+      showNotification(error.message, 'error');
+    }
+  },
+updateSearchHistory(term) {
+    try {
+      const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+      // Remove existing term if present
+      const index = searches.indexOf(term);
+      if (index > -1) {
+        searches.splice(index, 1);
+      }
+      // Add new term at the beginning
+      searches.unshift(term);
+      // Keep only last 5 searches
+      searches.splice(5);
+      localStorage.setItem('searchHistory', JSON.stringify(searches));
+    } catch (error) {
+      console.error('Error updating search history:', error);
+    }
+  },
+
+  showSearchHistory() {
+    if (!this.state.searchHistoryDropdown) return;
+    
+    try {
+      const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+      if (searches.length === 0) return;
+
+      this.state.searchHistoryDropdown.innerHTML = '';
+      const fragment = document.createDocumentFragment();
+
+      searches.forEach(term => {
+        const item = document.createElement('div');
+        item.className = 'search-history-item';
+        item.textContent = term;
+        item.addEventListener('click', () => {
+          this.state.searchInput.value = term;
+          this.searchProducts(term);
+          this.hideSearchHistory();
+        });
+        fragment.appendChild(item);
+      });
+
+      this.state.searchHistoryDropdown.appendChild(fragment);
+      this.state.searchHistoryDropdown.style.display = 'block';
+    } catch (error) {
+      console.error('Error showing search history:', error);
+    }
+  },
+
+  hideSearchHistory() {
+    if (this.state.searchHistoryDropdown) {
+      this.state.searchHistoryDropdown.style.display = 'none';
+    }
+  }, 
+async fetchCategories() {
     try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/categories');
       if (!response.ok) throw new Error(`Failed to fetch categories: ${response.statusText}`);
@@ -3384,85 +2953,7 @@ createImageSlider(product, productName) {
   sliderHtml += '</div>'; // Close image-slider
   return sliderHtml;
 },
-// initializeImageSliders() {
-//   document.querySelectorAll('.image-slider').forEach(slider => {
-//     // Skip if already initialized or has only one image
-//     if (slider.dataset.initialized === 'true') return;
-    
-//     const slides = slider.querySelectorAll('.slider-slide');
-//     if (slides.length <= 1) return;
 
-//     let currentIndex = 0;
-//     let autoPlayInterval;
-
-//     // Function to update active slide
-//     const updateSlide = (newIndex) => {
-//       slides[currentIndex].classList.remove('active');
-//       slider.querySelector(`.slider-dot[data-index="${currentIndex}"]`)?.classList.remove('active');
-      
-//       currentIndex = newIndex;
-      
-//       slides[currentIndex].classList.add('active');
-//       slider.querySelector(`.slider-dot[data-index="${currentIndex}"]`)?.classList.add('active');
-//     };
-
-//     // Function to start autoplay
-//     const startAutoPlay = () => {
-//       stopAutoPlay(); // Clear any existing interval
-//       autoPlayInterval = setInterval(() => {
-//         const nextIndex = (currentIndex + 1) % slides.length;
-//         updateSlide(nextIndex);
-//       }, 5000);
-//     };
-
-//     // Function to stop autoplay
-//     const stopAutoPlay = () => {
-//       if (autoPlayInterval) {
-//         clearInterval(autoPlayInterval);
-//         autoPlayInterval = null;
-//       }
-//     };
-
-//     // Previous button click handler
-//     slider.querySelector('.prev')?.addEventListener('click', (e) => {
-//       e.stopPropagation();
-//       const prevIndex = (currentIndex - 1 + slides.length) % slides.length;
-//       updateSlide(prevIndex);
-//       stopAutoPlay();
-//       startAutoPlay();
-//     });
-
-//     // Next button click handler
-//     slider.querySelector('.next')?.addEventListener('click', (e) => {
-//       e.stopPropagation();
-//       const nextIndex = (currentIndex + 1) % slides.length;
-//       updateSlide(nextIndex);
-//       stopAutoPlay();
-//       startAutoPlay();
-//     });
-
-//     // Dot navigation
-//     slider.querySelectorAll('.slider-dot').forEach(dot => {
-//       dot.addEventListener('click', (e) => {
-//         e.stopPropagation();
-//         const newIndex = parseInt(dot.dataset.index);
-//         updateSlide(newIndex);
-//         stopAutoPlay();
-//         startAutoPlay();
-//       });
-//     });
-
-//     // Start/stop autoplay on hover
-//     slider.addEventListener('mouseenter', stopAutoPlay);
-//     slider.addEventListener('mouseleave', startAutoPlay);
-
-//     // Start autoplay initially
-//     startAutoPlay();
-
-//     // Mark as initialized
-//     slider.dataset.initialized = 'true';
-//   });
-// },
 initializeImageSliders() {
   document.querySelectorAll('.image-slider').forEach(slider => {
     const gridItem = slider.closest('.grid-item');
@@ -4061,7 +3552,7 @@ async renderProducts(products) {
 },
 async initialize() {
     await this.fetchCategories();
-    
+    await this.setupSearch();
   },
   initializeImageSliders() {
     document.querySelectorAll('.image-slider').forEach(slider => {
@@ -4097,7 +3588,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Initialize all managers in parallel with proper error handling
     await Promise.allSettled([
       i18nManager.initialize(),
-      searchManager.initialize(),
       cryptoManager.initialize(),
       ratingManager.initialize(),
       categoryManager.initialize(),
@@ -4242,7 +3732,6 @@ window.authManager = authManager;
 window.cartManager = cartManager;
 window.paymentManager = paymentManager;
 window.uiManager = uiManager;
-window.searchManager = searchManager;
 window.categoryManager = categoryManager;
 window.ratingManager = ratingManager;
 window.socialSharingManager =socialSharingManager;
