@@ -318,6 +318,51 @@ body {
 }
 
 /* Message Styles */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px 25px;
+  border-radius: 4px;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  animation: fadeInOut 3s ease forwards;
+  color: white;
+  text-align: center;
+}
+
+.notification.success {
+  background-color: #4CAF50;
+}
+
+.notification.error {
+  background-color: #f44336;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+    visibility: visible;
+  }
+
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  90% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-20px);
+    visibility: hidden;
+  }
+}
 .message {
   margin-top: 1rem;
   padding: 0.75rem;
@@ -877,40 +922,8 @@ main {
   padding: 10px 20px;
   cursor: pointer;
   border-radius: 4px;
-}.notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 15px 25px;
-  border-radius: 4px;
-  z-index: 9999;
-  opacity: 0;
-  visibility: hidden;
-  animation: fadeInOut 3s ease forwards;
 }
 
-@keyframes fadeInOut {
-  0% {
-    opacity: 0;
-    transform: translateY(-20px);
-    visibility: visible;
-  }
-
-  10% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  90% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  100% {
-    opacity: 0;
-    transform: translateY(-20px);
-    visibility: hidden;
-  }
 }
   /* Utility Classes */
   .visible {
