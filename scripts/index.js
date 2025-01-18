@@ -2370,29 +2370,32 @@ transformProductData(products) {
     }).format(price);
   },
 
-  async refreshAllContent() {
+async refreshAllContent() {
     try {
-      // Update UI elements
-      this.updateUI();
-      
-      // If category manager exists, refresh its content
-      if (window.categoryManager) {
-        await categoryManager.fetchCategories();
-        if (categoryManager.state.selectedCategory) {
-          await categoryManager.fetchProducts(categoryManager.state.selectedCategory);
-        } else {
-          await categoryManager.fetchProducts();
+        // Update UI elements
+        this.updateUI();
+        
+        // If category manager exists, refresh its content
+        if (window.categoryManager) {
+            await categoryManager.fetchCategories();
+            
+            // Check if there's a selected category and fetch accordingly
+            const currentCategory = categoryManager.state.selectedCategory;
+            if (currentCategory) {
+                await categoryManager.fetchProducts(currentCategory);
+            } else {
+                await categoryManager.fetchProducts();
+            }
         }
-      }
-      
-      // Dispatch content refresh event
-      window.dispatchEvent(new CustomEvent('contentRefreshed'));
-      
+        
+        // Dispatch content refresh event
+        window.dispatchEvent(new CustomEvent('contentRefreshed'));
+        
     } catch (error) {
-      console.error('Error refreshing content:', error);
-      throw error;
+        console.error('Error refreshing content:', error);
+        throw error;
     }
-  },
+},
 
   setLanguage(lang) {
     if (!this.state.supportedLanguages.includes(lang)) {
@@ -2939,11 +2942,9 @@ async fetchProducts(categoryId = null) {
 async selectCategory(categoryId) {
     console.log('Selecting category:', categoryId);
     
-    // Use setState instead of direct mutation
-    await this.setState({
-        selectedCategory: categoryId,
-        searchTerm: ''
-    });
+    // Update state directly for vanilla JS
+    this.state.selectedCategory = categoryId;
+    this.state.searchTerm = '';
     
     // Clear search input
     const searchInput = document.getElementById('product-search');
