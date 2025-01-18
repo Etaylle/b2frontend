@@ -2020,174 +2020,7 @@ const socialSharingManager = {
     });
   }
 };
-// const i18nManager = {
-//   state: {
-//     currentLanguage: 'en', // Default language
-//     translations: { en: {
-//     buttons: {
-//       addToCart: "Add to Cart",
-//       login: "Login",
-//       register: "Register"
-//     },
-//     labels: {
-//       price: "Price",
-//       stock: "Stock"
-//     }
-//   },
-//   srb: {
-//     buttons: {
-//       addToCart: "Додај у корпу",
-//       login: "Пријава",
-//       register: "Регистрација"
-//     },
-//     labels: {
-//       price: "Цена",
-//       stock: "Стање"
-//     }
-//   }},
-//     supportedLanguages: ['en', 'srb', 'de'], 
 
-//   async initialize() {
-//     try {
-//       // Load saved language preference from localStorage
-//       const savedLang = localStorage.getItem('preferred_language');
-//       if (savedLang && this.state.supportedLanguages.includes(savedLang)) {
-//         this.state.currentLanguage = savedLang;
-//       }
-
-//       // Load translations for current language
-//       await this.loadTranslations();
-      
-//       // Update UI language
-//       this.updateUILanguage();
-      
-//       // Setup language switcher
-//       this.setupLanguageSwitcher();
-//     } catch (error) {
-//       console.error('Error initializing i18nManager:', error);
-//       showNotification('Error loading translations', 'error');
-//     }
-//   },
-
-//   async loadTranslations() {
-//     try {
-//       // In production, you would fetch this from your backend
-//       // For now, we'll load them from a static object
-//       this.state.translations = {
-//         en: {
-//           buttons: {
-//             addToCart: '💰',
-//             share: '🚀',
-//             rate: '⭐',
-//             login: 'Login',
-//             register: 'Register',
-//             logout: 'Logout',
-//             // Add more button translations
-//           },
-//           common: {
-//             price: 'Price',
-//             stock: 'Stock',
-//             all: 'All',
-//             // Add more common translations
-//           }
-//         },
-//         srb: {
-//           buttons: {
-//             addToCart: '💰',
-//             share: '🚀',
-//             rate: '⭐',
-//             login: 'Prijava',
-//             register: 'Registracija',
-//             logout: 'Odjava',
-//           },
-//           common: {
-//             price: 'Cena',
-//             stock: 'Stanje',
-//             all: 'Sve',
-//           }
-//         },
-//         // Add more languages
-//       };
-//     } catch (error) {
-//       console.error('Error loading translations:', error);
-//       throw error;
-//     }
-//   },
-
-//   setupLanguageSwitcher() {
-//     const container = document.querySelector('.header-controls') || document.body;
-    
-//     const switcher = document.createElement('select');
-//     switcher.className = 'language-switcher';
-    
-//     this.state.supportedLanguages.forEach(lang => {
-//       const option = document.createElement('option');
-//       option.value = lang;
-//       option.textContent = lang.toUpperCase();
-//       option.selected = lang === this.state.currentLanguage;
-//       switcher.appendChild(option);
-//     });
-
-//     switcher.addEventListener('change', (e) => {
-//       this.changeLanguage(e.target.value);
-//     });
-
-//     container.appendChild(switcher);
-//   },
-
-//   async changeLanguage(language) {
-//     if (!this.state.supportedLanguages.includes(language)) {
-//       console.error(`Language ${language} is not supported`);
-//       return;
-//     }
-
-//     this.state.currentLanguage = language;
-//     localStorage.setItem('preferred_language', language);
-    
-//     // Reload products and categories in new language
-//     await categoryManager.fetchCategories();
-//     await categoryManager.fetchProducts(categoryManager.state.selectedCategory);
-    
-//     // Update UI elements
-//     this.updateUILanguage();
-//   },
-
-//   updateUILanguage() {
-//     const translations = this.state.translations[this.state.currentLanguage];
-//     if (!translations) return;
-
-//     // Update static UI elements
-//     document.querySelectorAll('[data-i18n]').forEach(element => {
-//       const key = element.getAttribute('data-i18n');
-//       const translation = this.getTranslation(key);
-//       if (translation) {
-//         if (element.tagName === 'INPUT' && element.type === 'button') {
-//           element.value = translation;
-//         } else {
-//           element.textContent = translation;
-//         }
-//       }
-//     });
-//   },
-
-//   getTranslation(key) {
-//     const keys = key.split('.');
-//     let translation = this.state.translations[this.state.currentLanguage];
-    
-//     for (const k of keys) {
-//       if (!translation[k]) return key;
-//       translation = translation[k];
-//     }
-    
-//     return translation;
-//   },
-
-//   // Helper method to get product name in current language
-//   getProductName(product) {
-//     const langKey = this.state.currentLanguage === 'en' ? 'name' : `name_${this.state.currentLanguage}`;
-//     return product[langKey] || product.name; // Fallback to default name if translation doesn't exist
-//   }
-//   }};
 const i18nManager = {
    state: {
     currentLanguage: 'en',
@@ -2259,7 +2092,7 @@ const i18nManager = {
       }
     }
   },
- initialize() {
+  initialize() {
     const savedLang = localStorage.getItem('preferred_language');
     const browserLang = navigator.language.split('-')[0];
     
@@ -2288,19 +2121,19 @@ const i18nManager = {
     this.fetchProducts();
   }
 ,
- refreshContent() {
-  // Update the UI elements with the translated text
-  i18nManager.updateUI();
+//  refreshContent() {
+//   // Update the UI elements with the translated text
+//   i18nManager.updateUI();
 
-  // Update the search history dropdown content
-  categoryManager.setupSearch();
+//   // Update the search history dropdown content
+//   categoryManager.setupSearch();
 
-  // Update the category list with the translated category names
-  categoryManager.renderCategories();
+//   // Update the category list with the translated category names
+//   categoryManager.renderCategories();
 
-  // Update the product list with the translated product names and prices
-  categoryManager.renderProducts();
-},
+//   // Update the product list with the translated product names and prices
+//   categoryManager.renderProducts();
+// },
   // setLanguage(lang) {
   //   if (!this.state.supportedLanguages.includes(lang)) {
   //     console.warn(`Language ${lang} not supported, falling back to ${this.state.defaultLanguage}`);
@@ -2769,14 +2602,86 @@ async fetchCategories() {
     }
   },
 
+// async fetchProducts(categoryId = null) {
+//     try {
+//       const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+//       const currentLang = i18nManager.state.currentLanguage;
+      
+//       // Add language parameter to URL
+//       const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
+//       url.searchParams.append('lang', currentLang);
+      
+//       const response = await fetch(url.toString(), {
+//         headers: {
+//           'Accept-Language': currentLang
+//         }
+//       });
+      
+//       if (!response.ok) throw new Error("Failed to fetch products");
+//       const data = await response.json();
+      
+//       // Transform the product data with translations
+//       const products = (data.success ? data.products : data).map(product => 
+//         i18nManager.transformProductData(product)
+//       );
+      
+//       this.state.products = products;
+//       await this.renderProducts();
+//     } catch (error) {
+//       console.error("Error fetching products:", error);
+//       showNotification(error.message, "error");
+//     }
+//   }
+// async fetchProducts(categoryId = null) {
+//     try {
+//       const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+//       const currentLang = i18nManager.state.currentLanguage;
+      
+//       const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
+//       url.searchParams.append('lang', currentLang);
+      
+//       const response = await fetch(url.toString(), {
+//         headers: {
+//           'Accept-Language': currentLang
+//         }
+//       });
+      
+//       if (!response.ok) throw new Error("Failed to fetch products");
+//       const data = await response.json();
+      
+//       // Log the response to debug
+//       console.log('Products response:', data);
+      
+//       // Ensure we're getting an array of products
+//       let products;
+//       if (Array.isArray(data)) {
+//         products = data;
+//       } else if (data.products && Array.isArray(data.products)) {
+//         products = data.products;
+//       } else {
+//         throw new Error("Invalid products data format");
+//       }
+      
+//       // Transform and filter products
+//       this.state.products = products
+//         .map(product => i18nManager.transformProductData(product))
+//         .filter(product => !categoryId || product.category_id === categoryId);
+      
+//       await this.renderProducts();
+//     } catch (error) {
+//       console.error("Error fetching products:", error);
+//       showNotification(error.message, "error");
+//     }
+// },
 async fetchProducts(categoryId = null) {
     try {
       const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
       const currentLang = i18nManager.state.currentLanguage;
       
-      // Add language parameter to URL
       const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
       url.searchParams.append('lang', currentLang);
+      
+      console.log('Fetching products from URL:', url.toString()); // Debug log
       
       const response = await fetch(url.toString(), {
         headers: {
@@ -2787,18 +2692,28 @@ async fetchProducts(categoryId = null) {
       if (!response.ok) throw new Error("Failed to fetch products");
       const data = await response.json();
       
-      // Transform the product data with translations
-      const products = (data.success ? data.products : data).map(product => 
+      console.log('Raw API response:', data); // Debug log
+      
+      // Clear existing products first
+      this.state.products = [];
+      
+      // Use only the products from this response
+      const products = Array.isArray(data) ? data : 
+                      data.products ? data.products : 
+                      [data];
+      
+      this.state.products = products.map(product => 
         i18nManager.transformProductData(product)
       );
       
-      this.state.products = products;
+      console.log('Processed products:', this.state.products); // Debug log
+      
       await this.renderProducts();
     } catch (error) {
       console.error("Error fetching products:", error);
       showNotification(error.message, "error");
     }
-  },
+},
   renderCategories() {
     const container = document.querySelector(".categories");
     if (!container) {
@@ -2830,20 +2745,22 @@ async fetchProducts(categoryId = null) {
     this.ensureCategoryStylesExist();
   },
 
-   async selectCategory(categoryId) {
+async selectCategory(categoryId) {
+    console.log('Selecting category:', categoryId);
     this.state.selectedCategory = categoryId;
-    this.state.searchTerm = ''; // Clear search when changing categories
+    this.state.searchTerm = '';
     
-    // Clear search input
     const searchInput = document.getElementById('product-search');
     if (searchInput) {
       searchInput.value = '';
     }
 
-    await this.renderCategories(); // Update active states
+    await this.renderCategories();
     await this.fetchProducts(categoryId);
-  }
-,
+    
+    // Add debug logging to verify state after fetch
+    console.log('Current products after category selection:', this.state.products);
+},
 ensureCategoryStylesExist() {
     if (!document.querySelector('#category-styles')) {
       const styles = document.createElement('style');
@@ -3637,30 +3554,31 @@ window.socialSharingManager = socialSharingManager;
 window.productPageManager = productPageManager;
 window.i18nManager = i18nManager;
 
-async function fetchProducts(categoryId = null) {
-  try {
-    const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
-    const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
+// async function fetchProducts(categoryId = null) {
+//   try {
+//     const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+//     const url = new URL(categoryId ? `${baseUrl}/category/${categoryId}` : baseUrl);
     
-    // Add language parameter
-    url.searchParams.append('lang', this.state.currentLanguage);
+//     // Add language parameter
+//     url.searchParams.append('lang', this.state.currentLanguage);
     
-    const response = await fetch(url.toString());
+//     const response = await fetch(url.toString());
     
-    if (!response.ok) throw new Error("Failed to fetch products");
-    const data = await response.json();
+//     if (!response.ok) throw new Error("Failed to fetch products");
+//     const data = await response.json();
     
-    if (data.success) {
-      this.state.products = data.data; 
-      this.state.products = data;
-    }
+//     if (data.success) {
+//       this.state.products = data.data; 
+//       this.state.products = data;
+//     }
     
-    await this.renderProducts();
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    showNotification(error.message, "error");
-  }
-}
+//     await this.renderProducts();
+//   } catch (error) {
+//     console.error("Error fetching products:", error);
+//     showNotification(error.message, "error");
+//   }
+// }
+
 function initializeImageSliders() {
   document.querySelectorAll('.image-slider').forEach(slider => {
     const images = slider.querySelectorAll('img');
