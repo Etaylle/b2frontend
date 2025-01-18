@@ -146,7 +146,209 @@ html {
     margin-right: 10px;
   }
   
- 
+  
+  
+  .grid-item:hover {
+    border-radius: 10px;
+    filter: drop-shadow(0px 0px 5px rgba(132, 0, 255, 0.644));
+  }
+  .grid-item:hover button {
+    opacity: 1;
+  }
+  
+  .grid-item.hidden {
+    display: none;
+    opacity: 0;
+  }
+  
+  .grid-item img {
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
+    transition: scale 0.2s;
+  }
+  
+  .grid-item:hover img {
+    scale: 1.1;
+  }
+  
+  .grid-item .overlay {
+    position: absolute;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    width: 100%;
+    text-align: center;
+    padding-block: 1rem;
+  }
+  
+  .h-scroll-container {
+    width: 100%;
+    max-width: 2000px;
+  }
+  
+  .h-scroll-wrapper {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 1rem;
+    padding: 2rem;
+    list-style-type: none;
+    overflow: auto;
+  }
+  
+  [data-animated="true"] .h-scroll-wrapper {
+    flex-wrap: nowrap;
+    width: max-content;
+    animation: scroll-h 60s linear infinite;
+  }
+  
+  [data-animated="true"] .h-scroll-wrapper:has(.grid-item:hover) {
+    animation-play-state: paused;
+  }
+  
+  .h-scroll-wrapper img {
+    height: 300px;
+  }
+  
+  .h-scroll-container[data-animated="true"] {
+    overflow: hidden;
+    -webkit-mask: linear-gradient(
+      90deg,
+      transparent,
+      white 20%,
+      white 80%,
+      transparent
+    );
+    mask: linear-gradient(90deg, transparent, white 20%, white 80%, transparent);
+  }
+  
+  @keyframes scroll-h {
+    to {
+      transform: translate(calc(-50% - 0.5rem));
+    }
+  }
+  .scroll-item {
+    flex: 0 0 auto;
+    width: 200px;
+    background: #f0f0f0;
+    padding: 1rem;
+    text-align: center;
+  }
+  
+  .flex-section .filter-container {
+    margin-bottom: 1rem;
+  }
+  
+  .flex-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  .filter-container {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 1rem;
+    width: 100%;
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .filter-container > li {
+    flex: 1;
+    background-color: #aaa;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 5px;
+    padding: 1rem 0.5rem;
+    transition: flex 0.5s ease-in-out;
+  }
+  
+  .filter-container > li:hover {
+    background-color: #aaf;
+  }
+  
+  .filter-container > li.active {
+    flex: 2;
+  }
+  
+  .product_popover {
+    height: 80vh;
+    width: 80vw;
+    overflow: auto;
+  }
+  
+  .product_popover::backdrop {
+    background-color: rgba(0, 0, 0, 0.3333333333);
+  }
+  
+  .grid-item button {
+    border: none;
+    display: block;
+    position: relative;
+    top: 5px;
+    right: 5px;
+    height: 2rem;
+    width: 2rem;
+    border-radius: 50%;
+    background-color: #1976d2;
+    opacity: 0;
+    z-index: 2;
+    color: #fff;
+    font-size: 1.3rem;
+    transition: opacity 0.3s;
+    cursor: pointer;
+  }
+  
+/* Login Section Styles */
+
+.login-container {
+  height: 100vh;
+  width: 100vw;
+  position: absolute;
+  z-index: 10;
+  display: none;
+  place-items: center;
+  backdrop-filter: blur(10px);
+}
+
+.login-container div {
+  border: 2px solid var(--primary-color);
+  padding: 1rem;
+  border-radius: 10px;
+  position: relative;
+  background-color: #fff;
+  width: 25%;
+  min-width: 250px;
+  display: flex; /* Use Flexbox */
+  flex-direction: column;
+  align-items: center;
+}
+
+
+
+/* Grid Section Styles */
+
+.grid-container {
+  display: grid; /* Use Grid */
+  grid-template-columns: repeat(auto-fit, minmax(400px, min(25vw, 400px)));
+  gap: 2rem;
+  justify-content: center;
+    /* Center items horizontally */
+    padding: 2rem;
+}
+
+.grid-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
 /* Animation */
 
 .fade-in {
