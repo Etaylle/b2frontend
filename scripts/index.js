@@ -96,23 +96,23 @@ const CartEnhancements = {
   }
 };
 
-// Initialize guest mode
-document.addEventListener('DOMContentLoaded', () => {
-  CartEnhancements.initializeGuestMode();
+// // Initialize guest mode
+// document.addEventListener('DOMContentLoaded', () => {
+//   CartEnhancements.initializeGuestMode();
   
-  // Modify checkout button behavior
-  const checkoutBtn = document.getElementById('checkout-button');
-  if (checkoutBtn) {
-    checkoutBtn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      if (!currentUser) {
-        await enhancedPaymentManager.initiateGuestCheckout();
-      } else {
-        await paymentManager.initiateCheckout();
-      }
-    });
-  }
-});
+//   // Modify checkout button behavior
+//   const checkoutBtn = document.getElementById('checkout-button');
+//   if (checkoutBtn) {
+//     checkoutBtn.addEventListener('click', async (e) => {
+//       e.preventDefault();
+//       if (!currentUser) {
+//         await enhancedPaymentManager.initiateGuestCheckout();
+//       } else {
+//         await paymentManager.initiateCheckout();
+//       }
+//     });
+//   }
+// });
 // Cart state management
 const cartManager = {
 
@@ -415,55 +415,92 @@ const uiManager = {
     const registerContainer = document.querySelector("#register");
     registerContainer.style.display = "none";
   },
+updateButtonVisibility: function(currentUser) {
+  const elements = {
+    loginBtn: document.getElementById("login-btn"),
+    registerBtn: document.getElementById("register-btn"),
+    logoutButton: document.getElementById("logout-button"),
+    userAvatarDisplay: document.getElementById("user-avatar-display"),
+    navbar: document.querySelector('.navbar')
+  };
 
-  updateButtonVisibility: (currentUser) => {
-    const loginBtn = document.getElementById("login-btn");
-    const registerBtn = document.getElementById("register-btn");
-    const logoutBtn = document.getElementById("logout-button");
-    const logo2 = document.querySelector(".credit-info");
-    const userAvatar = document.querySelector(".user-avatar-display");
-    const navLinks = document.querySelector('.navbar');
-    const adminLink = document.getElementById("admin-link");
-    if (currentUser) {
-      // Hide login and register buttons
-      if (loginBtn) loginBtn.style.display = "none";
-      if (registerBtn) registerBtn.style.display = "none";
-  
-      // Show elements like logout and avatars
-      if (logoutBtn) logoutBtn.style.display = "block";
-      if (logo2) logo2.style.display = "flex";
-      if (userAvatar) userAvatar.style.display = "flex";
+  elements.loginBtn.style.display = currentUser ? "none" : "block";
+  elements.registerBtn.style.display = currentUser ? "none" : "block";
+  elements.logoutButton.style.display = currentUser ? "block" : "none";
+
+  if (currentUser) {
+    const isAdmin = currentUser.role === 'admin';
+    console.log('User is admin:', isAdmin);
     
+    // Clear existing content before adding new
+    elements.userAvatarDisplay.innerHTML = `
+      <img src="/images/avatar.jpg" alt="User Avatar">
+    `;
 
-  
-      // Handle admin link visibility
-      if (currentUser.role === 'admin') {
-        if (adminLink) {
-            adminLink.style.display = "block";
-        } else if (navLinks) {
-            const newAdminLink = document.createElement('a');
-            newAdminLink.href = '/admin';
-            newAdminLink.textContent = i18nManager.translate('ui.buttons.adminPanel');
-            newAdminLink.id = 'admin-link';
-            navLinks.appendChild(newAdminLink);
-        }
-    } else if (adminLink) {
-        adminLink.style.display = 'none';
+    if (isAdmin) {
+      // Add admin link dynamically
+      const adminLink = document.createElement('a');
+      adminLink.href = '/admin';
+      adminLink.className = 'admin-link';
+      adminLink.textContent = i18nManager.translate('ui.buttons.adminPanel');
+      adminLink.setAttribute('aria-label', i18nManager.translate('ui.ariaLabels.adminPanel'));
+      
+      // Append the admin link to userAvatarDisplay
+      elements.userAvatarDisplay.appendChild(adminLink);
     }
-} else {
-    // Show login and register buttons
-    if (loginBtn) loginBtn.style.display = "block";
-    if (registerBtn) registerBtn.style.display = "block";
-
-    // Hide logout button and credit info
-    if (logoutBtn) logoutBtn.style.display = "none";
-    if (logo2) logo2.style.display = "none";
-    if (userAvatar) userAvatar.style.display = "none";
-    // Hide admin link if it exists
-    if (adminLink) adminLink.style.display = 'none';
-}
-    
+  } else {
+    // Clear the content if no user is logged in
+    elements.userAvatarDisplay.innerHTML = '';
   }
+}
+//   updateButtonVisibility: (currentUser) => {
+//     const loginBtn = document.getElementById("login-btn");
+//     const registerBtn = document.getElementById("register-btn");
+//     const logoutBtn = document.getElementById("logout-button");
+//     const logo2 = document.querySelector(".credit-info");
+//     const userAvatar = document.querySelector(".user-avatar-display");
+//     const navLinks = document.querySelector('.navbar');
+//     const adminLink = document.getElementById("admin-link");
+//     if (currentUser) {
+//       // Hide login and register buttons
+//       if (loginBtn) loginBtn.style.display = "none";
+//       if (registerBtn) registerBtn.style.display = "none";
+  
+//       // Show elements like logout and avatars
+//       if (logoutBtn) logoutBtn.style.display = "block";
+//       if (logo2) logo2.style.display = "flex";
+//       if (userAvatar) userAvatar.style.display = "flex";
+    
+
+  
+//       // Handle admin link visibility
+//       if (currentUser.role === 'admin') {
+//         if (adminLink) {
+//             adminLink.style.display = "block";
+//         } else if (navLinks) {
+//             const newAdminLink = document.createElement('a');
+//             newAdminLink.href = '/admin';
+//             newAdminLink.textContent = i18nManager.translate('ui.buttons.adminPanel');
+//             newAdminLink.id = 'admin-link';
+//             navLinks.appendChild(newAdminLink);
+//         }
+//     } else if (adminLink) {
+//         adminLink.style.display = 'none';
+//     }
+// } else {
+//     // Show login and register buttons
+//     if (loginBtn) loginBtn.style.display = "block";
+//     if (registerBtn) registerBtn.style.display = "block";
+
+//     // Hide logout button and credit info
+//     if (logoutBtn) logoutBtn.style.display = "none";
+//     if (logo2) logo2.style.display = "none";
+//     if (userAvatar) userAvatar.style.display = "none";
+//     // Hide admin link if it exists
+//     if (adminLink) adminLink.style.display = 'none';
+// }
+    
+//   }
 };
 
 // Auth Management
@@ -742,10 +779,10 @@ const AuthModal = {
     }
 };
 
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    AuthModal.init();
-});
+// // Initialize when DOM is loaded
+// document.addEventListener('DOMContentLoaded', () => {
+//     AuthModal.init();
+// });
 
 const paymentManager = {
   stripe: null,
@@ -1925,58 +1962,58 @@ openProductPage(product) {
   }
 };
 // Update the main initialization sequence
-document.addEventListener("DOMContentLoaded", async () => {
-  try {
-    // Initialize all managers
-    await Promise.allSettled([
-      cryptoManager.initialize(),
-      ratingManager.initialize(),
-      productPageManager.initialize(),
-      paymentManager.initialize('your-stripe-key'),
-      recommendationManager.initialize(),
-    ]);
+// document.addEventListener("DOMContentLoaded", async () => {
+//   try {
+//     // Initialize all managers
+//     await Promise.allSettled([
+//       cryptoManager.initialize(),
+//       ratingManager.initialize(),
+//       productPageManager.initialize(),
+//       paymentManager.initialize('your-stripe-key'),
+//       recommendationManager.initialize(),
+//     ]);
 
-    // Initialize category manager last since it loads products
-    await categoryManager.initialize();
+//     // Initialize category manager last since it loads products
+//     await categoryManager.initialize();
 
-    // Fetch user data and update UI
-    currentUser = await authManager.fetchCurrentUser();
+//     // Fetch user data and update UI
+//     currentUser = await authManager.fetchCurrentUser();
     
-    // Initialize UI components
-    authManager.displayUserInfo();
-    authManager.displayUserAvatar();
-    cartManager.updateDisplay();
+//     // Initialize UI components
+//     authManager.displayUserInfo();
+//     authManager.displayUserAvatar();
+//     cartManager.updateDisplay();
     
-    setupEventListeners();
-    uiManager.updateButtonVisibility(currentUser);
+//     setupEventListeners();
+//     uiManager.updateButtonVisibility(currentUser);
 
-     const elements = {
-    checkoutButton: document.querySelector('.checkout-btn'),
-    emptyCartButton: document.getElementById('empty-cart-button')
-  };
+//      const elements = {
+//     checkoutButton: document.querySelector('.checkout-btn'),
+//     emptyCartButton: document.getElementById('empty-cart-button')
+//   };
 
-  if (elements.checkoutButton) {
-    elements.checkoutButton.textContent = i18nManager.translate('ui.buttons.checkout');
-    elements.checkoutButton.addEventListener('click', (event) => {
-      event.preventDefault();
-      paymentManager.initiateCheckout();
-    });
-  }
+//   if (elements.checkoutButton) {
+//     elements.checkoutButton.textContent = i18nManager.translate('ui.buttons.checkout');
+//     elements.checkoutButton.addEventListener('click', (event) => {
+//       event.preventDefault();
+//       paymentManager.initiateCheckout();
+//     });
+//   }
 
-  if (elements.emptyCartButton) {
-    elements.emptyCartButton.textContent = i18nManager.translate('ui.buttons.emptyCart');
-    elements.emptyCartButton.addEventListener('click', (event) => {
-      event.preventDefault();
-      cartManager.clearCart();
-    });
-  }
+//   if (elements.emptyCartButton) {
+//     elements.emptyCartButton.textContent = i18nManager.translate('ui.buttons.emptyCart');
+//     elements.emptyCartButton.addEventListener('click', (event) => {
+//       event.preventDefault();
+//       cartManager.clearCart();
+//     });
+//   }
 
     
-  } catch (error) {
-    console.error("Error during initialization:", error);
-    showNotification("Error initializing application", "error");
-  }
-});
+//   } catch (error) {
+//     console.error("Error during initialization:", error);
+//     showNotification("Error initializing application", "error");
+//   }
+// });
 const socialSharingManager = {
   getBaseUrl() {
     // Use your custom domain or the render.com frontend URL
@@ -3388,6 +3425,47 @@ async updateRelatedManagers() {
   this.initializeImageSliders();
 },
 };
+// document.addEventListener("DOMContentLoaded", async () => {
+//   try {
+//     // Initialize all managers in parallel with proper error handling
+//     await Promise.allSettled([
+//       i18nManager.initialize(),
+//       categoryManager.initialize(),
+//       cryptoManager.initialize(),
+//       ratingManager.initialize(),
+//       paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl'),
+//       recommendationManager.initialize(),
+//       productPageManager.initialize(),
+      
+     
+//     ]).then(results => {
+//       // Log any failures during initialization
+//       results.forEach((result, index) => {
+//         if (result.status === 'rejected') {
+//           console.error(`Manager ${index} failed to initialize:`, result.reason);
+//         }
+//       });
+//     });
+
+//     // Fetch user data and update UI
+//     currentUser = await authManager.fetchCurrentUser();
+    
+//     // Initialize UI components
+//     authManager.displayUserInfo();
+//     authManager.displayUserAvatar();
+//     cartManager.updateDisplay();
+    
+//     setupEventListeners();
+//     uiManager.updateButtonVisibility(currentUser);
+    
+//     // Handle direct navigation last, after all initialization is complete
+//     productPageManager.handleNavigation();
+    
+//   } catch (error) {
+//     console.error("Error during initialization:", error);
+//     showNotification("Error initializing application", "error");
+//   }
+// });
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     // Initialize all managers in parallel with proper error handling
@@ -3399,8 +3477,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl'),
       recommendationManager.initialize(),
       productPageManager.initialize(),
-      
-     
     ]).then(results => {
       // Log any failures during initialization
       results.forEach((result, index) => {
@@ -3411,19 +3487,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     // Fetch user data and update UI
-    currentUser = await authManager.fetchCurrentUser();
+    const currentUser = await authManager.fetchCurrentUser();
+    console.log('Fetched currentUser:', currentUser);
     
     // Initialize UI components
     authManager.displayUserInfo();
     authManager.displayUserAvatar();
     cartManager.updateDisplay();
     
-    setupEventListeners();
+    // Use the unified uiManager for button visibility
     uiManager.updateButtonVisibility(currentUser);
     
     // Handle direct navigation last, after all initialization is complete
     productPageManager.handleNavigation();
     
+    // Setup event listeners after all UI elements are updated
+    setupEventListeners();
+
   } catch (error) {
     console.error("Error during initialization:", error);
     showNotification("Error initializing application", "error");
