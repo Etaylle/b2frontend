@@ -2637,7 +2637,7 @@ async searchProducts(query) {
     clearTimeout(this.state.debounceTimeout);
     this.state.debounceTimeout = setTimeout(() => {
       this.searchProducts(e.target.value);
-    }, 300);
+    }, 1000);
   });
 
   // Show search history on focus
