@@ -303,14 +303,22 @@ async addItem(productId) {
 
         if (cartContainer) {
           cartContainer.innerHTML = `<li data-i18n="ui.messages.cartEmpty">Your cart is empty</li>`;
-  cartContainer.classList.add('hidden');
+          cartContainer.classList.add('hidden');
         }
 
         if (cartTotal) {
-          cartTotal.textContent = 'Total: 0';
+          cartTotal.textContent = i18nManager.translate('ui.labels.cartTotal') + ': 0';
         }
-
-        showNotification(afterPurchase ? 'Purchase completed successfully!' : 'Cart cleared successfully!', 'success');
+        // Update translations for the container text
+const emptyCartMessage = cartContainer.querySelector('li[data-i18n]');
+if (emptyCartMessage) {
+  emptyCartMessage.textContent = i18nManager.translate(emptyCartMessage.getAttribute('data-i18n'));
+}
+        showNotification(
+  afterPurchase ? 
+  i18nManager.translate('ui.messages.purchaseCompleted') : 
+  i18nManager.translate('ui.messages.cartCleared'), 
+  'success');
       } catch (error) {
         console.error('Error clearing cart:', error);
         showNotification(error.message || 'Failed to clear cart', 'error');
@@ -325,7 +333,7 @@ async addItem(productId) {
 
     if (!cart.items || cart.items.length === 0) {
       cartContainer.innerHTML = '<li>Your cart is empty</li>';
-      cartTotal.textContent = 'Total: 0';
+      cartTotal.textContent =  ': 0';
       cartContainer.classList.add('hidden');
       return;
     }
@@ -361,7 +369,7 @@ async addItem(productId) {
       total += productPrice * item.quantity;
     });
 
-    cartTotal.textContent = `Total: ${total.toFixed(2)}`;
+    cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: ${total.toFixed(2)}`;
     this.attachEventListeners();
   },
 
@@ -2167,6 +2175,8 @@ state: {
             quantity: "Quantity",
             showCryptoPrices: "Show Crypto Prices",
             adminPanel: "Admin Panel",
+            cartTotal: "Cart Total",
+            youMightAlsoLike: "You might also like",
           },
           tooltips: {
             decreaseQuantity: "Decrease Quantity",
@@ -2209,7 +2219,9 @@ state: {
             removeItem: "Уклони ставку",
             quantity: "Количина",
             showCryptoPrices: "Прикажи цене криптовалута",
-            adminPanel: "Админ Панел"
+            adminPanel: "Админ Панел",
+            cartTotal: "Укупна цена",
+            youMightAlsoLike: "Можда би вам се свидели следећи производи",
           },
           tooltips: {
             decreaseQuantity: "Смањи количину",
@@ -2253,6 +2265,8 @@ state: {
             quantity: "Anzahl",
             showCryptoPrices: "Krypto-Preise anzeigen",
             adminPanel: "Admin-Bereich",
+            cartTotal: "Gesamtbetrag",
+            youMightAlsoLike: "Ihnen könnten auch folgende Produkte gefallen",
           },
           tooltips: {
             decreaseQuantity: "Menge verringern",
