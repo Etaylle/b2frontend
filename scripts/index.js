@@ -2074,7 +2074,7 @@ const i18nManager = {
           tooltips: {
             decreaseQuantity: "Decrease Quantity",
             increaseQuantity: "Increase Quantity",
-            removeItem: "Remove Item" // Added this for completeness
+            remove: "Remove Item" 
           },
         }
       },
@@ -2105,7 +2105,7 @@ const i18nManager = {
           tooltips: {
             decreaseQuantity: "Смањи количину",
             increaseQuantity: "Повећај количину",
-            removeItem: "Уклони ставку"
+            remove: "Уклони ставку"
           },
         }
       },
@@ -2124,7 +2124,7 @@ const i18nManager = {
             clearHistory: "Suchverlauf löschen",
             checkout: "Kassenbestellen",
             emptyCart: "Warenkorb leeren",
-            removeItem: "Entfernen",
+            remove: "Entfernen",
           },
           labels: {
             stock: "Lagerbestand",
