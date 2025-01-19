@@ -2666,7 +2666,7 @@ async searchProducts(query) {
       this.searchProducts(this.state.searchTerm);
     }
   });
-}
+},
 
 //   setupSearch() {
 //     this.state.searchInput = document.getElementById('product-search');
