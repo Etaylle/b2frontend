@@ -2070,6 +2070,7 @@ state: {
             search: "Search products...",
             recentSearches: "Recent searches",
             removeItem: "Remove Item",
+            quantity: "Quantity",
           },
           tooltips: {
             decreaseQuantity: "Decrease Quantity",
@@ -2106,7 +2107,8 @@ state: {
             categories: "Категорије",
             search: "Претражи производе...",
             recentSearches: "Недавне претраге",
-            removeItem: "Уклони ставку"
+            removeItem: "Уклони ставку",
+            quantity: "Количина",
           },
           tooltips: {
             decreaseQuantity: "Смањи количину",
@@ -2144,6 +2146,7 @@ state: {
             search: "Produkte suchen...",
             recentSearches: "Vorherige Suchanfragen",
             removeItem: "Artikel entfernen",
+            quantity: "Anzahl",
           },
           tooltips: {
             decreaseQuantity: "Menge verringern",
