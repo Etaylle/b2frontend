@@ -2123,11 +2123,7 @@ const i18nManager = {
     
     window.dispatchEvent(new CustomEvent('languageChanged', { detail: { language: lang } }));
   },
-  // getCurrentLanguage() {
-  //   console.log('Current language:', i18nManager.state.currentLanguage);
-  //   console.log('Available languages:', i18nManager.state.supportedLanguages);
-  //   return i18nManager.state.currentLanguage;
-  // },
+
   
   forceLanguage(lang) {
     i18nManager.setLanguage(lang);
@@ -2311,34 +2307,6 @@ initialize() {
     
     return Promise.resolve();
   },
-  // setupSearch() {
-  //   // Get search elements
-  //   this.state.searchInput = document.getElementById('product-search');
-  //   this.state.searchHistoryDropdown = document.getElementById('search-history');
-    
-  //   if (!this.state.searchInput) return;
-
-  //   // Setup search input event listener with debouncing
-  //   this.state.searchInput.addEventListener('input', (e) => {
-  //     clearTimeout(this.state.debounceTimeout);
-  //     this.state.debounceTimeout = setTimeout(() => {
-  //       this.searchProducts(e.target.value);
-  //     }, 500); 
-  //   });
-
-  //   // Setup search history display
-  //   this.state.searchInput.addEventListener('focus', () => {
-  //     this.showSearchHistory();
-  //   });
-
-  //   // Close search history when clicking outside
-  //   document.addEventListener('click', (e) => {
-  //     if (!e.target.closest('#search-history') && !e.target.closest('#product-search')) {
-  //       this.hideSearchHistory();
-  //     }
-  //   });
-  // },
-
 updateSearchHistory(term) {
     try {
       const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
@@ -2385,107 +2353,12 @@ updateSearchHistory(term) {
       console.error('Error showing search history:', error);
     }
   },
-//  async searchProducts(query) {
-//     try {
-//       const searchTerm = query.toLowerCase().trim();
-//       this.state.searchTerm = searchTerm;
-
-//       // Save search term to history if not empty
-//       if (searchTerm) {
-//         this.updateSearchHistory(searchTerm);
-//       }
-
-//       let productsToSearch = this.state.products; // Use current products in state
-
-//       // Filter products based on search term
-//       const filteredProducts = productsToSearch.filter(product => {
-//         const productName = i18nManager.getProductTranslation(product, 'name').toLowerCase();
-//         const productDescription = i18nManager.getProductTranslation(product, 'description').toLowerCase();
-//         const price = product.price.toString();
-
-//         return productName.includes(searchTerm) || 
-//                productDescription.includes(searchTerm) || 
-//                price.includes(searchTerm);
-//       });
-
-//       // Update state and render
-//       this.state.products = filteredProducts;
-//       await this.renderProducts(this.state.products);
-
-//       // Show no results message if needed
-//       if (filteredProducts.length === 0) {
-//         const message = i18nManager.translate('ui.messages.noProductsFound');
-//         showNotification(message, 'info');
-//       }
-
-//     } catch (error) {
-//       console.error('Search error:', error);
-//       showNotification(error.message, 'error');
-//     }
-//   },
-//  async searchProducts(query) {
-//     try {
-//       // Normalize the search query
-//       const searchTerm = query.toLowerCase().trim();
-//       this.state.searchTerm = searchTerm;
-
-//       // Save search term to history if not empty
-//       if (searchTerm) {
-//         this.updateSearchHistory(searchTerm);
-//       }
-
-//       let productsToSearch;
-      
-//       if (this.state.selectedCategory) {
-//         // If category is selected, get products for that category
-//         const response = await fetch(`/api/products/category/${this.state.selectedCategory}?lang=${i18nManager.getCurrentLanguage()}`);
-//         if (!response.ok) throw new Error('Failed to fetch category products');
-//         productsToSearch = await response.json();
-//       } else {
-//         // Otherwise get all products
-//         const response = await fetch(`/api/products?lang=${i18nManager.getCurrentLanguage()}`);
-//         if (!response.ok) throw new Error('Failed to fetch products');
-//         productsToSearch = await response.json();
-//       }
-
-//       // If search is empty, show all products for current category
-//       if (!searchTerm) {
-//         this.state.products = productsToSearch;
-//         await this.renderProducts();
-//         return;
-//       }
-
-//       // Filter products based on search term
-//       const filteredProducts = productsToSearch.filter(product => {
-//         const productName = i18nManager.getProductTranslation(product, 'name').toLowerCase();
-//         const productDescription = i18nManager.getProductTranslation(product, 'description').toLowerCase();
-//         const price = product.price.toString();
-
-//         return productName.includes(searchTerm) || 
-//                productDescription.includes(searchTerm) || 
-//                price.includes(searchTerm);
-//       });
-
-//       // Update state and render
-//       this.state.products = filteredProducts;
-//       await this.renderProducts();
-
-//       // Show no results message if needed
-//       if (filteredProducts.length === 0) {
-//         const message = i18nManager.translate('ui.messages.noProductsFound');
-//         showNotification(message, 'info');
-//       }
-
-//     } catch (error) {
-//       console.error('Search error:', error);
-//       showNotification(error.message, 'error');
-//     }
-//   },
-  hideSearchHistory() {
+ hideSearchHistory() {
     if (this.state.searchHistoryDropdown) {
       this.state.searchHistoryDropdown.style.display = 'none';
     }
-  }, async searchProducts(query) {
+  },
+async searchProducts(query) {
     try {
       const searchTerm = query.toLowerCase().trim();
       this.state.searchTerm = searchTerm;
@@ -2601,6 +2474,17 @@ updateSearchHistory(term) {
         this.searchProducts(this.state.searchInput.value);
       });
     }
+    // Clear previous event listeners for focus and click
+  this.state.searchInput.removeEventListener('focus', this.showSearchHistory);
+  document.removeEventListener('click', this.hideSearchHistory);
+
+  // Reattach event listeners
+  this.state.searchInput.addEventListener('focus', this.showSearchHistory.bind(this));
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#search-history') && !e.target.closest('#product-search')) {
+      this.hideSearchHistory();
+    }
+  });
 
     // Listen for language changes
     window.addEventListener('languageChanged', () => {
