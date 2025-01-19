@@ -2176,6 +2176,7 @@ state: {
             showCryptoPrices: "Show Crypto Prices",
             adminPanel: "Admin Panel",
             cartTotal: "Cart Total",
+            youMightAlsoLike: "You might also like",
           },
           tooltips: {
             decreaseQuantity: "Decrease Quantity",
@@ -2220,6 +2221,7 @@ state: {
             showCryptoPrices: "Прикажи цене криптовалута",
             adminPanel: "Админ Панел",
             cartTotal: "Укупна цена",
+            youMightAlsoLike: "Можда би вам се свидели следећи производи",
           },
           tooltips: {
             decreaseQuantity: "Смањи количину",
@@ -2264,6 +2266,7 @@ state: {
             showCryptoPrices: "Krypto-Preise anzeigen",
             adminPanel: "Admin-Bereich",
             cartTotal: "Gesamtbetrag",
+            youMightAlsoLike: "Ihnen könnten auch folgende Produkte gefallen",
           },
           tooltips: {
             decreaseQuantity: "Menge verringern",
