@@ -464,6 +464,51 @@ const uiManager = {
 // }
     
 //   }
+updateUIVisibility(currentUser) {
+    const elements = {
+        loginBtn: document.getElementById("login-btn"),
+        registerBtn: document.getElementById("register-btn"),
+        logoutButton: document.getElementById("logout-button"),
+        userAvatarDisplay: document.getElementById("user-avatar-display"),
+        adminLink: document.getElementById("admin-link") // Add this
+    };
+
+    elements.loginBtn.style.display = currentUser ? "none" : "block";
+    elements.registerBtn.style.display = currentUser ? "none" : "block";
+    elements.logoutButton.style.display = currentUser ? "block" : "none";
+
+    if (currentUser) {
+        const isAdmin = JSON.parse(currentUser)?.isAdmin || false;
+        if (isAdmin) {
+            elements.userAvatarDisplay.innerHTML = `
+                <img src="/images/avatar.jpg" alt="User Avatar">
+                <div class="admin-dropdown">
+                    <a href="/admin" aria-label="${i18nManager.translate('ui.ariaLabels.adminPanel')}">${i18nManager.translate('ui.buttons.adminPanel')}</a>
+                </div>
+            `;
+            // Ensure the static admin link is also visible and translated
+            if (elements.adminLink) {
+                elements.adminLink.style.display = "block";
+                elements.adminLink.textContent = i18nManager.translate('ui.buttons.adminPanel');
+                elements.adminLink.setAttribute('aria-label', i18nManager.translate('ui.ariaLabels.adminPanel'));
+            }
+        } else {
+            elements.userAvatarDisplay.innerHTML = `
+                <img src="/images/avatar.jpg" alt="User Avatar">
+            `;
+            // Hide the static admin link if the user is not an admin
+            if (elements.adminLink) {
+                elements.adminLink.style.display = "none";
+            }
+        }
+    } else {
+        elements.userAvatarDisplay.innerHTML = ''; // Clear the content if no user is logged in
+        // Hide the static admin link if no user is logged in
+        if (elements.adminLink) {
+            elements.adminLink.style.display = "none";
+        }
+    }
+}
 };
 
 // Auth Management
