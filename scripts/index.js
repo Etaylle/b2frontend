@@ -302,15 +302,23 @@ async addItem(productId) {
         const cartTotal = document.getElementById('cart-total');
 
         if (cartContainer) {
-          cartContainer.innerHTML = '<li>Your cart is empty</li>';
+          cartContainer.innerHTML = `<li data-i18n="ui.messages.cartEmpty">Your cart is empty</li>`;
           cartContainer.classList.add('hidden');
         }
 
         if (cartTotal) {
-          cartTotal.textContent = 'Total: 0';
+          cartTotal.textContent = i18nManager.translate('ui.labels.cartTotal') + ': 0';
         }
-
-        showNotification(afterPurchase ? 'Purchase completed successfully!' : 'Cart cleared successfully!', 'success');
+        // Update translations for the container text
+const emptyCartMessage = cartContainer.querySelector('li[data-i18n]');
+if (emptyCartMessage) {
+  emptyCartMessage.textContent = i18nManager.translate(emptyCartMessage.getAttribute('data-i18n'));
+}
+        showNotification(
+  afterPurchase ? 
+  i18nManager.translate('ui.messages.purchaseCompleted') : 
+  i18nManager.translate('ui.messages.cartCleared'), 
+  'success');
       } catch (error) {
         console.error('Error clearing cart:', error);
         showNotification(error.message || 'Failed to clear cart', 'error');
@@ -2167,6 +2175,7 @@ state: {
             quantity: "Quantity",
             showCryptoPrices: "Show Crypto Prices",
             adminPanel: "Admin Panel",
+            cartTotal: "Cart Total",
           },
           tooltips: {
             decreaseQuantity: "Decrease Quantity",
@@ -2209,7 +2218,8 @@ state: {
             removeItem: "Уклони ставку",
             quantity: "Количина",
             showCryptoPrices: "Прикажи цене криптовалута",
-            adminPanel: "Админ Панел"
+            adminPanel: "Админ Панел",
+            cartTotal: "Укупна цена",
           },
           tooltips: {
             decreaseQuantity: "Смањи количину",
@@ -2253,6 +2263,7 @@ state: {
             quantity: "Anzahl",
             showCryptoPrices: "Krypto-Preise anzeigen",
             adminPanel: "Admin-Bereich",
+            cartTotal: "Gesamtbetrag",
           },
           tooltips: {
             decreaseQuantity: "Menge verringern",
@@ -3047,95 +3058,46 @@ initializeImageSliders() {
     slider.dataset.initialized = 'true';
   });
 },
-// createButtonsContainer(product, translations, buttonTemplate) {
-//   const container = document.createElement("div");
-//   container.className = "product-buttons";
-
-//   // Add to Cart button
-//   const addToCartButton = buttonTemplate.cloneNode();
-//   addToCartButton.innerHTML = '<i class="fas fa-shopping-cart"></i>'; 
-//   addToCartButton.className = "add-to-cart-btn";
-//   addToCartButton.title = translations.addToCart;
-//   addToCartButton.addEventListener("click", (e) => {
-//     e.stopPropagation();
-//     cartManager.addItem(product.product_id);
-//   });
-
-//   // Share button
-//   const shareButton = buttonTemplate.cloneNode();
-//   shareButton.innerHTML = '<i class="fas fa-share-alt"></i>'; 
-//   shareButton.className = "share-btn";
-//   shareButton.title = translations.share;
-//   shareButton.addEventListener("click", (e) => {
-//     e.preventDefault();
-//     e.stopPropagation();
-//     socialSharingManager.showShareOptions(product);
-//   });
-
-//   // Rate button
-//   const rateButton = buttonTemplate.cloneNode();
-//   rateButton.innerHTML = '<i class="fas fa-star"></i>';  
-//   rateButton.className = "rate-btn";
-//   rateButton.title = translations.rate;
-//   rateButton.addEventListener("click", (e) => {
-//     e.preventDefault();
-//     e.stopPropagation();
-//     ratingManager.openRatingModal(product.product_id.toString(), e);
-//   });
-
-//   container.append(addToCartButton, shareButton, rateButton);
-//   return container;
-// },
 createButtonsContainer(product, translations, buttonTemplate) {
-    const container = document.createElement("div");
-    container.className = "product-buttons";
+  const container = document.createElement("div");
+  container.className = "product-buttons";
 
-    // Add to Cart button
-    const addToCartButton = buttonTemplate.cloneNode();
-    addToCartButton.innerHTML = '<i class="fas fa-shopping-cart"></i>';
-    addToCartButton.className = "add-to-cart-btn";
-    addToCartButton.setAttribute('data-i18n', 'ui.buttons.addToCart');
-    addToCartButton.setAttribute('aria-label', i18nManager.translate('ui.buttons.addToCart'));
-    addToCartButton.title = i18nManager.translate('ui.buttons.addToCart');
-    addToCartButton.addEventListener("click", (e) => {
-        e.stopPropagation();
-        cartManager.addItem(product.product_id);
-    });
+  // Add to Cart button
+  const addToCartButton = buttonTemplate.cloneNode();
+  addToCartButton.innerHTML = '<i class="fas fa-shopping-cart"></i>'; 
+  addToCartButton.className = "add-to-cart-btn";
+  addToCartButton.title = translations.addToCart;
+  addToCartButton.addEventListener("click", (e) => {
+    e.stopPropagation();
+    cartManager.addItem(product.product_id);
+  });
 
-    // Share button
-    const shareButton = buttonTemplate.cloneNode();
-    shareButton.innerHTML = '<i class="fas fa-share-alt"></i>';
-    shareButton.className = "share-btn";
-    shareButton.setAttribute('data-i18n', 'ui.buttons.share');
-    shareButton.setAttribute('aria-label', i18nManager.translate('ui.buttons.share'));
-    shareButton.title = i18nManager.translate('ui.buttons.share');
-    shareButton.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        socialSharingManager.showShareOptions(product);
-    });
+  // Share button
+  const shareButton = buttonTemplate.cloneNode();
+  shareButton.innerHTML = '<i class="fas fa-share-alt"></i>'; 
+  shareButton.className = "share-btn";
+  shareButton.title = translations.share;
+  shareButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    socialSharingManager.showShareOptions(product);
+  });
 
-    // Rate button
-    const rateButton = buttonTemplate.cloneNode();
-    rateButton.innerHTML = '<i class="fas fa-star"></i>';
-    rateButton.className = "rate-btn";
-    rateButton.setAttribute('data-i18n', 'ui.buttons.rate');
-    rateButton.setAttribute('aria-label', i18nManager.translate('ui.buttons.rate'));
-    rateButton.title = i18nManager.translate('ui.buttons.rate');
-    rateButton.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        ratingManager.openRatingModal(product.product_id.toString(), e);
-    });
+  // Rate button
+  const rateButton = buttonTemplate.cloneNode();
+  rateButton.innerHTML = '<i class="fas fa-star"></i>';  
+  rateButton.className = "rate-btn";
+  rateButton.title = translations.rate;
+  rateButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    ratingManager.openRatingModal(product.product_id.toString(), e);
+  });
 
-    // Update button text content with translations
-    addToCartButton.textContent += ' ' + i18nManager.translate(addToCartButton.getAttribute('data-i18n'));
-    shareButton.textContent += ' ' + i18nManager.translate(shareButton.getAttribute('data-i18n'));
-    rateButton.textContent += ' ' + i18nManager.translate(rateButton.getAttribute('data-i18n'));
-
-    container.append(addToCartButton, shareButton, rateButton);
-    return container;
+  container.append(addToCartButton, shareButton, rateButton);
+  return container;
 },
+
 ensureStylesExist() {
   if (!document.querySelector('#product-buttons-styles')) {
     const styles = document.createElement('style');
