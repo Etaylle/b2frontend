@@ -415,150 +415,55 @@ const uiManager = {
     const registerContainer = document.querySelector("#register");
     registerContainer.style.display = "none";
   },
-updateButtonVisibility: function(currentUser) {
-  const elements = {
-    loginBtn: document.getElementById("login-btn"),
-    registerBtn: document.getElementById("register-btn"),
-    logoutButton: document.getElementById("logout-button"),
-    userAvatarDisplay: document.getElementById("user-avatar-display"),
-    navbar: document.querySelector('.navbar')
-  };
 
-  // Check if currentUser is a string (JSON) or an object
-  let userData;
-  if (typeof currentUser === 'string') {
-    // If it's a string, parse it
-    try {
-      userData = JSON.parse(currentUser);
-    } catch (e) {
-      console.error('Failed to parse currentUser:', e);
-      userData = null; // or handle this error in another way
+  updateButtonVisibility: (currentUser) => {
+    const loginBtn = document.getElementById("login-btn");
+    const registerBtn = document.getElementById("register-btn");
+    const logoutBtn = document.getElementById("logout-button");
+    const logo2 = document.querySelector(".credit-info");
+    const userAvatar = document.querySelector(".user-avatar-display");
+    const navLinks = document.querySelector('.navbar');
+    const adminLink = document.getElementById("admin-link");
+    if (currentUser) {
+      // Hide login and register buttons
+      if (loginBtn) loginBtn.style.display = "none";
+      if (registerBtn) registerBtn.style.display = "none";
+  
+      // Show elements like logout and avatars
+      if (logoutBtn) logoutBtn.style.display = "block";
+      if (logo2) logo2.style.display = "flex";
+      if (userAvatar) userAvatar.style.display = "flex";
+    
+
+  
+      // Handle admin link visibility
+      if (currentUser.role === 'admin') {
+        if (adminLink) {
+            adminLink.style.display = "block";
+        } else if (navLinks) {
+            const newAdminLink = document.createElement('a');
+            newAdminLink.href = '/admin';
+            newAdminLink.textContent = i18nManager.translate('ui.buttons.adminPanel');
+            newAdminLink.id = 'admin-link';
+            navLinks.appendChild(newAdminLink);
+        }
+    } else if (adminLink) {
+        adminLink.style.display = 'none';
     }
-  } else {
-    // If it's already an object, use it directly
-    userData = currentUser;
-  }
+} else {
+    // Show login and register buttons
+    if (loginBtn) loginBtn.style.display = "block";
+    if (registerBtn) registerBtn.style.display = "block";
 
-  elements.loginBtn.style.display = userData ? "none" : "block";
-  elements.registerBtn.style.display = userData ? "none" : "block";
-  elements.logoutButton.style.display = userData ? "block" : "none";
-
-  if (userData) {
-    const isAdmin = userData.isAdmin || false;
-    // Clear existing content before adding new
-    elements.userAvatarDisplay.innerHTML = `
-      <img src="/images/avatar.jpg" alt="User Avatar">
-    `;
-
-    if (isAdmin) {
-      // Add admin link dynamically
-      const adminLink = document.createElement('a');
-      adminLink.href = '/admin';
-      adminLink.className = 'admin-link';
-      adminLink.textContent = i18nManager.translate('ui.buttons.adminPanel');
-      adminLink.setAttribute('aria-label', i18nManager.translate('ui.ariaLabels.adminPanel'));
-      
-      // Append the admin link to userAvatarDisplay
-      elements.userAvatarDisplay.appendChild(adminLink);
-    }
-  } else {
-    // Clear the content if no user is logged in
-    elements.userAvatarDisplay.innerHTML = '';
-  }
+    // Hide logout button and credit info
+    if (logoutBtn) logoutBtn.style.display = "none";
+    if (logo2) logo2.style.display = "none";
+    if (userAvatar) userAvatar.style.display = "none";
+    // Hide admin link if it exists
+    if (adminLink) adminLink.style.display = 'none';
 }
-//   updateButtonVisibility: (currentUser) => {
-//     const loginBtn = document.getElementById("login-btn");
-//     const registerBtn = document.getElementById("register-btn");
-//     const logoutBtn = document.getElementById("logout-button");
-//     const logo2 = document.querySelector(".credit-info");
-//     const userAvatar = document.querySelector(".user-avatar-display");
-//     const navLinks = document.querySelector('.navbar');
-//     const adminLink = document.getElementById("admin-link");
-//     if (currentUser) {
-//       // Hide login and register buttons
-//       if (loginBtn) loginBtn.style.display = "none";
-//       if (registerBtn) registerBtn.style.display = "none";
-  
-//       // Show elements like logout and avatars
-//       if (logoutBtn) logoutBtn.style.display = "block";
-//       if (logo2) logo2.style.display = "flex";
-//       if (userAvatar) userAvatar.style.display = "flex";
     
-
-  
-//       // Handle admin link visibility
-//       if (currentUser.role === 'admin') {
-//         if (adminLink) {
-//             adminLink.style.display = "block";
-//         } else if (navLinks) {
-//             const newAdminLink = document.createElement('a');
-//             newAdminLink.href = '/admin';
-//             newAdminLink.textContent = i18nManager.translate('ui.buttons.adminPanel');
-//             newAdminLink.id = 'admin-link';
-//             navLinks.appendChild(newAdminLink);
-//         }
-//     } else if (adminLink) {
-//         adminLink.style.display = 'none';
-//     }
-// } else {
-//     // Show login and register buttons
-//     if (loginBtn) loginBtn.style.display = "block";
-//     if (registerBtn) registerBtn.style.display = "block";
-
-//     // Hide logout button and credit info
-//     if (logoutBtn) logoutBtn.style.display = "none";
-//     if (logo2) logo2.style.display = "none";
-//     if (userAvatar) userAvatar.style.display = "none";
-//     // Hide admin link if it exists
-//     if (adminLink) adminLink.style.display = 'none';
-// }
-    
-//   }
-// updateButtonVisibility(currentUser) {
-//     const elements = {
-//         loginBtn: document.getElementById("login-btn"),
-//         registerBtn: document.getElementById("register-btn"),
-//         logoutButton: document.getElementById("logout-button"),
-//         userAvatarDisplay: document.getElementById("user-avatar-display"),
-//         adminLink: document.getElementById("admin-link") // Add this
-//     };
-
-//     elements.loginBtn.style.display = currentUser ? "none" : "block";
-//     elements.registerBtn.style.display = currentUser ? "none" : "block";
-//     elements.logoutButton.style.display = currentUser ? "block" : "none";
-
-//     if (currentUser) {
-//         const isAdmin = JSON.parse(currentUser)?.isAdmin || false;
-//         if (isAdmin) {
-//             elements.userAvatarDisplay.innerHTML = `
-//                 <img src="/images/avatar.jpg" alt="User Avatar">
-//                 <div class="admin-dropdown">
-//                     <a href="/admin" aria-label="${i18nManager.translate('ui.ariaLabels.adminPanel')}">${i18nManager.translate('ui.buttons.adminPanel')}</a>
-//                 </div>
-//             `;
-//             // Ensure the static admin link is also visible and translated
-//             if (elements.adminLink) {
-//                 elements.adminLink.style.display = "block";
-//                 elements.adminLink.textContent = i18nManager.translate('ui.buttons.adminPanel');
-//                 elements.adminLink.setAttribute('aria-label', i18nManager.translate('ui.ariaLabels.adminPanel'));
-//             }
-//         } else {
-//             elements.userAvatarDisplay.innerHTML = `
-//                 <img src="/images/avatar.jpg" alt="User Avatar">
-//             `;
-//             // Hide the static admin link if the user is not an admin
-//             if (elements.adminLink) {
-//                 elements.adminLink.style.display = "none";
-//             }
-//         }
-//     } else {
-//         elements.userAvatarDisplay.innerHTML = ''; // Clear the content if no user is logged in
-//         // Hide the static admin link if no user is logged in
-//         if (elements.adminLink) {
-//             elements.adminLink.style.display = "none";
-//         }
-//     }
-// }
+  }
 };
 
 // Auth Management
