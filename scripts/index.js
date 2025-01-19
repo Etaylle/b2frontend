@@ -1160,12 +1160,7 @@ setProductData(products) {
   attachEventListeners() {
   // Global event listener for product cards
   document.addEventListener('click', async (e) => {
-    // // Handle product card click
-    // if (e.target.closest('.grid-item') && !e.target.closest('.rating-modal')) {
-    //   const productId = e.target.closest('.grid-item').dataset.productId;
-    //   await this.openRatingModal(productId);
-    //   return;
-    // }
+    
 
     // Check if the clicked element is the rate button
     const rateBtn = e.target.closest('.rate-btn');
@@ -1679,7 +1674,7 @@ const recommendationManager = {
     const container = document.createElement('div');
     container.className = 'recommendations-container';
     container.innerHTML = `
-      <h3>You might also like:</h3>
+      <h3>${i18nManager.translate('ui.labels.youMightAlsoLike')}</h3>
       <div class="recommendations-grid"></div>
     `;
 
@@ -1950,6 +1945,28 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     setupEventListeners();
     uiManager.updateButtonVisibility(currentUser);
+
+     const elements = {
+    checkoutButton: document.querySelector('.checkout-btn'),
+    emptyCartButton: document.getElementById('empty-cart-button')
+  };
+
+  if (elements.checkoutButton) {
+    elements.checkoutButton.textContent = i18nManager.translate('ui.buttons.checkout');
+    elements.checkoutButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      paymentManager.initiateCheckout();
+    });
+  }
+
+  if (elements.emptyCartButton) {
+    elements.emptyCartButton.textContent = i18nManager.translate('ui.buttons.emptyCart');
+    elements.emptyCartButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      cartManager.clearCart();
+    });
+  }
+
     
   } catch (error) {
     console.error("Error during initialization:", error);
@@ -2040,6 +2057,8 @@ const i18nManager = {
             cart: "Cart",
             orderHistory: "Order History",
             clearHistory: "Clear History",
+            checkout: "Checkout",
+            emptyCart: "Empty Cart",
           },
           labels: {
             stock: "Stock",
@@ -2062,8 +2081,9 @@ const i18nManager = {
             register: "Регистрација",
             cart: "Корпа",
             orderHistory: "Историја поруџбина",
-            clearHistory: "Obrisi istoriju pretrage",
-            clearCart: "Очисти корпу",
+            clearHistory: "Обриши историју претрага",
+            checkout: "Купи",
+            emptyCart: "Очисти корпу",
             
           },
           labels: {
@@ -2071,7 +2091,7 @@ const i18nManager = {
             price: "Цена",
             categories: "Категорије",
             search: "Претражи производе...",
-            recentSearches: "Nedavna pretraga"
+            recentSearches: "Недавне претраге"
           }
         }
       },
@@ -2088,6 +2108,8 @@ const i18nManager = {
             cart: "Warenkorb",
             orderHistory: "Bestellverlauf",
             clearHistory: "Suchverlauf löschen",
+            checkout: "Kassenbestellen",
+            emptyCart: "Warenkorb leeren",
           },
           labels: {
             stock: "Lagerbestand",
@@ -2365,7 +2387,7 @@ showSearchHistory() {
     this.state.searchHistoryDropdown.innerHTML = '';
     const fragment = document.createDocumentFragment();
 
-    // Add header for clarity
+    // Add header SEARCH HISTORY
     const header = document.createElement('div');
     header.className = 'search-history-header';
     header.textContent = i18nManager.translate('ui.labels.recentSearches');
@@ -2407,144 +2429,7 @@ hideSearchHistory() {
     this.state.searchHistoryDropdown.style.display = 'none';
   }
 },
-// updateSearchHistory(term) {
-//     try {
-//       const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-//       // Remove existing term if present
-//       const index = searches.indexOf(term);
-//       if (index > -1) {
-//         searches.splice(index, 1);
-//       }
-//       // Add new term at the beginning
-//       searches.unshift(term);
-//       // Keep only last 5 searches
-//       searches.splice(5);
-//       localStorage.setItem('searchHistory', JSON.stringify(searches));
-//     } catch (error) {
-//       console.error('Error updating search history:', error);
-//     }
-//   },
-  // updateSearchHistory(term) {
-  //   if (!term || term.trim() === '') return;
-    
-  //   try {
-  //     let searches = [];
-  //     const storedSearches = localStorage.getItem('searchHistory');
-      
-  //     if (storedSearches) {
-  //       searches = JSON.parse(storedSearches);
-  //       if (!Array.isArray(searches)) searches = [];
-  //     }
 
-  //     // Remove existing term if present
-  //     searches = searches.filter(item => item.toLowerCase() !== term.toLowerCase());
-      
-  //     // Add new term at the beginning
-  //     searches.unshift(term.trim());
-      
-  //     // Keep only last 5 searches
-  //     searches = searches.slice(0, 5);
-      
-  //     localStorage.setItem('searchHistory', JSON.stringify(searches));
-  //   } catch (error) {
-  //     console.error('Error updating search history:', error);
-  //   }
-  // },
-  // showSearchHistory() {
-  //   if (!this.state.searchHistoryDropdown) return;
-    
-  //   try {
-  //     const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-  //     if (searches.length === 0) return;
-
-  //     this.state.searchHistoryDropdown.innerHTML = '';
-  //     const fragment = document.createDocumentFragment();
-
-  //     searches.forEach(term => {
-  //       const item = document.createElement('div');
-  //       item.className = 'search-history-item';
-  //       item.textContent = term;
-  //       item.addEventListener('click', () => {
-  //         this.state.searchInput.value = term;
-  //         this.searchProducts(term);
-  //         this.hideSearchHistory();
-  //       });
-  //       fragment.appendChild(item);
-  //     });
-
-  //     this.state.searchHistoryDropdown.appendChild(fragment);
-  //     this.state.searchHistoryDropdown.style.display = 'block';
-  //   } catch (error) {
-  //     console.error('Error showing search history:', error);
-  //   }
-  // },
-//     showSearchHistory() {
-//     if (!this.state.searchHistoryDropdown) return;
-    
-//     try {
-//       const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-      
-//       // Clear existing content
-//       this.state.searchHistoryDropdown.innerHTML = '';
-      
-//       if (searches.length === 0) {
-//         this.state.searchHistoryDropdown.style.display = 'none';
-//         return;
-//       }
-
-//       const fragment = document.createDocumentFragment();
-      
-//       // Create header
-//       const header = document.createElement('div');
-//       header.className = 'search-history-header';
-//       header.textContent = i18nManager.translate('ui.labels.recentSearches');
-//       fragment.appendChild(header);
-
-//       // Create search items
-//       searches.forEach(term => {
-//         const item = document.createElement('div');
-//         item.className = 'search-history-item';
-        
-//         const searchIcon = document.createElement('i');
-//         searchIcon.className = 'fas fa-history';
-//         item.appendChild(searchIcon);
-        
-//         const text = document.createElement('span');
-//         text.textContent = term;
-//         item.appendChild(text);
-        
-//         item.addEventListener('click', () => {
-//           this.state.searchInput.value = term;
-//           this.searchProducts(term);
-//           this.hideSearchHistory();
-//         });
-        
-//         fragment.appendChild(item);
-//       });
-
-//       // Add clear history button
-//       const clearButton = document.createElement('div');
-//       clearButton.className = 'search-history-clear';
-//       clearButton.textContent = i18nManager.translate('ui.buttons.clearHistory');
-//       clearButton.addEventListener('click', (e) => {
-//         e.stopPropagation();
-//         localStorage.removeItem('searchHistory');
-//         this.hideSearchHistory();
-//       });
-//       fragment.appendChild(clearButton);
-
-//       this.state.searchHistoryDropdown.appendChild(fragment);
-//       this.state.searchHistoryDropdown.style.display = 'block';
-//     } catch (error) {
-//       console.error('Error showing search history:', error);
-//       this.hideSearchHistory();
-//     }
-//   },
-//  hideSearchHistory() {
-//     if (this.state.searchHistoryDropdown) {
-//       this.state.searchHistoryDropdown.style.display = 'none';
-//     }
-//   },
 async searchProducts(query) {
     try {
       const searchTerm = query.toLowerCase().trim();
@@ -2675,66 +2560,6 @@ async searchProducts(query) {
     }
   });
 },
-
-//   setupSearch() {
-//     this.state.searchInput = document.getElementById('product-search');
-//     this.state.searchHistoryDropdown = document.getElementById('search-history');
-    
-//     if (!this.state.searchInput) {
-//       console.warn('Search input element not found');
-//       return;
-//     }
-
-//     // Update placeholder text with translation
-//     this.state.searchInput.placeholder = i18nManager.translate('ui.labels.search');
-
-//     // Clear previous event listeners
-//     const newSearchInput = this.state.searchInput.cloneNode(true);
-//     this.state.searchInput.parentNode.replaceChild(newSearchInput, this.state.searchInput);
-//     this.state.searchInput = newSearchInput;
-
-//     // Setup search input event listener with debouncing
-//     this.state.searchInput.addEventListener('input', (e) => {
-//       clearTimeout(this.state.debounceTimeout);
-//       this.state.debounceTimeout = setTimeout(() => {
-//         this.searchProducts(e.target.value);
-//       }, 300);
-//     });
-
-//     // Setup search history display with translations
-//     this.state.searchInput.addEventListener('focus', () => {
-//       this.showSearchHistory();
-//     });
-
-//     // Handle clicks outside search area
-// document.addEventListener('click', (e) => {
-//   if (!this.state.searchInput.contains(e.target) && 
-//       !this.state.searchHistoryDropdown.contains(e.target)) {
-//     setTimeout(() => {
-//       this.hideSearchHistory();
-//     }, 5000); // Delay hiding to allow for quick interactions
-//   }
-// });
-
-//     // Handle form submission
-//     const searchForm = this.state.searchInput.closest('form');
-//     if (searchForm) {
-//       searchForm.addEventListener('submit', (e) => {
-//         e.preventDefault();
-//         this.searchProducts(this.state.searchInput.value);
-//       });
-//     }
-
-//     // Listen for language changes
-//     window.addEventListener('languageChanged', () => {
-//       // Update placeholder text when language changes
-//       this.state.searchInput.placeholder = i18nManager.translate('ui.labels.search');
-//       // Re-run search with current term if exists
-//       if (this.state.searchTerm) {
-//         this.searchProducts(this.state.searchTerm);
-//       }
-//     });
-//   },
   async fetchCategories() {
     try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/categories');
@@ -3366,126 +3191,6 @@ ensureStylesExist() {
   }
 },
 
-// async renderProducts(products) {
-//   const gridContainer = document.querySelector(".grid-container");
-//   if (!gridContainer) return;
-  
-//   // Update state with provided products or fetch them if not provided
-//   if (products) {
-//     this.state.products = products;
-//   } else {
-//     try {
-//       const currentLang = i18nManager.getCurrentLanguage();
-//       const response = await fetch('/api/products?lang=' + currentLang);
-//       if (!response.ok) throw new Error('Failed to fetch products');
-//       const data = await response.json();
-//       this.state.products = data.products;
-//     } catch (error) {
-//       console.error('Error fetching products:', error);
-//       return;
-//     }
-//   }
-  
-//   // Clear container
-//   gridContainer.innerHTML = "";
-  
-//   // Create document fragment for better performance
-//   const fragment = document.createDocumentFragment();
-  
-//   // Cache translations
-//   const translations = {
-//     addToCart: i18nManager.translate('ui.buttons.addToCart'),
-//     share: i18nManager.translate('ui.buttons.share'),
-//     rate: i18nManager.translate('ui.buttons.rate'),
-//     stock: i18nManager.translate('ui.labels.stock')
-//   };
-  
-//   // Create button template
-//   const buttonTemplate = document.createElement('button');
-  
-//   // Handle empty state
-//   if (!this.state.products.length) {
-//     const emptyState = document.createElement('div');
-//     emptyState.className = 'empty-state';
-//     emptyState.textContent = 'No products found';
-//     gridContainer.appendChild(emptyState);
-//     return;
-//   }
-
-//   // Render each product
-//   this.state.products.forEach((product) => {
-//     const gridItem = document.createElement("div");
-//     gridItem.className = "grid-item grid-item-xl";
-//     gridItem.dataset.productId = product.product_id;
-
-//     // Get translated product name using i18nManager's getProductTranslation
-//     const productName = i18nManager.getProductTranslation(product, 'name');
-    
-//     const productContent = document.createElement("div");
-//     productContent.className = "product-content";
-    
-//     // Create image slider with error handling
-//     const imageSlider = this.createImageSlider(product, productName);
-    
-//     // Format price using crypto manager if available, fallback to regular formatting
-//     const formattedPrice = window.cryptoManager ? 
-//       cryptoManager.formatCryptoPrice(product.price) : 
-//       new Intl.NumberFormat(i18nManager.getCurrentLanguage(), {
-//         style: 'currency',
-//         currency: 'USD'
-//       }).format(product.price);
-    
-//     productContent.innerHTML = `
-//       ${imageSlider}
-//       <div class="overlay">
-//         <span class="product-name">${productName}</span> | 
-//         <span class="price-span" data-usd-price="${product.price}">
-//           ${formattedPrice}
-//         </span>
-//         | ${translations.stock}: ${product.stock}
-//       </div>
-//     `;
-
-//     // Add product click handler with error boundary
-//     productContent.addEventListener("click", (e) => {
-//       try {
-//         if (window.productPageManager) {
-//           productPageManager.openProductPage(product);
-//         }
-//       } catch (error) {
-//         console.error('Error opening product page:', error);
-//       }
-//     });
-    
-//     // Create buttons container
-//     const buttonsContainer = this.createButtonsContainer(product, translations, buttonTemplate);
-    
-//     gridItem.append(productContent, buttonsContainer);
-//     fragment.appendChild(gridItem);
-//   });
-  
-//   // Append all items at once
-//   gridContainer.appendChild(fragment);
-
-//   // Initialize sliders after DOM is updated
-//   requestAnimationFrame(() => {
-//     try {
-//       this.initializeImageSliders();
-//     } catch (error) {
-//       console.error('Error initializing image sliders:', error);
-//     }
-//   });
-
-//   // Ensure styles exist
-//   this.ensureStylesExist();
-
-//   // Update related managers if needed
-//   try {
-//     await this.updateRelatedManagers();
-//   } catch (error) {
-//     console.error('Error updating related managers:', error);
-//   }
-// },
  async renderProducts(products) {
     const gridContainer = document.querySelector(".grid-container");
     if (!gridContainer) return;
@@ -3737,12 +3442,12 @@ function setupEventListeners() {
   if (elements.logoutBtn) {
     elements.logoutBtn.addEventListener("click", () => authManager.logout());
   }
-  if (elements.checkoutButton) {
-    elements.checkoutButton.addEventListener("click", () => paymentManager.initiateCheckout());
-  }
-  if (elements.emptyCartButton) {
-    elements.emptyCartButton.addEventListener("click", () => cartManager.clearCart());
-  }
+  // if (elements.checkoutButton) {
+  //   elements.checkoutButton.addEventListener("click", () => paymentManager.initiateCheckout());
+  // }
+  // if (elements.emptyCartButton) {
+  //   elements.emptyCartButton.addEventListener("click", () => cartManager.clearCart());
+  // }
   uiManager.updateButtonVisibility(currentUser);
 };
 
