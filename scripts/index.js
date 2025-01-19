@@ -352,7 +352,7 @@ async addItem(productId) {
       <div class="cart-item-controls">
         <button class="quantity-btn minus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.decreaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.decreaseQuantity')}">-</button>
         <button class="quantity-btn plus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.increaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.increaseQuantity')}">+</button>
-        <button class="remove-btn" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.removeItem')}" aria-label="${i18nManager.translate('ui.ariaLabels.removeItem')}">${i18nManager.translate('ui.buttons.remove')}</button>
+        <button class="remove-btn" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.removeItem')}" aria-label="${i18nManager.translate('ui.ariaLabels.removeItem')}">${i18nManager.translate('ui.buttons.removeItem')}</button>
       </div>
     `;
 
