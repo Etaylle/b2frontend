@@ -145,9 +145,9 @@
 
                 
             <div id="user-avatar-display" class="user-avatar-display">
-                <!-- <div class="admin-dropdown" style="display: none;">
+                <div class="admin-dropdown" style="display: none;">
                     <a href="/admin" id="admin-link" aria-label=""></a>
-                </div> -->
+                </div>
             </div>
             </div>
 
@@ -333,10 +333,20 @@
 
             if (currentUser) {
                 const isAdmin = JSON.parse(currentUser)?.isAdmin || false;
-                elements.userAvatarDisplay.innerHTML = `
-                    <img src="/images/avatar.jpg" alt="User Avatar">
-                    ${isAdmin ? '<div class="admin-dropdown"><a href="/admin">Admin Panel</a></div>' : ''}
-                `;
+                if (isAdmin) {
+                    elements.userAvatarDisplay.innerHTML = `
+                <img src="/images/avatar.jpg" alt="User Avatar">
+                <div class="admin-dropdown">
+                    <a href="/admin" aria-label="${i18nManager.translate('ui.ariaLabels.adminPanel')}">${i18nManager.translate('ui.buttons.adminPanel')}</a>
+                </div>
+            `;
+                } else {
+                    elements.userAvatarDisplay.innerHTML = `
+                <img src="/images/avatar.jpg" alt="User Avatar">
+            `;
+                }
+            } else {
+                elements.userAvatarDisplay.innerHTML = ''; // Clear the content if no user is logged in
             }
         }
 
