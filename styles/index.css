@@ -414,44 +414,49 @@ body {
 main {
 
 
-
-
-  .search-container {
-    display: flex;
-    align-items: center;
-    margin: 1rem auto;
-    max-width: 600px;
-    position: relative;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
   }
+  /* Search */
+.search-container {
+  display: flex;
+  align-items: center;
+  margin: 1rem auto;
+  max-width: 600px;
+  position: relative;
+}
 
-  #product-search {
-    width: 100%;
-    padding: 0.5rem 2rem 0.5rem 1rem;
-    border: 2px solid #ddd;
-    border-radius: 20px;
-    font-size: 1rem;
-    transition: border-color 0.3s ease;
-  }
+#product-search {
+  width: 100%;
+  padding: 0.5rem 2rem 0.5rem 1rem;
+  border: 2px solid #ddd;
+  border-radius: 20px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
 
-  #product-search:focus {
-    outline: none;
-    border-color: #007bff;
-  }
+#product-search:focus {
+  outline: none;
+  border-color: #007bff;
+}
 
-  .clear-search {
-    position: absolute;
-    right: 10px;
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    color: #c91a1a;
-    cursor: pointer;
-    padding: 0 5px;
-  }
+.clear-search {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #c91a1a;
+  cursor: pointer;
+  padding: 0 5px;
+}
 
-  .clear-search:hover {
-    color: #bb3131;
-  }
+.clear-search:hover {
+  color: #bb3131;
+}
+
 .search-history {
   position: absolute;
   top: 100%;
@@ -496,16 +501,26 @@ main {
 .search-history-clear:hover {
   background: #fff5f5;
 }
+
 .no-search-history {
   text-align: center;
   padding: 10px;
 }
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
 
+/* Utility Classes */
+.visible {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.hidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+.no-scroll {
+  overflow: hidden;
+}
   /* Grid Container */
   .grid-container {
     display: grid;
