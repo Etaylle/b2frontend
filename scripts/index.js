@@ -333,7 +333,7 @@ if (emptyCartMessage) {
 
     if (!cart.items || cart.items.length === 0) {
       cartContainer.innerHTML = '<li>Your cart is empty</li>';
-      cartTotal.textContent = i18nManager.translate('ui.labels.cartTotal') + ': 0';
+      cartTotal.textContent =  ': 0';
       cartContainer.classList.add('hidden');
       return;
     }
