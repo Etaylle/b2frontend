@@ -2074,7 +2074,7 @@ const i18nManager = {
           tooltips: {
             decreaseQuantity: "Decrease Quantity",
             increaseQuantity: "Increase Quantity",
-            remove: "Remove Item" 
+            removeItem: "Remove Item" 
           },
         }
       },
@@ -2105,7 +2105,7 @@ const i18nManager = {
           tooltips: {
             decreaseQuantity: "Смањи количину",
             increaseQuantity: "Повећај количину",
-            remove: "Уклони ставку"
+            removeItem: "Уклони ставку"
           },
         }
       },
@@ -2124,7 +2124,7 @@ const i18nManager = {
             clearHistory: "Suchverlauf löschen",
             checkout: "Kassenbestellen",
             emptyCart: "Warenkorb leeren",
-            remove: "Entfernen",
+            removeItem: "Entfernen",
           },
           labels: {
             stock: "Lagerbestand",
@@ -2132,6 +2132,7 @@ const i18nManager = {
             categories: "Kategorien",
             search: "Produkte suchen...",
             recentSearches: "Vorherige Suchanfragen",
+            removeItem: "Artikel entfernen"
           },
           tooltips: {
             decreaseQuantity: "Menge verringern",
