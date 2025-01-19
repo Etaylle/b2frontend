@@ -464,7 +464,7 @@ const uiManager = {
 // }
     
 //   }
-updateUIVisibility(currentUser) {
+updateButtonVisibility(currentUser) {
     const elements = {
         loginBtn: document.getElementById("login-btn"),
         registerBtn: document.getElementById("register-btn"),
