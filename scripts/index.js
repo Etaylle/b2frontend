@@ -2070,6 +2070,7 @@ const i18nManager = {
             categories: "Categories",
             search: "Search products...",
             recentSearches: "Recent searches",
+            removeItem: "Remove Item",
           },
           tooltips: {
             decreaseQuantity: "Decrease Quantity",
@@ -2100,7 +2101,8 @@ const i18nManager = {
             price: "Цена",
             categories: "Категорије",
             search: "Претражи производе...",
-            recentSearches: "Недавне претраге"
+            recentSearches: "Недавне претраге",
+            removeItem: "Уклони ставку"
           },
           tooltips: {
             decreaseQuantity: "Смањи количину",
@@ -2132,7 +2134,8 @@ const i18nManager = {
             categories: "Kategorien",
             search: "Produkte suchen...",
             recentSearches: "Vorherige Suchanfragen",
-            removeItem: "Artikel entfernen"
+            removeItem: "Artikel entfernen",
+            
           },
           tooltips: {
             decreaseQuantity: "Menge verringern",
