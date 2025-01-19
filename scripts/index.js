@@ -2307,6 +2307,96 @@ initialize() {
     
     return Promise.resolve();
   },
+  updateSearchHistory(term) {
+  try {
+    let searches = [];
+    const storedSearches = localStorage.getItem('searchHistory');
+    
+    // Parse stored searches or initialize an empty array
+    if (storedSearches) {
+      searches = JSON.parse(storedSearches);
+      if (!Array.isArray(searches)) {
+        searches = []; // Reset if corrupted data
+      }
+    }
+
+    // Normalize the search term for consistency
+    term = term.trim().toLowerCase();
+    
+    // Remove any duplicates
+    searches = searches.filter(search => search.toLowerCase() !== term);
+    
+    // Add new term to the beginning
+    searches.unshift(term);
+    
+    // Limit history to 5 items
+    searches = searches.slice(0, 5);
+    
+    localStorage.setItem('searchHistory', JSON.stringify(searches));
+    console.log('Updated search history:', searches);
+  } catch (error) {
+    console.error('Error updating search history:', error);
+  }
+},
+showSearchHistory() {
+  if (!this.state.searchHistoryDropdown) {
+    console.warn('Search history dropdown not found');
+    return;
+  }
+
+  try {
+    const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+    
+    if (searches.length === 0) {
+      this.state.searchHistoryDropdown.innerHTML = '<div class="no-search-history">No recent searches</div>';
+      this.state.searchHistoryDropdown.style.display = 'block';
+      return;
+    }
+
+    this.state.searchHistoryDropdown.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+
+    // Add header for clarity
+    const header = document.createElement('div');
+    header.className = 'search-history-header';
+    header.textContent = i18nManager.translate('ui.labels.recentSearches');
+    fragment.appendChild(header);
+
+    searches.forEach(term => {
+      const item = document.createElement('div');
+      item.className = 'search-history-item';
+      item.innerHTML = `<i class="fas fa-history"></i> ${term}`;
+      item.addEventListener('click', () => {
+        this.state.searchInput.value = term;
+        this.searchProducts(term);
+        this.hideSearchHistory();
+      });
+      fragment.appendChild(item);
+    });
+
+    // Clear search history option
+    const clearButton = document.createElement('div');
+    clearButton.className = 'search-history-clear';
+    clearButton.textContent = i18nManager.translate('ui.buttons.clearHistory');
+    clearButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      localStorage.removeItem('searchHistory');
+      this.hideSearchHistory();
+    });
+    fragment.appendChild(clearButton);
+
+    this.state.searchHistoryDropdown.appendChild(fragment);
+    this.state.searchHistoryDropdown.style.display = 'block';
+  } catch (error) {
+    console.error('Error showing search history:', error);
+    this.hideSearchHistory();
+  }
+},
+hideSearchHistory() {
+  if (this.state.searchHistoryDropdown) {
+    this.state.searchHistoryDropdown.style.display = 'none';
+  }
+},
 // updateSearchHistory(term) {
 //     try {
 //       const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
@@ -2324,32 +2414,32 @@ initialize() {
 //       console.error('Error updating search history:', error);
 //     }
 //   },
-  updateSearchHistory(term) {
-    if (!term || term.trim() === '') return;
+  // updateSearchHistory(term) {
+  //   if (!term || term.trim() === '') return;
     
-    try {
-      let searches = [];
-      const storedSearches = localStorage.getItem('searchHistory');
+  //   try {
+  //     let searches = [];
+  //     const storedSearches = localStorage.getItem('searchHistory');
       
-      if (storedSearches) {
-        searches = JSON.parse(storedSearches);
-        if (!Array.isArray(searches)) searches = [];
-      }
+  //     if (storedSearches) {
+  //       searches = JSON.parse(storedSearches);
+  //       if (!Array.isArray(searches)) searches = [];
+  //     }
 
-      // Remove existing term if present
-      searches = searches.filter(item => item.toLowerCase() !== term.toLowerCase());
+  //     // Remove existing term if present
+  //     searches = searches.filter(item => item.toLowerCase() !== term.toLowerCase());
       
-      // Add new term at the beginning
-      searches.unshift(term.trim());
+  //     // Add new term at the beginning
+  //     searches.unshift(term.trim());
       
-      // Keep only last 5 searches
-      searches = searches.slice(0, 5);
+  //     // Keep only last 5 searches
+  //     searches = searches.slice(0, 5);
       
-      localStorage.setItem('searchHistory', JSON.stringify(searches));
-    } catch (error) {
-      console.error('Error updating search history:', error);
-    }
-  },
+  //     localStorage.setItem('searchHistory', JSON.stringify(searches));
+  //   } catch (error) {
+  //     console.error('Error updating search history:', error);
+  //   }
+  // },
   // showSearchHistory() {
   //   if (!this.state.searchHistoryDropdown) return;
     
@@ -2378,73 +2468,73 @@ initialize() {
   //     console.error('Error showing search history:', error);
   //   }
   // },
-    showSearchHistory() {
-    if (!this.state.searchHistoryDropdown) return;
+//     showSearchHistory() {
+//     if (!this.state.searchHistoryDropdown) return;
     
-    try {
-      const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
+//     try {
+//       const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
       
-      // Clear existing content
-      this.state.searchHistoryDropdown.innerHTML = '';
+//       // Clear existing content
+//       this.state.searchHistoryDropdown.innerHTML = '';
       
-      if (searches.length === 0) {
-        this.state.searchHistoryDropdown.style.display = 'none';
-        return;
-      }
+//       if (searches.length === 0) {
+//         this.state.searchHistoryDropdown.style.display = 'none';
+//         return;
+//       }
 
-      const fragment = document.createDocumentFragment();
+//       const fragment = document.createDocumentFragment();
       
-      // Create header
-      const header = document.createElement('div');
-      header.className = 'search-history-header';
-      header.textContent = i18nManager.translate('ui.labels.recentSearches');
-      fragment.appendChild(header);
+//       // Create header
+//       const header = document.createElement('div');
+//       header.className = 'search-history-header';
+//       header.textContent = i18nManager.translate('ui.labels.recentSearches');
+//       fragment.appendChild(header);
 
-      // Create search items
-      searches.forEach(term => {
-        const item = document.createElement('div');
-        item.className = 'search-history-item';
+//       // Create search items
+//       searches.forEach(term => {
+//         const item = document.createElement('div');
+//         item.className = 'search-history-item';
         
-        const searchIcon = document.createElement('i');
-        searchIcon.className = 'fas fa-history';
-        item.appendChild(searchIcon);
+//         const searchIcon = document.createElement('i');
+//         searchIcon.className = 'fas fa-history';
+//         item.appendChild(searchIcon);
         
-        const text = document.createElement('span');
-        text.textContent = term;
-        item.appendChild(text);
+//         const text = document.createElement('span');
+//         text.textContent = term;
+//         item.appendChild(text);
         
-        item.addEventListener('click', () => {
-          this.state.searchInput.value = term;
-          this.searchProducts(term);
-          this.hideSearchHistory();
-        });
+//         item.addEventListener('click', () => {
+//           this.state.searchInput.value = term;
+//           this.searchProducts(term);
+//           this.hideSearchHistory();
+//         });
         
-        fragment.appendChild(item);
-      });
+//         fragment.appendChild(item);
+//       });
 
-      // Add clear history button
-      const clearButton = document.createElement('div');
-      clearButton.className = 'search-history-clear';
-      clearButton.textContent = i18nManager.translate('ui.buttons.clearHistory');
-      clearButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        localStorage.removeItem('searchHistory');
-        this.hideSearchHistory();
-      });
-      fragment.appendChild(clearButton);
+//       // Add clear history button
+//       const clearButton = document.createElement('div');
+//       clearButton.className = 'search-history-clear';
+//       clearButton.textContent = i18nManager.translate('ui.buttons.clearHistory');
+//       clearButton.addEventListener('click', (e) => {
+//         e.stopPropagation();
+//         localStorage.removeItem('searchHistory');
+//         this.hideSearchHistory();
+//       });
+//       fragment.appendChild(clearButton);
 
-      this.state.searchHistoryDropdown.appendChild(fragment);
-      this.state.searchHistoryDropdown.style.display = 'block';
-    } catch (error) {
-      console.error('Error showing search history:', error);
-      this.hideSearchHistory();
-    }
-  },
- hideSearchHistory() {
-    if (this.state.searchHistoryDropdown) {
-      this.state.searchHistoryDropdown.style.display = 'none';
-    }
-  },
+//       this.state.searchHistoryDropdown.appendChild(fragment);
+//       this.state.searchHistoryDropdown.style.display = 'block';
+//     } catch (error) {
+//       console.error('Error showing search history:', error);
+//       this.hideSearchHistory();
+//     }
+//   },
+//  hideSearchHistory() {
+//     if (this.state.searchHistoryDropdown) {
+//       this.state.searchHistoryDropdown.style.display = 'none';
+//     }
+//   },
 async searchProducts(query) {
     try {
       const searchTerm = query.toLowerCase().trim();

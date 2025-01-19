@@ -496,6 +496,10 @@ main {
 .search-history-clear:hover {
   background: #fff5f5;
 }
+.no-search-history {
+  text-align: center;
+  padding: 10px;
+}
 * {
     margin: 0;
     padding: 0;
