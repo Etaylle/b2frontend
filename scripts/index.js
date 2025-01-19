@@ -2075,6 +2075,7 @@ state: {
             removeItem: "Remove Item",
             quantity: "Quantity",
             showCryptoPrices: "Show Crypto Prices",
+            adminPanel: "Admin Panel",
           },
           tooltips: {
             decreaseQuantity: "Decrease Quantity",
@@ -2117,6 +2118,7 @@ state: {
             removeItem: "Уклони ставку",
             quantity: "Количина",
             showCryptoPrices: "Прикажи цене криптовалута",
+            adminPanel: "Админ Панел"
           },
           tooltips: {
             decreaseQuantity: "Смањи количину",
@@ -2159,6 +2161,7 @@ state: {
             removeItem: "Artikel entfernen",
             quantity: "Anzahl",
             showCryptoPrices: "Krypto-Preise anzeigen",
+            adminPanel: "Admin-Bereich",
           },
           tooltips: {
             decreaseQuantity: "Menge verringern",
