@@ -2085,7 +2085,8 @@ state: {
             decreaseQuantity: "Decrease the quantity of this item",
             increaseQuantity: "Increase the quantity of this item",
             removeItem: "Remove this item from the cart",
-            showCryptoPrices: "Show Crypto Prices"
+            showCryptoPrices: "Show Crypto Prices",
+            adminPanel: "Admin Panel",
           }
         }
       },
@@ -2126,7 +2127,8 @@ state: {
             decreaseQuantity: "Смањи количину овог производа",
             increaseQuantity: "Повећај количину овог производа",
             removeItem: "Уклони овај производ из корпе",
-            showCryptoPrices: "Прикажи цене криптовалута"
+            showCryptoPrices: "Прикажи цене криптовалута",
+            adminPanel: "Админ Панел"
           }
         }
       },
@@ -2167,7 +2169,8 @@ state: {
             decreaseQuantity: "Menge dieses Artikels verringern",
             increaseQuantity: "Menge dieses Artikels erhöhen",
             removeItem: "Diesen Artikel aus dem Warenkorb entfernen",
-            showCryptoPrices: "Krypto-Preise anzeigen"
+            showCryptoPrices: "Krypto-Preise anzeigen",
+            adminPanel: "Admin-Bereich",
           }
         }
       }
