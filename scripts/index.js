@@ -96,23 +96,23 @@ const CartEnhancements = {
   }
 };
 
-// // Initialize guest mode
-// document.addEventListener('DOMContentLoaded', () => {
-//   CartEnhancements.initializeGuestMode();
+// Initialize guest mode
+document.addEventListener('DOMContentLoaded', () => {
+  CartEnhancements.initializeGuestMode();
   
-//   // Modify checkout button behavior
-//   const checkoutBtn = document.getElementById('checkout-button');
-//   if (checkoutBtn) {
-//     checkoutBtn.addEventListener('click', async (e) => {
-//       e.preventDefault();
-//       if (!currentUser) {
-//         await enhancedPaymentManager.initiateGuestCheckout();
-//       } else {
-//         await paymentManager.initiateCheckout();
-//       }
-//     });
-//   }
-// });
+  // Modify checkout button behavior
+  const checkoutBtn = document.getElementById('checkout-button');
+  if (checkoutBtn) {
+    checkoutBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      if (!currentUser) {
+        await enhancedPaymentManager.initiateGuestCheckout();
+      } else {
+        await paymentManager.initiateCheckout();
+      }
+    });
+  }
+});
 // Cart state management
 const cartManager = {
 
@@ -779,10 +779,10 @@ const AuthModal = {
     }
 };
 
-// // Initialize when DOM is loaded
-// document.addEventListener('DOMContentLoaded', () => {
-//     AuthModal.init();
-// });
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    AuthModal.init();
+});
 
 const paymentManager = {
   stripe: null,
@@ -1962,58 +1962,58 @@ openProductPage(product) {
   }
 };
 // Update the main initialization sequence
-// document.addEventListener("DOMContentLoaded", async () => {
-//   try {
-//     // Initialize all managers
-//     await Promise.allSettled([
-//       cryptoManager.initialize(),
-//       ratingManager.initialize(),
-//       productPageManager.initialize(),
-//       paymentManager.initialize('your-stripe-key'),
-//       recommendationManager.initialize(),
-//     ]);
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    // Initialize all managers
+    await Promise.allSettled([
+      cryptoManager.initialize(),
+      ratingManager.initialize(),
+      productPageManager.initialize(),
+      paymentManager.initialize('your-stripe-key'),
+      recommendationManager.initialize(),
+    ]);
 
-//     // Initialize category manager last since it loads products
-//     await categoryManager.initialize();
+    // Initialize category manager last since it loads products
+    await categoryManager.initialize();
 
-//     // Fetch user data and update UI
-//     currentUser = await authManager.fetchCurrentUser();
+    // Fetch user data and update UI
+    currentUser = await authManager.fetchCurrentUser();
     
-//     // Initialize UI components
-//     authManager.displayUserInfo();
-//     authManager.displayUserAvatar();
-//     cartManager.updateDisplay();
+    // Initialize UI components
+    authManager.displayUserInfo();
+    authManager.displayUserAvatar();
+    cartManager.updateDisplay();
     
-//     setupEventListeners();
-//     uiManager.updateButtonVisibility(currentUser);
+    setupEventListeners();
+    uiManager.updateButtonVisibility(currentUser);
 
-//      const elements = {
-//     checkoutButton: document.querySelector('.checkout-btn'),
-//     emptyCartButton: document.getElementById('empty-cart-button')
-//   };
+     const elements = {
+    checkoutButton: document.querySelector('.checkout-btn'),
+    emptyCartButton: document.getElementById('empty-cart-button')
+  };
 
-//   if (elements.checkoutButton) {
-//     elements.checkoutButton.textContent = i18nManager.translate('ui.buttons.checkout');
-//     elements.checkoutButton.addEventListener('click', (event) => {
-//       event.preventDefault();
-//       paymentManager.initiateCheckout();
-//     });
-//   }
+  if (elements.checkoutButton) {
+    elements.checkoutButton.textContent = i18nManager.translate('ui.buttons.checkout');
+    elements.checkoutButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      paymentManager.initiateCheckout();
+    });
+  }
 
-//   if (elements.emptyCartButton) {
-//     elements.emptyCartButton.textContent = i18nManager.translate('ui.buttons.emptyCart');
-//     elements.emptyCartButton.addEventListener('click', (event) => {
-//       event.preventDefault();
-//       cartManager.clearCart();
-//     });
-//   }
+  if (elements.emptyCartButton) {
+    elements.emptyCartButton.textContent = i18nManager.translate('ui.buttons.emptyCart');
+    elements.emptyCartButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      cartManager.clearCart();
+    });
+  }
 
     
-//   } catch (error) {
-//     console.error("Error during initialization:", error);
-//     showNotification("Error initializing application", "error");
-//   }
-// });
+  } catch (error) {
+    console.error("Error during initialization:", error);
+    showNotification("Error initializing application", "error");
+  }
+});
 const socialSharingManager = {
   getBaseUrl() {
     // Use your custom domain or the render.com frontend URL
