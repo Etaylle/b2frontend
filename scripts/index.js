@@ -343,18 +343,19 @@ async addItem(productId) {
       const productId = item.product_id;
 
       listItem.innerHTML = `
-        <img src="${imageUrl}" alt="${productName}" class="cart-item-image">
-        <div class="cart-item-details">
-          <span class="item-name">${productName} | </span>
-          <span class="item-price"> ${parseFloat(productPrice).toFixed(2)} $ |</span>
-          <span class="item-quantity">Quantity: ${item.quantity}</span>
-        </div>
-        <div class="cart-item-controls">
-          <button class="quantity-btn minus" data-id="${productId}">-</button>
-          <button class="quantity-btn plus" data-id="${productId}">+</button>
-          <button class="remove-btn" data-id="${productId}">Remove</button>
-        </div>
-      `;
+      <img src="${imageUrl}" alt="${productName}" class="cart-item-image">
+      <div class="cart-item-details">
+        <span class="item-name">${productName} | </span>
+        <span class="item-price">${parseFloat(productPrice).toFixed(2)} $ |</span>
+        <span class="item-quantity">${i18nManager.translate('ui.labels.quantity')}: ${item.quantity}</span>
+      </div>
+      <div class="cart-item-controls">
+        <button class="quantity-btn minus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.decreaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.decreaseQuantity')}">-</button>
+        <button class="quantity-btn plus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.increaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.increaseQuantity')}">+</button>
+        <button class="remove-btn" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.removeItem')}" aria-label="${i18nManager.translate('ui.ariaLabels.removeItem')}">${i18nManager.translate('ui.buttons.remove')}</button>
+      </div>
+    `;
+
 
       cartContainer.appendChild(listItem);
       total += productPrice * item.quantity;
@@ -382,6 +383,7 @@ async addItem(productId) {
       });
     });
 
+// Then append this button to your cart item or wherever it belongs
     document.querySelectorAll('.remove-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const productId = e.target.getAttribute('data-id');
@@ -2059,6 +2061,7 @@ const i18nManager = {
             clearHistory: "Clear History",
             checkout: "Checkout",
             emptyCart: "Empty Cart",
+            removeItem: "Remove",
           },
           labels: {
             stock: "Stock",
@@ -2066,7 +2069,11 @@ const i18nManager = {
             categories: "Categories",
             search: "Search products...",
             recentSearches: "Recent searches",
-          }
+          },
+          tooltips: {
+            decreaseQuantity: "Decrease Quantity",
+            increaseQuantity: "Increase Quantity",
+            
         }
       },
       srb: {
@@ -2084,6 +2091,7 @@ const i18nManager = {
             clearHistory: "Обриши историју претрага",
             checkout: "Купи",
             emptyCart: "Очисти корпу",
+            removeItem: "Уклони",
             
           },
           labels: {
@@ -2092,8 +2100,12 @@ const i18nManager = {
             categories: "Категорије",
             search: "Претражи производе...",
             recentSearches: "Недавне претраге"
-          }
+          },
+          tooltips: {
+            decreaseQuantity: "Смањи количину",
+            increaseQuantity: "Повећај количину",
         }
+        
       },
       de: {
         ui: {
@@ -2110,6 +2122,7 @@ const i18nManager = {
             clearHistory: "Suchverlauf löschen",
             checkout: "Kassenbestellen",
             emptyCart: "Warenkorb leeren",
+            removeItem: "Entfernen",
           },
           labels: {
             stock: "Lagerbestand",
@@ -2117,7 +2130,11 @@ const i18nManager = {
             categories: "Kategorien",
             search: "Produkte suchen...",
             recentSearches: "Vorherige Suchanfragen",
-          }
+          },
+            tooltips: {
+            decreaseQuantity: "Menge verringern",
+            increaseQuantity: "Menge erhöhen",
+        }
         }
       }
     }
