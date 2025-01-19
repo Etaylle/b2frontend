@@ -332,11 +332,13 @@ if (emptyCartMessage) {
     cartContainer.innerHTML = '';
 
     if (!cart.items || cart.items.length === 0) {
-      cartContainer.innerHTML = '<li>Your cart is empty</li>';
-      cartTotal.textContent = 'Total: 0';
-      cartContainer.classList.add('hidden');
-      return;
-    }
+  cartContainer.innerHTML = `
+    <li>${i18nManager.translate('ui.messages.cartEmpty')}</li>
+    <span class="item-quantity">${i18nManager.translate('ui.labels.quantity')}: 0</span>
+  `;
+  cartContainer.classList.add('hidden');
+  return;
+}
 
     cartContainer.classList.remove('hidden');
     let total = 0;
@@ -355,7 +357,7 @@ if (emptyCartMessage) {
       <div class="cart-item-details">
         <span class="item-name">${productName} | </span>
         <span class="item-price">${parseFloat(productPrice).toFixed(2)} $ |</span>
-        <span class="item-quantity">${i18nManager.translate('ui.labels.quantity')}: ${item.quantity}</span>
+        <span class="item-quantity">${i18nManager.translate('ui.labels.quantity')}: $${item.quantity}</span>
       </div>
       <div class="cart-item-controls">
         <button class="quantity-btn minus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.decreaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.decreaseQuantity')}">-</button>
