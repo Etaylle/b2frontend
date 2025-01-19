@@ -369,7 +369,7 @@ if (emptyCartMessage) {
       total += productPrice * item.quantity;
     });
 
-    cartTotal.textContent = `Total: ${total.toFixed(2)}`;
+    cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: ${total.toFixed(2)}`;
     this.attachEventListeners();
   },
 
