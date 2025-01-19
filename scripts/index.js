@@ -2306,37 +2306,38 @@ initialize() {
       await this.renderCategories();
       await this.fetchProducts(this.state.selectedCategory);
       await this.renderProducts(this.state.products);
+      
     });
     
     return Promise.resolve();
   },
-  setupSearch() {
-    // Get search elements
-    this.state.searchInput = document.getElementById('product-search');
-    this.state.searchHistoryDropdown = document.getElementById('search-history');
+  // setupSearch() {
+  //   // Get search elements
+  //   this.state.searchInput = document.getElementById('product-search');
+  //   this.state.searchHistoryDropdown = document.getElementById('search-history');
     
-    if (!this.state.searchInput) return;
+  //   if (!this.state.searchInput) return;
 
-    // Setup search input event listener with debouncing
-    this.state.searchInput.addEventListener('input', (e) => {
-      clearTimeout(this.state.debounceTimeout);
-      this.state.debounceTimeout = setTimeout(() => {
-        this.searchProducts(e.target.value);
-      }, 500); 
-    });
+  //   // Setup search input event listener with debouncing
+  //   this.state.searchInput.addEventListener('input', (e) => {
+  //     clearTimeout(this.state.debounceTimeout);
+  //     this.state.debounceTimeout = setTimeout(() => {
+  //       this.searchProducts(e.target.value);
+  //     }, 500); 
+  //   });
 
-    // Setup search history display
-    this.state.searchInput.addEventListener('focus', () => {
-      this.showSearchHistory();
-    });
+  //   // Setup search history display
+  //   this.state.searchInput.addEventListener('focus', () => {
+  //     this.showSearchHistory();
+  //   });
 
-    // Close search history when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('#search-history') && !e.target.closest('#product-search')) {
-        this.hideSearchHistory();
-      }
-    });
-  },
+  //   // Close search history when clicking outside
+  //   document.addEventListener('click', (e) => {
+  //     if (!e.target.closest('#search-history') && !e.target.closest('#product-search')) {
+  //       this.hideSearchHistory();
+  //     }
+  //   });
+  // },
 
 updateSearchHistory(term) {
     try {
@@ -2422,69 +2423,195 @@ updateSearchHistory(term) {
 //       showNotification(error.message, 'error');
 //     }
 //   },
- async searchProducts(query) {
-    try {
-      // Normalize the search query
-      const searchTerm = query.toLowerCase().trim();
-      this.state.searchTerm = searchTerm;
+//  async searchProducts(query) {
+//     try {
+//       // Normalize the search query
+//       const searchTerm = query.toLowerCase().trim();
+//       this.state.searchTerm = searchTerm;
 
-      // Save search term to history if not empty
-      if (searchTerm) {
-        this.updateSearchHistory(searchTerm);
-      }
+//       // Save search term to history if not empty
+//       if (searchTerm) {
+//         this.updateSearchHistory(searchTerm);
+//       }
 
-      let productsToSearch;
+//       let productsToSearch;
       
-      if (this.state.selectedCategory) {
-        // If category is selected, get products for that category
-        const response = await fetch(`/api/products/category/${this.state.selectedCategory}?lang=${i18nManager.getCurrentLanguage()}`);
-        if (!response.ok) throw new Error('Failed to fetch category products');
-        productsToSearch = await response.json();
-      } else {
-        // Otherwise get all products
-        const response = await fetch(`/api/products?lang=${i18nManager.getCurrentLanguage()}`);
-        if (!response.ok) throw new Error('Failed to fetch products');
-        productsToSearch = await response.json();
-      }
+//       if (this.state.selectedCategory) {
+//         // If category is selected, get products for that category
+//         const response = await fetch(`/api/products/category/${this.state.selectedCategory}?lang=${i18nManager.getCurrentLanguage()}`);
+//         if (!response.ok) throw new Error('Failed to fetch category products');
+//         productsToSearch = await response.json();
+//       } else {
+//         // Otherwise get all products
+//         const response = await fetch(`/api/products?lang=${i18nManager.getCurrentLanguage()}`);
+//         if (!response.ok) throw new Error('Failed to fetch products');
+//         productsToSearch = await response.json();
+//       }
 
-      // If search is empty, show all products for current category
-      if (!searchTerm) {
-        this.state.products = productsToSearch;
-        await this.renderProducts();
-        return;
-      }
+//       // If search is empty, show all products for current category
+//       if (!searchTerm) {
+//         this.state.products = productsToSearch;
+//         await this.renderProducts();
+//         return;
+//       }
 
-      // Filter products based on search term
-      const filteredProducts = productsToSearch.filter(product => {
-        const productName = i18nManager.getProductTranslation(product, 'name').toLowerCase();
-        const productDescription = i18nManager.getProductTranslation(product, 'description').toLowerCase();
-        const price = product.price.toString();
+//       // Filter products based on search term
+//       const filteredProducts = productsToSearch.filter(product => {
+//         const productName = i18nManager.getProductTranslation(product, 'name').toLowerCase();
+//         const productDescription = i18nManager.getProductTranslation(product, 'description').toLowerCase();
+//         const price = product.price.toString();
 
-        return productName.includes(searchTerm) || 
-               productDescription.includes(searchTerm) || 
-               price.includes(searchTerm);
-      });
+//         return productName.includes(searchTerm) || 
+//                productDescription.includes(searchTerm) || 
+//                price.includes(searchTerm);
+//       });
 
-      // Update state and render
-      this.state.products = filteredProducts;
-      await this.renderProducts();
+//       // Update state and render
+//       this.state.products = filteredProducts;
+//       await this.renderProducts();
 
-      // Show no results message if needed
-      if (filteredProducts.length === 0) {
-        const message = i18nManager.translate('ui.messages.noProductsFound');
-        showNotification(message, 'info');
-      }
+//       // Show no results message if needed
+//       if (filteredProducts.length === 0) {
+//         const message = i18nManager.translate('ui.messages.noProductsFound');
+//         showNotification(message, 'info');
+//       }
 
-    } catch (error) {
-      console.error('Search error:', error);
-      showNotification(error.message, 'error');
-    }
-  },
+//     } catch (error) {
+//       console.error('Search error:', error);
+//       showNotification(error.message, 'error');
+//     }
+//   },
   hideSearchHistory() {
     if (this.state.searchHistoryDropdown) {
       this.state.searchHistoryDropdown.style.display = 'none';
     }
-  }, 
+  }, async searchProducts(query) {
+    try {
+      const searchTerm = query.toLowerCase().trim();
+      this.state.searchTerm = searchTerm;
+      const currentLang = i18nManager.getCurrentLanguage();
+
+      if (searchTerm) {
+        this.updateSearchHistory(searchTerm);
+      }
+
+      // Fetch fresh products if needed to ensure we have latest translations
+      const baseUrl = 'https://backend-3mvr.onrender.com/api/products';
+      const url = new URL(this.state.selectedCategory ? 
+        `${baseUrl}/category/${this.state.selectedCategory}` : 
+        baseUrl
+      );
+      url.searchParams.append('lang', currentLang);
+
+      const response = await fetch(url.toString(), {
+        headers: {
+          'Accept-Language': currentLang
+        }
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch products");
+      let products = await response.json();
+      
+      // Normalize response structure
+      products = Array.isArray(products) ? products : 
+                products.products ? products.products : 
+                [products];
+
+      // Transform products to include proper translations
+      products = products.map(product => i18nManager.transformProductData(product));
+
+      // If search is empty, show all products
+      if (!searchTerm) {
+        this.state.products = products;
+        await this.renderProducts(products);
+        return;
+      }
+
+      // Filter products using translated content
+      const filteredProducts = products.filter(product => {
+        const translatedName = i18nManager.getProductTranslation(product, 'name')?.toLowerCase() || '';
+        const translatedDescription = i18nManager.getProductTranslation(product, 'description')?.toLowerCase() || '';
+        const translatedCategory = i18nManager.getCategoryName(product.category)?.toLowerCase() || '';
+        const price = product.price?.toString() || '';
+
+        return translatedName.includes(searchTerm) || 
+               translatedDescription.includes(searchTerm) || 
+               translatedCategory.includes(searchTerm) ||
+               price.includes(searchTerm);
+      });
+
+      this.state.products = filteredProducts;
+      await this.renderProducts(filteredProducts);
+
+      // Show no results message in current language
+      if (filteredProducts.length === 0) {
+        const noResultsMessage = i18nManager.translate('ui.messages.noProductsFound');
+        showNotification(noResultsMessage, 'info');
+      }
+
+    } catch (error) {
+      console.error('Search error:', error);
+      const errorMessage = i18nManager.translate('ui.messages.searchError');
+      showNotification(errorMessage, 'error');
+    }
+  },
+
+  setupSearch() {
+    this.state.searchInput = document.getElementById('product-search');
+    this.state.searchHistoryDropdown = document.getElementById('search-history');
+    
+    if (!this.state.searchInput) {
+      console.warn('Search input element not found');
+      return;
+    }
+
+    // Update placeholder text with translation
+    this.state.searchInput.placeholder = i18nManager.translate('ui.labels.search');
+
+    // Clear previous event listeners
+    const newSearchInput = this.state.searchInput.cloneNode(true);
+    this.state.searchInput.parentNode.replaceChild(newSearchInput, this.state.searchInput);
+    this.state.searchInput = newSearchInput;
+
+    // Setup search input event listener with debouncing
+    this.state.searchInput.addEventListener('input', (e) => {
+      clearTimeout(this.state.debounceTimeout);
+      this.state.debounceTimeout = setTimeout(() => {
+        this.searchProducts(e.target.value);
+      }, 300);
+    });
+
+    // Setup search history display with translations
+    this.state.searchInput.addEventListener('focus', () => {
+      this.showSearchHistory();
+    });
+
+    // Close search history when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#search-history') && !e.target.closest('#product-search')) {
+        this.hideSearchHistory();
+      }
+    });
+
+    // Handle form submission
+    const searchForm = this.state.searchInput.closest('form');
+    if (searchForm) {
+      searchForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.searchProducts(this.state.searchInput.value);
+      });
+    }
+
+    // Listen for language changes
+    window.addEventListener('languageChanged', () => {
+      // Update placeholder text when language changes
+      this.state.searchInput.placeholder = i18nManager.translate('ui.labels.search');
+      // Re-run search with current term if exists
+      if (this.state.searchTerm) {
+        this.searchProducts(this.state.searchTerm);
+      }
+    });
+  },
   async fetchCategories() {
     try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/categories');
