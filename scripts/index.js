@@ -2607,66 +2607,126 @@ async searchProducts(query) {
       showNotification(errorMessage, 'error');
     }
   },
-
   setupSearch() {
-    this.state.searchInput = document.getElementById('product-search');
-    this.state.searchHistoryDropdown = document.getElementById('search-history');
-    
-    if (!this.state.searchInput) {
-      console.warn('Search input element not found');
-      return;
-    }
-
-    // Update placeholder text with translation
-    this.state.searchInput.placeholder = i18nManager.translate('ui.labels.search');
-
-    // Clear previous event listeners
-    const newSearchInput = this.state.searchInput.cloneNode(true);
-    this.state.searchInput.parentNode.replaceChild(newSearchInput, this.state.searchInput);
-    this.state.searchInput = newSearchInput;
-
-    // Setup search input event listener with debouncing
-    this.state.searchInput.addEventListener('input', (e) => {
-      clearTimeout(this.state.debounceTimeout);
-      this.state.debounceTimeout = setTimeout(() => {
-        this.searchProducts(e.target.value);
-      }, 300);
-    });
-
-    // Setup search history display with translations
-    this.state.searchInput.addEventListener('focus', () => {
-      this.showSearchHistory();
-    });
-
-    // Handle clicks outside search area
-document.addEventListener('click', (e) => {
-  if (!this.state.searchInput.contains(e.target) && 
-      !this.state.searchHistoryDropdown.contains(e.target)) {
-    setTimeout(() => {
-      this.hideSearchHistory();
-    }, 5000); // Delay hiding to allow for quick interactions
+  this.state.searchInput = document.getElementById('product-search');
+  this.state.searchHistoryDropdown = document.getElementById('search-history');
+  
+  if (!this.state.searchInput) {
+    console.warn('Search input element not found');
+    return;
   }
-});
 
-    // Handle form submission
-    const searchForm = this.state.searchInput.closest('form');
-    if (searchForm) {
-      searchForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        this.searchProducts(this.state.searchInput.value);
-      });
-    }
+  // Update placeholder text with translation
+  this.state.searchInput.placeholder = i18nManager.translate('ui.labels.search');
 
-    // Listen for language changes
-    window.addEventListener('languageChanged', () => {
-      // Update placeholder text when language changes
-      this.state.searchInput.placeholder = i18nManager.translate('ui.labels.search');
-      // Re-run search with current term if exists
-      if (this.state.searchTerm) {
-        this.searchProducts(this.state.searchTerm);
+  // Clear previous event listeners
+  const newSearchInput = this.state.searchInput.cloneNode(true);
+  this.state.searchInput.parentNode.replaceChild(newSearchInput, this.state.searchInput);
+  this.state.searchInput = newSearchInput;
+
+  // Setup search input event listener with debouncing
+  this.state.searchInput.addEventListener('input', (e) => {
+    clearTimeout(this.state.debounceTimeout);
+    this.state.debounceTimeout = setTimeout(() => {
+      this.searchProducts(e.target.value);
+    }, 300);
+  });
+
+  // Show search history on focus
+  this.state.searchInput.addEventListener('focus', () => {
+    this.showSearchHistory();
+  });
+
+  // Handle blur event
+  this.state.searchInput.addEventListener('blur', () => {
+    // We use setTimeout to allow for quick movement from input to dropdown
+    setTimeout(() => {
+      // Check if the focus is still within the dropdown
+      if (!this.state.searchHistoryDropdown.contains(document.activeElement)) {
+        this.hideSearchHistory();
       }
+    }, 100); // A short delay to allow for quick interactions
+  });
+
+  // Handle form submission
+  const searchForm = this.state.searchInput.closest('form');
+  if (searchForm) {
+    searchForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.searchProducts(this.state.searchInput.value);
     });
-  },
+  }
+
+  // Listen for language changes
+  window.addEventListener('languageChanged', () => {
+    // Update placeholder text when language changes
+    this.state.searchInput.placeholder = i18nManager.translate('ui.labels.search');
+    // Re-run search with current term if exists
+    if (this.state.searchTerm) {
+      this.searchProducts(this.state.searchTerm);
+    }
+  });
+}
+
+//   setupSearch() {
+//     this.state.searchInput = document.getElementById('product-search');
+//     this.state.searchHistoryDropdown = document.getElementById('search-history');
+    
+//     if (!this.state.searchInput) {
+//       console.warn('Search input element not found');
+//       return;
+//     }
+
+//     // Update placeholder text with translation
+//     this.state.searchInput.placeholder = i18nManager.translate('ui.labels.search');
+
+//     // Clear previous event listeners
+//     const newSearchInput = this.state.searchInput.cloneNode(true);
+//     this.state.searchInput.parentNode.replaceChild(newSearchInput, this.state.searchInput);
+//     this.state.searchInput = newSearchInput;
+
+//     // Setup search input event listener with debouncing
+//     this.state.searchInput.addEventListener('input', (e) => {
+//       clearTimeout(this.state.debounceTimeout);
+//       this.state.debounceTimeout = setTimeout(() => {
+//         this.searchProducts(e.target.value);
+//       }, 300);
+//     });
+
+//     // Setup search history display with translations
+//     this.state.searchInput.addEventListener('focus', () => {
+//       this.showSearchHistory();
+//     });
+
+//     // Handle clicks outside search area
+// document.addEventListener('click', (e) => {
+//   if (!this.state.searchInput.contains(e.target) && 
+//       !this.state.searchHistoryDropdown.contains(e.target)) {
+//     setTimeout(() => {
+//       this.hideSearchHistory();
+//     }, 5000); // Delay hiding to allow for quick interactions
+//   }
+// });
+
+//     // Handle form submission
+//     const searchForm = this.state.searchInput.closest('form');
+//     if (searchForm) {
+//       searchForm.addEventListener('submit', (e) => {
+//         e.preventDefault();
+//         this.searchProducts(this.state.searchInput.value);
+//       });
+//     }
+
+//     // Listen for language changes
+//     window.addEventListener('languageChanged', () => {
+//       // Update placeholder text when language changes
+//       this.state.searchInput.placeholder = i18nManager.translate('ui.labels.search');
+//       // Re-run search with current term if exists
+//       if (this.state.searchTerm) {
+//         this.searchProducts(this.state.searchTerm);
+//       }
+//     });
+//   },
   async fetchCategories() {
     try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/categories');
