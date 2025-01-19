@@ -303,22 +303,14 @@ async addItem(productId) {
 
         if (cartContainer) {
           cartContainer.innerHTML = `<li data-i18n="ui.messages.cartEmpty">Your cart is empty</li>`;
-          cartContainer.classList.add('hidden');
+  cartContainer.classList.add('hidden');
         }
 
         if (cartTotal) {
-          cartTotal.textContent = i18nManager.translate('ui.labels.cartTotal') + ': 0';
+          cartTotal.textContent = 'Total: 0';
         }
-        // Update translations for the container text
-const emptyCartMessage = cartContainer.querySelector('li[data-i18n]');
-if (emptyCartMessage) {
-  emptyCartMessage.textContent = i18nManager.translate(emptyCartMessage.getAttribute('data-i18n'));
-}
-        showNotification(
-  afterPurchase ? 
-  i18nManager.translate('ui.messages.purchaseCompleted') : 
-  i18nManager.translate('ui.messages.cartCleared'), 
-  'success');
+
+        showNotification(afterPurchase ? 'Purchase completed successfully!' : 'Cart cleared successfully!', 'success');
       } catch (error) {
         console.error('Error clearing cart:', error);
         showNotification(error.message || 'Failed to clear cart', 'error');
@@ -333,7 +325,7 @@ if (emptyCartMessage) {
 
     if (!cart.items || cart.items.length === 0) {
       cartContainer.innerHTML = '<li>Your cart is empty</li>';
-      cartTotal.textContent =  ': 0';
+      cartTotal.textContent = 'Total: 0';
       cartContainer.classList.add('hidden');
       return;
     }
@@ -355,7 +347,7 @@ if (emptyCartMessage) {
       <div class="cart-item-details">
         <span class="item-name">${productName} | </span>
         <span class="item-price">${parseFloat(productPrice).toFixed(2)} $ |</span>
-        <span class="item-quantity">${i18nManager.translate('ui.labels.quantity')}: $${item.quantity}</span>
+        <span class="item-quantity">${i18nManager.translate('ui.labels.quantity')}: ${item.quantity}</span>
       </div>
       <div class="cart-item-controls">
         <button class="quantity-btn minus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.decreaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.decreaseQuantity')}">-</button>
@@ -369,7 +361,7 @@ if (emptyCartMessage) {
       total += productPrice * item.quantity;
     });
 
-    cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: ${total.toFixed(2)}`;
+    cartTotal.textContent = `Total: ${total.toFixed(2)}`;
     this.attachEventListeners();
   },
 
@@ -2175,8 +2167,6 @@ state: {
             quantity: "Quantity",
             showCryptoPrices: "Show Crypto Prices",
             adminPanel: "Admin Panel",
-            cartTotal: "Cart Total",
-            youMightAlsoLike: "You might also like",
           },
           tooltips: {
             decreaseQuantity: "Decrease Quantity",
@@ -2219,9 +2209,7 @@ state: {
             removeItem: "Уклони ставку",
             quantity: "Количина",
             showCryptoPrices: "Прикажи цене криптовалута",
-            adminPanel: "Админ Панел",
-            cartTotal: "Укупна цена",
-            youMightAlsoLike: "Можда би вам се свидели следећи производи",
+            adminPanel: "Админ Панел"
           },
           tooltips: {
             decreaseQuantity: "Смањи количину",
@@ -2265,8 +2253,6 @@ state: {
             quantity: "Anzahl",
             showCryptoPrices: "Krypto-Preise anzeigen",
             adminPanel: "Admin-Bereich",
-            cartTotal: "Gesamtbetrag",
-            youMightAlsoLike: "Ihnen könnten auch folgende Produkte gefallen",
           },
           tooltips: {
             decreaseQuantity: "Menge verringern",
