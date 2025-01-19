@@ -416,54 +416,54 @@ const uiManager = {
     registerContainer.style.display = "none";
   },
 
-  updateButtonVisibility: (currentUser) => {
-    const loginBtn = document.getElementById("login-btn");
-    const registerBtn = document.getElementById("register-btn");
-    const logoutBtn = document.getElementById("logout-button");
-    const logo2 = document.querySelector(".credit-info");
-    const userAvatar = document.querySelector(".user-avatar-display");
-    const navLinks = document.querySelector('.navbar');
-    const adminLink = document.getElementById("admin-link");
-    if (currentUser) {
-      // Hide login and register buttons
-      if (loginBtn) loginBtn.style.display = "none";
-      if (registerBtn) registerBtn.style.display = "none";
+//   updateButtonVisibility: (currentUser) => {
+//     const loginBtn = document.getElementById("login-btn");
+//     const registerBtn = document.getElementById("register-btn");
+//     const logoutBtn = document.getElementById("logout-button");
+//     const logo2 = document.querySelector(".credit-info");
+//     const userAvatar = document.querySelector(".user-avatar-display");
+//     const navLinks = document.querySelector('.navbar');
+//     const adminLink = document.getElementById("admin-link");
+//     if (currentUser) {
+//       // Hide login and register buttons
+//       if (loginBtn) loginBtn.style.display = "none";
+//       if (registerBtn) registerBtn.style.display = "none";
   
-      // Show elements like logout and avatars
-      if (logoutBtn) logoutBtn.style.display = "block";
-      if (logo2) logo2.style.display = "flex";
-      if (userAvatar) userAvatar.style.display = "flex";
+//       // Show elements like logout and avatars
+//       if (logoutBtn) logoutBtn.style.display = "block";
+//       if (logo2) logo2.style.display = "flex";
+//       if (userAvatar) userAvatar.style.display = "flex";
     
 
   
-      // Handle admin link visibility
-      if (currentUser.role === 'admin') {
-        if (adminLink) {
-            adminLink.style.display = "block";
-        } else if (navLinks) {
-            const newAdminLink = document.createElement('a');
-            newAdminLink.href = '/admin';
-            newAdminLink.textContent = i18nManager.translate('ui.buttons.adminPanel');
-            newAdminLink.id = 'admin-link';
-            navLinks.appendChild(newAdminLink);
-        }
-    } else if (adminLink) {
-        adminLink.style.display = 'none';
-    }
-} else {
-    // Show login and register buttons
-    if (loginBtn) loginBtn.style.display = "block";
-    if (registerBtn) registerBtn.style.display = "block";
+//       // Handle admin link visibility
+//       if (currentUser.role === 'admin') {
+//         if (adminLink) {
+//             adminLink.style.display = "block";
+//         } else if (navLinks) {
+//             const newAdminLink = document.createElement('a');
+//             newAdminLink.href = '/admin';
+//             newAdminLink.textContent = i18nManager.translate('ui.buttons.adminPanel');
+//             newAdminLink.id = 'admin-link';
+//             navLinks.appendChild(newAdminLink);
+//         }
+//     } else if (adminLink) {
+//         adminLink.style.display = 'none';
+//     }
+// } else {
+//     // Show login and register buttons
+//     if (loginBtn) loginBtn.style.display = "block";
+//     if (registerBtn) registerBtn.style.display = "block";
 
-    // Hide logout button and credit info
-    if (logoutBtn) logoutBtn.style.display = "none";
-    if (logo2) logo2.style.display = "none";
-    if (userAvatar) userAvatar.style.display = "none";
-    // Hide admin link if it exists
-    if (adminLink) adminLink.style.display = 'none';
-}
+//     // Hide logout button and credit info
+//     if (logoutBtn) logoutBtn.style.display = "none";
+//     if (logo2) logo2.style.display = "none";
+//     if (userAvatar) userAvatar.style.display = "none";
+//     // Hide admin link if it exists
+//     if (adminLink) adminLink.style.display = 'none';
+// }
     
-  }
+//   }
 };
 
 // Auth Management
