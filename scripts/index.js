@@ -2038,7 +2038,8 @@ const i18nManager = {
             logout: "Logout",
             register: "Register",
             cart: "Cart",
-            orderHistory: "Order History"
+            orderHistory: "Order History",
+            clearHistory: "Clear History",
           },
           labels: {
             stock: "Stock",
@@ -2060,7 +2061,10 @@ const i18nManager = {
             logout: "Одјава",
             register: "Регистрација",
             cart: "Корпа",
-            orderHistory: "Историја поруџбина"
+            orderHistory: "Историја поруџбина",
+            clearHistory: "Obrisi istoriju pretrage",
+            clearCart: "Очисти корпу",
+            
           },
           labels: {
             stock: "Стање",
@@ -2082,7 +2086,8 @@ const i18nManager = {
             logout: "Abmelden",
             register: "Registrieren",
             cart: "Warenkorb",
-            orderHistory: "Bestellverlauf"
+            orderHistory: "Bestellverlauf",
+            clearHistory: "Suchverlauf löschen",
           },
           labels: {
             stock: "Lagerbestand",
