@@ -332,13 +332,11 @@ if (emptyCartMessage) {
     cartContainer.innerHTML = '';
 
     if (!cart.items || cart.items.length === 0) {
-  cartContainer.innerHTML = `
-    <li>${i18nManager.translate('ui.messages.cartEmpty')}</li>
-    <span class="item-quantity">${i18nManager.translate('ui.labels.quantity')}: 0</span>
-  `;
-  cartContainer.classList.add('hidden');
-  return;
-}
+      cartContainer.innerHTML = '<li>Your cart is empty</li>';
+      cartTotal.textContent = i18nManager.translate('ui.labels.cartTotal') + ': 0';
+      cartContainer.classList.add('hidden');
+      return;
+    }
 
     cartContainer.classList.remove('hidden');
     let total = 0;
