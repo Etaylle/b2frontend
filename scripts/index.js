@@ -2474,17 +2474,6 @@ async searchProducts(query) {
         this.searchProducts(this.state.searchInput.value);
       });
     }
-    // Clear previous event listeners for focus and click
-  this.state.searchInput.removeEventListener('focus', this.showSearchHistory);
-  document.removeEventListener('click', this.hideSearchHistory);
-
-  // Reattach event listeners
-  this.state.searchInput.addEventListener('focus', this.showSearchHistory.bind(this));
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('#search-history') && !e.target.closest('#product-search')) {
-      this.hideSearchHistory();
-    }
-  });
 
     // Listen for language changes
     window.addEventListener('languageChanged', () => {
