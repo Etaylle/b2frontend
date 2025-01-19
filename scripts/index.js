@@ -2041,8 +2041,7 @@ const socialSharingManager = {
 };
 
 const i18nManager = {
-
-  state: {
+state: {
     currentLanguage: 'en',
     defaultLanguage: 'en',
     supportedLanguages: ['en', 'srb', 'de'],
@@ -2075,8 +2074,13 @@ const i18nManager = {
           tooltips: {
             decreaseQuantity: "Decrease Quantity",
             increaseQuantity: "Increase Quantity",
-            removeItem: "Remove Item" 
+            removeItem: "Remove Item"
           },
+          ariaLabels: {
+            decreaseQuantity: "Decrease the quantity of this item",
+            increaseQuantity: "Increase the quantity of this item",
+            removeItem: "Remove this item from the cart"
+          }
         }
       },
       srb: {
@@ -2109,6 +2113,11 @@ const i18nManager = {
             increaseQuantity: "Повећај количину",
             removeItem: "Уклони ставку"
           },
+          ariaLabels: {
+            decreaseQuantity: "Смањи количину овог производа",
+            increaseQuantity: "Повећај количину овог производа",
+            removeItem: "Уклони овај производ из корпе"
+          }
         }
       },
       de: {
@@ -2135,13 +2144,17 @@ const i18nManager = {
             search: "Produkte suchen...",
             recentSearches: "Vorherige Suchanfragen",
             removeItem: "Artikel entfernen",
-            
           },
           tooltips: {
             decreaseQuantity: "Menge verringern",
             increaseQuantity: "Menge erhöhen",
             removeItem: "Artikel entfernen"
           },
+          ariaLabels: {
+            decreaseQuantity: "Menge dieses Artikels verringern",
+            increaseQuantity: "Menge dieses Artikels erhöhen",
+            removeItem: "Diesen Artikel aus dem Warenkorb entfernen"
+          }
         }
       }
     }
