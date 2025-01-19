@@ -2044,7 +2044,8 @@ const i18nManager = {
             stock: "Stock",
             price: "Price",
             categories: "Categories",
-            search: "Search products..."
+            search: "Search products...",
+            recentSearches: "Recent searches",
           }
         }
       },
@@ -2065,7 +2066,8 @@ const i18nManager = {
             stock: "Стање",
             price: "Цена",
             categories: "Категорије",
-            search: "Претражи производе..."
+            search: "Претражи производе...",
+            recentSearches: "Nedavna pretraga"
           }
         }
       },
@@ -2086,7 +2088,8 @@ const i18nManager = {
             stock: "Lagerbestand",
             price: "Preis",
             categories: "Kategorien",
-            search: "Produkte suchen..."
+            search: "Produkte suchen...",
+            recentSearches: "Vorherige Suchanfragen",
           }
         }
       }
