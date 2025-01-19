@@ -443,7 +443,7 @@ const uiManager = {
         } else if (navLinks) {
             const newAdminLink = document.createElement('a');
             newAdminLink.href = '/admin';
-            newAdminLink.textContent = 'Admin Panel';
+            newAdminLink.textContent = i18nManager.translate('ui.buttons.adminPanel');
             newAdminLink.id = 'admin-link';
             navLinks.appendChild(newAdminLink);
         }
@@ -1538,7 +1538,9 @@ const cryptoManager = {
         <input type="checkbox" id="crypto-toggle">
         <span class="slider round"></span>
       </label>
-      <span class="crypto-label"> <a href="#" aria-label="Show Crypto Prices">Show Crypto Prices</a></span>
+      <span class="crypto-label">
+  <a href="#" aria-label="${i18nManager.translate('ui.ariaLabels.showCryptoPrices')}">${i18nManager.translate('ui.labels.showCryptoPrices')}</a>
+</span>
       
     `;
 
@@ -2062,6 +2064,7 @@ state: {
             checkout: "Checkout",
             emptyCart: "Empty Cart",
             removeItem: "Remove",
+            adminPanel: "Admin Panel",
           },
           labels: {
             stock: "Stock",
@@ -2071,6 +2074,7 @@ state: {
             recentSearches: "Recent searches",
             removeItem: "Remove Item",
             quantity: "Quantity",
+            showCryptoPrices: "Show Crypto Prices",
           },
           tooltips: {
             decreaseQuantity: "Decrease Quantity",
@@ -2080,7 +2084,8 @@ state: {
           ariaLabels: {
             decreaseQuantity: "Decrease the quantity of this item",
             increaseQuantity: "Increase the quantity of this item",
-            removeItem: "Remove this item from the cart"
+            removeItem: "Remove this item from the cart",
+            showCryptoPrices: "Show Crypto Prices"
           }
         }
       },
@@ -2100,6 +2105,7 @@ state: {
             checkout: "Купи",
             emptyCart: "Очисти корпу",
             removeItem: "Уклони",
+            adminPanel: "Админ Панел",
           },
           labels: {
             stock: "Стање",
@@ -2109,6 +2115,7 @@ state: {
             recentSearches: "Недавне претраге",
             removeItem: "Уклони ставку",
             quantity: "Количина",
+            showCryptoPrices: "Прикажи цене криптовалута",
           },
           tooltips: {
             decreaseQuantity: "Смањи количину",
@@ -2118,7 +2125,8 @@ state: {
           ariaLabels: {
             decreaseQuantity: "Смањи количину овог производа",
             increaseQuantity: "Повећај количину овог производа",
-            removeItem: "Уклони овај производ из корпе"
+            removeItem: "Уклони овај производ из корпе",
+            showCryptoPrices: "Прикажи цене криптовалута"
           }
         }
       },
@@ -2138,6 +2146,7 @@ state: {
             checkout: "Kassenbestellen",
             emptyCart: "Warenkorb leeren",
             removeItem: "Entfernen",
+            adminPanel: "Admin-Bereich",
           },
           labels: {
             stock: "Lagerbestand",
@@ -2147,6 +2156,7 @@ state: {
             recentSearches: "Vorherige Suchanfragen",
             removeItem: "Artikel entfernen",
             quantity: "Anzahl",
+            showCryptoPrices: "Krypto-Preise anzeigen",
           },
           tooltips: {
             decreaseQuantity: "Menge verringern",
@@ -2156,7 +2166,8 @@ state: {
           ariaLabels: {
             decreaseQuantity: "Menge dieses Artikels verringern",
             increaseQuantity: "Menge dieses Artikels erhöhen",
-            removeItem: "Diesen Artikel aus dem Warenkorb entfernen"
+            removeItem: "Diesen Artikel aus dem Warenkorb entfernen",
+            showCryptoPrices: "Krypto-Preise anzeigen"
           }
         }
       }
