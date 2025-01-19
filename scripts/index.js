@@ -2105,7 +2105,7 @@ const i18nManager = {
           tooltips: {
             decreaseQuantity: "Смањи количину",
             increaseQuantity: "Повећај количину",
-            removeItem: "Уклони ставку" // Added this for completeness
+            removeItem: "Уклони ставку"
           },
         }
       },
@@ -2136,7 +2136,7 @@ const i18nManager = {
           tooltips: {
             decreaseQuantity: "Menge verringern",
             increaseQuantity: "Menge erhöhen",
-            removeItem: "Artikel entfernen" // Added this for completeness
+            removeItem: "Artikel entfernen"
           },
         }
       }
