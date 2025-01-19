@@ -2041,7 +2041,8 @@ const socialSharingManager = {
 };
 
 const i18nManager = {
-   state: {
+
+  state: {
     currentLanguage: 'en',
     defaultLanguage: 'en',
     supportedLanguages: ['en', 'srb', 'de'],
@@ -2073,7 +2074,8 @@ const i18nManager = {
           tooltips: {
             decreaseQuantity: "Decrease Quantity",
             increaseQuantity: "Increase Quantity",
-            
+            removeItem: "Remove Item" // Added this for completeness
+          },
         }
       },
       srb: {
@@ -2092,7 +2094,6 @@ const i18nManager = {
             checkout: "Купи",
             emptyCart: "Очисти корпу",
             removeItem: "Уклони",
-            
           },
           labels: {
             stock: "Стање",
@@ -2104,8 +2105,9 @@ const i18nManager = {
           tooltips: {
             decreaseQuantity: "Смањи количину",
             increaseQuantity: "Повећај количину",
+            removeItem: "Уклони ставку" // Added this for completeness
+          },
         }
-        
       },
       de: {
         ui: {
@@ -2131,10 +2133,11 @@ const i18nManager = {
             search: "Produkte suchen...",
             recentSearches: "Vorherige Suchanfragen",
           },
-            tooltips: {
+          tooltips: {
             decreaseQuantity: "Menge verringern",
             increaseQuantity: "Menge erhöhen",
-        }
+            removeItem: "Artikel entfernen" // Added this for completeness
+          },
         }
       }
     }
