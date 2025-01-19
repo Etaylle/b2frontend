@@ -416,41 +416,56 @@ const uiManager = {
     registerContainer.style.display = "none";
   },
 updateButtonVisibility: function(currentUser) {
-    const elements = {
-      loginBtn: document.getElementById("login-btn"),
-      registerBtn: document.getElementById("register-btn"),
-      logoutButton: document.getElementById("logout-button"),
-      userAvatarDisplay: document.getElementById("user-avatar-display"),
-      navbar: document.querySelector('.navbar')
-    };
+  const elements = {
+    loginBtn: document.getElementById("login-btn"),
+    registerBtn: document.getElementById("register-btn"),
+    logoutButton: document.getElementById("logout-button"),
+    userAvatarDisplay: document.getElementById("user-avatar-display"),
+    navbar: document.querySelector('.navbar')
+  };
 
-    elements.loginBtn.style.display = currentUser ? "none" : "block";
-    elements.registerBtn.style.display = currentUser ? "none" : "block";
-    elements.logoutButton.style.display = currentUser ? "block" : "none";
-
-    if (currentUser) {
-      const isAdmin = JSON.parse(currentUser)?.isAdmin || false;
-      // Clear existing content before adding new
-      elements.userAvatarDisplay.innerHTML = `
-        <img src="/images/avatar.jpg" alt="User Avatar">
-      `;
-
-      if (isAdmin) {
-        // Add admin link dynamically
-        const adminLink = document.createElement('a');
-        adminLink.href = '/admin';
-        adminLink.className = 'admin-link';
-        adminLink.textContent = i18nManager.translate('ui.buttons.adminPanel');
-        adminLink.setAttribute('aria-label', i18nManager.translate('ui.ariaLabels.adminPanel'));
-        
-        // Append the admin link to userAvatarDisplay
-        elements.userAvatarDisplay.appendChild(adminLink);
-      }
-    } else {
-      // Clear the content if no user is logged in
-      elements.userAvatarDisplay.innerHTML = '';
+  // Check if currentUser is a string (JSON) or an object
+  let userData;
+  if (typeof currentUser === 'string') {
+    // If it's a string, parse it
+    try {
+      userData = JSON.parse(currentUser);
+    } catch (e) {
+      console.error('Failed to parse currentUser:', e);
+      userData = null; // or handle this error in another way
     }
+  } else {
+    // If it's already an object, use it directly
+    userData = currentUser;
   }
+
+  elements.loginBtn.style.display = userData ? "none" : "block";
+  elements.registerBtn.style.display = userData ? "none" : "block";
+  elements.logoutButton.style.display = userData ? "block" : "none";
+
+  if (userData) {
+    const isAdmin = userData.isAdmin || false;
+    // Clear existing content before adding new
+    elements.userAvatarDisplay.innerHTML = `
+      <img src="/images/avatar.jpg" alt="User Avatar">
+    `;
+
+    if (isAdmin) {
+      // Add admin link dynamically
+      const adminLink = document.createElement('a');
+      adminLink.href = '/admin';
+      adminLink.className = 'admin-link';
+      adminLink.textContent = i18nManager.translate('ui.buttons.adminPanel');
+      adminLink.setAttribute('aria-label', i18nManager.translate('ui.ariaLabels.adminPanel'));
+      
+      // Append the admin link to userAvatarDisplay
+      elements.userAvatarDisplay.appendChild(adminLink);
+    }
+  } else {
+    // Clear the content if no user is logged in
+    elements.userAvatarDisplay.innerHTML = '';
+  }
+}
 //   updateButtonVisibility: (currentUser) => {
 //     const loginBtn = document.getElementById("login-btn");
 //     const registerBtn = document.getElementById("register-btn");
