@@ -1558,7 +1558,51 @@ const cryptoManager = {
     }
   },
 
-  createCryptoToggle() {
+//   createCryptoToggle() {
+//     const navbarRight = document.querySelector(".navbar-right");
+//     if (!navbarRight) return;
+
+//     // Remove existing toggle if present
+//     const existingToggle = document.querySelector(".crypto-toggle-container");
+//     if (existingToggle) {
+//       existingToggle.remove();
+//     }
+
+//     const toggleContainer = document.createElement("div");
+//     toggleContainer.className = "crypto-toggle-container";
+//     toggleContainer.innerHTML = `
+//       <label class="crypto-switch">
+//         <input type="checkbox" id="crypto-toggle">
+//         <span class="slider round"></span>
+//       </label>
+//       <span class="crypto-label">
+//   <a href="#" aria-label="${i18nManager.translate('ui.ariaLabels.showCryptoPrices')}">${i18nManager.translate('ui.labels.showCryptoPrices')}</a>
+// </span>
+      
+//     `;
+
+//     navbarRight.insertBefore(toggleContainer, navbarRight.firstChild);
+
+//     const toggle = document.getElementById("crypto-toggle");
+//     if (toggle) {
+//       // Set initial state
+//       toggle.checked = this.state.cryptoPricesEnabled;
+      
+//       // Add event listener
+//       toggle.addEventListener("change", async (e) => {
+//         this.state.cryptoPricesEnabled = e.target.checked;
+//         localStorage.setItem("cryptoPricesEnabled", this.state.cryptoPricesEnabled);
+        
+//         // Fetch fresh rates if enabled
+//         if (this.state.cryptoPricesEnabled) {
+//           await this.fetchCryptoRates();
+//         }
+//         console.log("update ALL PRODUCT PRICES CALL");
+//         this.updateAllProductPrices();
+//       });
+//     }
+//   },
+createCryptoToggle() {
     const navbarRight = document.querySelector(".navbar-right");
     if (!navbarRight) return;
 
@@ -1576,9 +1620,8 @@ const cryptoManager = {
         <span class="slider round"></span>
       </label>
       <span class="crypto-label">
-  <a href="#" aria-label="${i18nManager.translate('ui.ariaLabels.showCryptoPrices')}">${i18nManager.translate('ui.labels.showCryptoPrices')}</a>
-</span>
-      
+        <a href="#" aria-label="${i18nManager.translate('ui.ariaLabels.showCryptoPrices')}" data-i18n="ui.labels.showCryptoPrices">Show Crypto Prices</a>
+      </span>
     `;
 
     navbarRight.insertBefore(toggleContainer, navbarRight.firstChild);
@@ -1599,10 +1642,21 @@ const cryptoManager = {
         }
         console.log("update ALL PRODUCT PRICES CALL");
         this.updateAllProductPrices();
+
+        // Update the label text when the toggle changes (if needed)
+        const cryptoLabel = toggleContainer.querySelector('a[data-i18n]');
+        if (cryptoLabel) {
+          cryptoLabel.textContent = i18nManager.translate(cryptoLabel.getAttribute('data-i18n'));
+        }
       });
     }
-  },
 
+    // Immediately update the translated text
+    const cryptoLabel = toggleContainer.querySelector('a[data-i18n]');
+    if (cryptoLabel) {
+      cryptoLabel.textContent = i18nManager.translate(cryptoLabel.getAttribute('data-i18n'));
+    }
+},
   updateAllProductPrices() {
     const priceSpans = document.querySelectorAll(".price-span");
     
