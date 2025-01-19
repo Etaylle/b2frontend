@@ -2322,7 +2322,7 @@ initialize() {
       clearTimeout(this.state.debounceTimeout);
       this.state.debounceTimeout = setTimeout(() => {
         this.searchProducts(e.target.value);
-      }, 300); // 300ms debounce delay
+      }, 500); 
     });
 
     // Setup search history display
@@ -2337,64 +2337,7 @@ initialize() {
       }
     });
   },
-//  async searchProducts(query) {
-//     try {
-//       // Normalize the search query
-//       const searchTerm = query.toLowerCase().trim();
-//       this.state.searchTerm = searchTerm;
 
-//       // Save search term to history if not empty
-//       if (searchTerm) {
-//         this.updateSearchHistory(searchTerm);
-//       }
-
-//       let productsToSearch;
-      
-//       if (this.state.selectedCategory) {
-//         // If category is selected, get products for that category
-//         const response = await fetch(`/api/products/category/${this.state.selectedCategory}?lang=${i18nManager.getCurrentLanguage()}`);
-//         if (!response.ok) throw new Error('Failed to fetch category products');
-//         productsToSearch = await response.json();
-//       } else {
-//         // Otherwise get all products
-//         const response = await fetch(`/api/products?lang=${i18nManager.getCurrentLanguage()}`);
-//         if (!response.ok) throw new Error('Failed to fetch products');
-//         productsToSearch = await response.json();
-//       }
-
-//       // If search is empty, show all products for current category
-//       if (!searchTerm) {
-//         this.state.products = productsToSearch;
-//         await this.renderProducts();
-//         return;
-//       }
-
-//       // Filter products based on search term
-//       const filteredProducts = productsToSearch.filter(product => {
-//         const productName = i18nManager.getProductTranslation(product, 'name').toLowerCase();
-//         const productDescription = i18nManager.getProductTranslation(product, 'description').toLowerCase();
-//         const price = product.price.toString();
-
-//         return productName.includes(searchTerm) || 
-//                productDescription.includes(searchTerm) || 
-//                price.includes(searchTerm);
-//       });
-
-//       // Update state and render
-//       this.state.products = filteredProducts;
-//       await this.renderProducts();
-
-//       // Show no results message if needed
-//       if (filteredProducts.length === 0) {
-//         const message = i18nManager.translate('ui.messages.noProductsFound');
-//         showNotification(message, 'info');
-//       }
-
-//     } catch (error) {
-//       console.error('Search error:', error);
-//       showNotification(error.message, 'error');
-//     }
-//   },
 updateSearchHistory(term) {
     try {
       const searches = JSON.parse(localStorage.getItem('searchHistory') || '[]');
@@ -2441,7 +2384,44 @@ updateSearchHistory(term) {
       console.error('Error showing search history:', error);
     }
   },
+ async searchProducts(query) {
+    try {
+      const searchTerm = query.toLowerCase().trim();
+      this.state.searchTerm = searchTerm;
 
+      // Save search term to history if not empty
+      if (searchTerm) {
+        this.updateSearchHistory(searchTerm);
+      }
+
+      let productsToSearch = this.state.products; // Use current products in state
+
+      // Filter products based on search term
+      const filteredProducts = productsToSearch.filter(product => {
+        const productName = i18nManager.getProductTranslation(product, 'name').toLowerCase();
+        const productDescription = i18nManager.getProductTranslation(product, 'description').toLowerCase();
+        const price = product.price.toString();
+
+        return productName.includes(searchTerm) || 
+               productDescription.includes(searchTerm) || 
+               price.includes(searchTerm);
+      });
+
+      // Update state and render
+      this.state.products = filteredProducts;
+      await this.renderProducts(this.state.products);
+
+      // Show no results message if needed
+      if (filteredProducts.length === 0) {
+        const message = i18nManager.translate('ui.messages.noProductsFound');
+        showNotification(message, 'info');
+      }
+
+    } catch (error) {
+      console.error('Search error:', error);
+      showNotification(error.message, 'error');
+    }
+  },
   hideSearchHistory() {
     if (this.state.searchHistoryDropdown) {
       this.state.searchHistoryDropdown.style.display = 'none';
@@ -3332,24 +3312,6 @@ ensureStylesExist() {
       console.error('Error updating related managers:', error);
     }
   },
-// async initialize() {
-//     await this.fetchCategories();
-//     await this.setupSearch();
-//   },
-//   initializeImageSliders() {
-//     document.querySelectorAll('.image-slider').forEach(slider => {
-//       const images = slider.querySelectorAll('img');
-//       if (images.length <= 1) return;
-
-//       let currentIndex = 0;
-//       setInterval(() => {
-//         images[currentIndex].classList.remove('active');
-//         currentIndex = (currentIndex + 1) % images.length;
-//         images[currentIndex].classList.add('active');
-//       }, 3000);
-//     });
-//   },
-
   highlightSelectedCategory() {
   // Remove 'active' class from all buttons
     document.querySelectorAll(".category-btn").forEach(btn => btn.classList.remove("active"));
