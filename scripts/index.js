@@ -2339,6 +2339,7 @@ initialize() {
   }
 },
 showSearchHistory() {
+  console.log('Showing search history');
   if (!this.state.searchHistoryDropdown) {
     console.warn('Search history dropdown not found');
     return;
@@ -2393,6 +2394,7 @@ showSearchHistory() {
   }
 },
 hideSearchHistory() {
+  console.log('Hiding search history');
   if (this.state.searchHistoryDropdown) {
     this.state.searchHistoryDropdown.style.display = 'none';
   }
@@ -2637,12 +2639,14 @@ async searchProducts(query) {
     });
 
     // Handle clicks outside search area
-    document.addEventListener('click', (e) => {
-      if (!this.state.searchInput.contains(e.target) && 
-          !this.state.searchHistoryDropdown.contains(e.target)) {
-        this.hideSearchHistory();
-      }
-    });
+document.addEventListener('click', (e) => {
+  if (!this.state.searchInput.contains(e.target) && 
+      !this.state.searchHistoryDropdown.contains(e.target)) {
+    setTimeout(() => {
+      this.hideSearchHistory();
+    }, 5000); // Delay hiding to allow for quick interactions
+  }
+});
 
     // Handle form submission
     const searchForm = this.state.searchInput.closest('form');
