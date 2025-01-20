@@ -2051,73 +2051,57 @@ const recommendationManager = {
   //   }
   // },
 async renderRecommendations() {
-  console.log('Starting renderRecommendations');
-  console.log('Raw recommended products:', JSON.stringify(this.state.recommendedProducts, null, 2));
-  
-  const container = document.createElement('div');
-  container.className = 'recommendations-container';
-  container.innerHTML = `
-    <h3>${i18nManager.translate('ui.labels.youMightAlsoLike')}</h3>
-    <div class="recommendations-grid"></div>
-  `;
+    console.log('Starting renderRecommendations');
+    console.log('Raw recommended products:', JSON.stringify(this.state.recommendedProducts, null, 2));
 
-  const grid = container.querySelector('.recommendations-grid');
-  
-  // Set product data in ratingManager before rendering
-  console.log('Setting product data in ratingManager...');
-  ratingManager.setProductData(this.state.recommendedProducts);
-
-  this.state.recommendedProducts.forEach(product => {
-    // Log the complete product object to see all available properties
-    console.log('Full product object:', JSON.stringify(product, null, 2));
-    
-    // Ensure we're using the correct property names
-    const productInfo = {
-      id: product.product_id,
-      name: product.name,
-      average_rating: parseFloat(product.average_rating) || 0,
-      total_ratings: parseInt(product.total_ratings) || 0
-    };
-    
-    console.log('Processed product info:', productInfo);
-    
-    const productElement = document.createElement('div');
-    productElement.className = 'recommended-product';
-    
-    // Create rating HTML using ratingManager with the correct properties
-    console.log(`Creating rating HTML for product ${productInfo.id} with rating ${productInfo.average_rating}`);
-    const ratingHTML = ratingManager.createProductRating(
-      productInfo.id,
-      productInfo.average_rating,
-      productInfo.total_ratings
-    );
-
-    productElement.innerHTML = `
-      <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${productInfo.name}">
-      <h4>${productInfo.name}</h4>
-      <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
-      ${ratingHTML}
-      <button class="recommend-add-to-cart">Add to the cart</button>
+    const container = document.createElement('div');
+    container.className = 'recommendations-container';
+    container.innerHTML = `
+      <h3>${i18nManager.translate('ui.labels.youMightAlsoLike')}</h3>
+      <div class="recommendations-grid"></div>
     `;
 
-    // Add click handler for cart button
-    const addButton = productElement.querySelector('.recommend-add-to-cart');
-    addButton.onclick = () => cartManager.addItem(productInfo.id);
+    const grid = container.querySelector('.recommendations-grid');
 
-    grid.appendChild(productElement);
-  });
+    // Update ratingManager with current product data
+    ratingManager.setProductData(this.state.recommendedProducts);
 
-  // Find and update the recommendations section
-  const existingRecommendations = document.querySelector('.recommendations-container');
-  if (existingRecommendations) {
-    console.log('Replacing existing recommendations');
-    existingRecommendations.replaceWith(container);
-  } else {
-    console.log('Adding new recommendations container');
-    document.querySelector('.grid-container').after(container);
-  }
-  console.log('Finished rendering recommendations');
-},
+    this.state.recommendedProducts.forEach(product => {
+      const productElement = document.createElement('div');
+      productElement.className = 'recommended-product';
+      
+      // Use ratingManager to create rating HTML, but we'll only use average_rating here
+      const ratingHTML = ratingManager.createProductRating(
+        product.product_id.toString(),
+        product.average_rating || 0 // Use the product's average rating directly
+      );
+
+      productElement.innerHTML = `
+        <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
+        <h4>${product.name}</h4>
+        <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
+        ${ratingHTML}
+        <button class="recommend-add-to-cart">Add to the cart</button>
+      `;
+
+      // Add click handler for cart button
+      const addButton = productElement.querySelector('.recommend-add-to-cart');
+      addButton.onclick = () => cartManager.addItem(product.product_id);
+
+      grid.appendChild(productElement);
+    });
+
+    // Find and update the recommendations section
+    const existingRecommendations = document.querySelector('.recommendations-container');
+    if (existingRecommendations) {
+      console.log('Replacing existing recommendations');
+      existingRecommendations.replaceWith(container);
+    } else {
+      console.log('Adding new recommendations container');
+      document.querySelector('.grid-container').after(container);
+    }
+    console.log('Finished rendering recommendations');
+  },
   initialize() {
     // Add click handlers to product grid items to show recommendations
     document.querySelector('.grid-container').addEventListener('click', (e) => {
