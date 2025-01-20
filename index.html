@@ -594,20 +594,21 @@
                 this.closeButton.addEventListener('click', () => this.closeChat());
             }
 
-            toggleChat() {
-                this.isVisible = !this.isVisible;  // Toggle visibility state
-                this.chatWindow.style.display = this.isVisible ? 'flex' : 'none';
-                this.chatToggle.style.display = this.isVisible ? 'none' : 'flex';
+        toggleChat() {
+            this.isVisible = !this.isVisible;
+            this.chatWindow.classList.toggle('visible');
+            this.chatToggle.style.display = this.isVisible ? 'none' : 'flex';
 
-                if (this.isVisible && this.messages.length === 0) {
-                    this.addMessage('Hello! How can I help you today?', 'support');
-                } else if (!this.isVisible) {
-                    // Optionally, clear the messages from the DOM when closing, but keep them in memory
-                    while (this.chatMessages.firstChild) {
-                        this.chatMessages.removeChild(this.chatMessages.firstChild);
-                    }
-                }
+            if (this.isVisible && this.messages.length === 0) {
+                this.addMessage('Hello! How can I help you today?', 'support');
             }
+        }
+
+        closeChat() {
+            this.isVisible = false;
+            this.chatWindow.classList.remove('visible');
+            this.chatToggle.style.display = 'flex';
+        }
 
             minimizeChat() {
                 this.isMinimized = !this.isMinimized;
@@ -616,10 +617,7 @@
                 this.minimizeButton.querySelector('i').classList.toggle('fa-plus');
             }
 
-            closeChat() {
-                this.chatWindow.style.display = 'none';
-                this.chatToggle.style.display = 'flex';
-            }
+            
 
             handleSubmit(e) {
                 e.preventDefault();
