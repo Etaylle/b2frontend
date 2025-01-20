@@ -1070,7 +1070,7 @@ main {
   cursor: pointer;
   border-radius: 4px;
 }
-CHAT
+/* CHAT */
 .chat-widget {
   position: fixed;
   bottom: 20px;
@@ -1120,8 +1120,7 @@ CHAT
 .chat-window.minimized .chat-input-container {
   display: none;
 }
-.chat-window:not(.visible) .message {
-  display: none;}
+
 .chat-header {
   background-color: #4CAF50;
   color: white;
@@ -1247,6 +1246,7 @@ CHAT
     transform: translateY(0);
   }
 }
+
 
   /* Utility Classes */
   .visible {

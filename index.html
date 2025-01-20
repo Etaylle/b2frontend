@@ -657,28 +657,6 @@
             }
 
             addMessage(text, sender) {
-                // const messageDiv = document.createElement('div');
-                // messageDiv.classList.add('message', sender, 'message-animation');
-
-                // const messageText = document.createElement('span');
-                // messageText.textContent = text;
-
-                // const timeSpan = document.createElement('span');
-                // timeSpan.classList.add('message-time');
-                // timeSpan.textContent = new Date().toLocaleTimeString([], {
-                //     hour: '2-digit',
-                //     minute: '2-digit'
-                // });
-
-                // messageDiv.appendChild(messageText);
-                // messageDiv.appendChild(timeSpan);
-
-                // this.chatMessages.appendChild(messageDiv);
-                // this.scrollToBottom();
-                // this.messages.push({ text, sender, time: new Date() });
-
-                // // Save messages to localStorage
-                // this.saveMessages();
                 const messageDiv = document.createElement('div');
                 messageDiv.classList.add('message', sender, 'message-animation');
 
@@ -699,6 +677,7 @@
                 this.scrollToBottom();
                 this.messages.push({ text, sender, time: new Date() });
 
+                // Save messages to localStorage
                 this.saveMessages();
             }
 
