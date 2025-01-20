@@ -559,7 +559,7 @@ async fetchCurrentUser() {
     fetchConfig.headers['X-Guest-User'] = fetchConfig.headers['X-Guest-User'] || generateGuestId();
     return null;
   }
-}
+},
 // async login(formData) {
 //   try {
 //     const response = await fetch("https://backend-3mvr.onrender.com/api/auth/login", {
