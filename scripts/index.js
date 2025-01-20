@@ -526,25 +526,40 @@ const authManager = {
 //       return null;
 //     }
 //   },
+// Inside authManager
 async fetchCurrentUser() {
   try {
     const response = await fetch('https://backend-3mvr.onrender.com/api/users/current', {
       ...fetchConfig,
       credentials: 'include'
     });
-    if (!response.ok) throw new Error('Auth failed');
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        // If authentication failed (e.g., user not logged in), set or maintain guest ID
+        fetchConfig.headers['X-Guest-User'] = fetchConfig.headers['X-Guest-User'] || generateGuestId();
+      }
+      throw new Error('Auth failed');
+    }
+    
     const user = await response.json();
     
     if (user) {
-      // Clear the guest ID header if a user is found
+      // Clear the guest ID header since a user is found
       delete fetchConfig.headers['X-Guest-User'];
+    } else {
+      // If no user is returned but the response was OK, consider this case as well
+      fetchConfig.headers['X-Guest-User'] = fetchConfig.headers['X-Guest-User'] || generateGuestId();
     }
+    
     return user;
   } catch (error) {
     console.error(error);
+    // Ensure guest ID is set even if an error occurs (like network issues)
+    fetchConfig.headers['X-Guest-User'] = fetchConfig.headers['X-Guest-User'] || generateGuestId();
     return null;
   }
-},
+}
 // async login(formData) {
 //   try {
 //     const response = await fetch("https://backend-3mvr.onrender.com/api/auth/login", {
