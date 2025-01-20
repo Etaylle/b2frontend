@@ -333,11 +333,11 @@ body {
   text-align: center;
 }
 
-.notification.success-message {
+.notification.success{
   background-color: #4CAF50;
 }
 
-.notification.error-message {
+.notification.error {
   background-color: #f44336;
 }
 

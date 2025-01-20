@@ -2241,9 +2241,9 @@ state: {
             adminPanel: "Админ Панел"
           },
           messages: {
-            itemAddedToCart: "Artikal dodat u korpu",
-            itemRemovedFromCart: "Artikal uklonjen iz korpe",
-            errorOccurred: "Došlo je do greške"
+            itemAddedToCart: "Артикал додат у корпу",
+            itemRemovedFromCart: "Артикал уклоњен из корпе",
+            errorOccurred: "Дошло је до грешке"
           },
         }
       },
