@@ -520,72 +520,72 @@
                 this.closeButton = document.getElementById('close-chat');
             }
 
-        //     addStyles() {
-        //         const styles = `
-        //     .message {
-        //         max-width: 80%;
-        //         margin: 8px;
-        //         padding: 12px;
-        //         border-radius: 15px;
-        //         position: relative;
-        //         animation: messageSlide 0.3s ease-out;
-        //         clear: both;
-        //         word-wrap: break-word;
-        //     }
+            addStyles() {
+                const styles = `
+            .message {
+                max-width: 80%;
+                margin: 8px;
+                padding: 12px;
+                border-radius: 15px;
+                position: relative;
+                animation: messageSlide 0.3s ease-out;
+                clear: both;
+                word-wrap: break-word;
+            }
 
-        //     .message.user {
-        //         background-color: #007bff;
-        //         color: white;
-        //         float: right;
-        //         border-bottom-right-radius: 5px;
-        //     }
+            .message.user {
+                background-color: #007bff;
+                color: white;
+                float: right;
+                border-bottom-right-radius: 5px;
+            }
 
-        //     .message.support {
-        //         background-color: #f0f0f0;
-        //         color: #333;
-        //         float: left;
-        //         border-bottom-left-radius: 5px;
-        //     }
+            .message.support {
+                background-color: #f0f0f0;
+                color: #333;
+                float: left;
+                border-bottom-left-radius: 5px;
+            }
 
-        //     .message-time {
-        //         font-size: 0.7em;
-        //         opacity: 0.7;
-        //         margin-top: 5px;
-        //         display: block;
-        //     }
+            .message-time {
+                font-size: 0.7em;
+                opacity: 0.7;
+                margin-top: 5px;
+                display: block;
+            }
 
-        //     @keyframes messageSlide {
-        //         from {
-        //             opacity: 0;
-        //             transform: translateY(20px);
-        //         }
-        //         to {
-        //             opacity: 1;
-        //             transform: translateY(0);
-        //         }
-        //     }
+            @keyframes messageSlide {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
 
-        //     .chat-messages {
-        //         height: 300px;
-        //         overflow-y: auto;
-        //         padding: 10px;
-        //         background: white;
-        //     }
+            .chat-messages {
+                height: 300px;
+                overflow-y: auto;
+                padding: 10px;
+                background: white;
+            }
 
-        //     .message-animation {
-        //         animation: messageSlide 0.3s ease-out;
-        //     }
+            .message-animation {
+                animation: messageSlide 0.3s ease-out;
+            }
 
-        //     .chat-window.minimized {
-        //         height: 40px;
-        //         overflow: hidden;
-        //     }
-        // `;
+            .chat-window.minimized {
+                height: 40px;
+                overflow: hidden;
+            }
+        `;
 
-        //         const styleSheet = document.createElement("style");
-        //         styleSheet.textContent = styles;
-        //         document.head.appendChild(styleSheet);
-        //     }
+                const styleSheet = document.createElement("style");
+                styleSheet.textContent = styles;
+                document.head.appendChild(styleSheet);
+            }
 
             bindEvents() {
                 this.chatToggle.addEventListener('click', () => this.toggleChat());
