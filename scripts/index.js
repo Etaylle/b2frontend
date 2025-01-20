@@ -1065,23 +1065,35 @@ const ratingManager = {
 //       });
 //     });
 //   },
-setProductData(products) {
+  setProductData(products) {
+    console.log('setProductData called with:', products);
+    
     if (!Array.isArray(products)) {
-      console.error('Expected array of products');
+      console.error('Expected array of products, received:', typeof products);
       return;
     }
     
+    console.log(`Processing ${products.length} products`);
+    
     products.forEach(product => {
       if (product && product.product_id) {
-        this.state.products.set(product.product_id.toString(), {
+        const productData = {
           name: product.name,
           average_rating: product.average_rating || 0,
           total_ratings: product.total_ratings || 0
-        });
+        };
+        
+        console.log(`Storing product data for ID ${product.product_id}:`, productData);
+        this.state.products.set(product.product_id.toString(), productData);
+      } else {
+        console.warn('Invalid product data:', product);
       }
     });
     
+    console.log('Current products in state:', Array.from(this.state.products.entries()));
+    
     // Update any existing rating displays
+    console.log('Updating all product ratings...');
     this.updateAllProductRatings();
   },
   findProduct(productId) {
@@ -2038,6 +2050,9 @@ const recommendationManager = {
   //   }
   // },
 async renderRecommendations() {
+  console.log('Starting renderRecommendations');
+  console.log('Recommended products:', this.state.recommendedProducts);
+  
   const container = document.createElement('div');
   container.className = 'recommendations-container';
   container.innerHTML = `
@@ -2048,18 +2063,28 @@ async renderRecommendations() {
   const grid = container.querySelector('.recommendations-grid');
   
   // Set product data in ratingManager before rendering
+  console.log('Setting product data in ratingManager...');
   ratingManager.setProductData(this.state.recommendedProducts);
 
   this.state.recommendedProducts.forEach(product => {
+    console.log('Processing recommended product:', {
+      id: product.product_id,
+      name: product.name,
+      rating: product.average_rating,
+      totalRatings: product.total_ratings
+    });
+    
     const productElement = document.createElement('div');
     productElement.className = 'recommended-product';
     
     // Create rating HTML using ratingManager
+    console.log(`Creating rating HTML for product ${product.product_id}`);
     const ratingHTML = ratingManager.createProductRating(
       product.product_id,
       product.average_rating || 0,
       product.total_ratings || 0
     );
+    console.log(`Generated rating HTML: ${ratingHTML}`);
 
     productElement.innerHTML = `
       <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
@@ -2076,15 +2101,17 @@ async renderRecommendations() {
     grid.appendChild(productElement);
   });
 
-  // Find and update the recommendations section
+  console.log('Checking for existing recommendations container...');
   const existingRecommendations = document.querySelector('.recommendations-container');
   if (existingRecommendations) {
+    console.log('Replacing existing recommendations');
     existingRecommendations.replaceWith(container);
   } else {
+    console.log('Adding new recommendations container');
     document.querySelector('.grid-container').after(container);
   }
+  console.log('Finished rendering recommendations');
 },
-
   initialize() {
     // Add click handlers to product grid items to show recommendations
     document.querySelector('.grid-container').addEventListener('click', (e) => {
