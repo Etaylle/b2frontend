@@ -1056,16 +1056,34 @@ const ratingManager = {
     modalContainer: null, 
     products: new Map(), 
   },
+// setProductData(products) {
+//     products.forEach(product => {
+//       this.state.products.set(product.product_id.toString(), {
+//         name: product.name,
+//         average_rating: product.average_rating || 0,
+//         total_ratings: product.total_ratings || 0
+//       });
+//     });
+//   },
 setProductData(products) {
+    if (!Array.isArray(products)) {
+      console.error('Expected array of products');
+      return;
+    }
+    
     products.forEach(product => {
-      this.state.products.set(product.product_id.toString(), {
-        name: product.name,
-        average_rating: product.average_rating || 0,
-        total_ratings: product.total_ratings || 0
-      });
+      if (product && product.product_id) {
+        this.state.products.set(product.product_id.toString(), {
+          name: product.name,
+          average_rating: product.average_rating || 0,
+          total_ratings: product.total_ratings || 0
+        });
+      }
     });
+    
+    // Update any existing rating displays
+    this.updateAllProductRatings();
   },
-
   findProduct(productId) {
     return this.state.products.get(productId.toString()) || {
       name: 'Product',
@@ -1975,50 +1993,97 @@ const recommendationManager = {
   },
 
   // Render recommendations in the UI
-  async renderRecommendations() {
-    const container = document.createElement('div');
-    container.className = 'recommendations-container';
-    container.innerHTML = `
-      <h3>${i18nManager.translate('ui.labels.youMightAlsoLike')}</h3>
-      <div class="recommendations-grid"></div>
+  // async renderRecommendations() {
+  //   const container = document.createElement('div');
+  //   container.className = 'recommendations-container';
+  //   container.innerHTML = `
+  //     <h3>${i18nManager.translate('ui.labels.youMightAlsoLike')}</h3>
+  //     <div class="recommendations-grid"></div>
+  //   `;
+
+  //   const grid = container.querySelector('.recommendations-grid');
+
+  //   this.state.recommendedProducts.forEach(product => {
+  //     const productElement = document.createElement('div');
+  //     productElement.className = 'recommended-product';
+      
+  //     // Create rating HTML using ratingManager
+  //     const ratingHTML = ratingManager.createProductRating(
+  //       product.product_id,
+  //       product.average_rating || 0,
+  //       product.total_ratings || 0
+  //     );
+
+  //     productElement.innerHTML = `
+  //       <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
+  //       <h4>${product.name}</h4>
+  //       <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
+  //       ${ratingHTML}
+  //       <button class="recommend-add-to-cart">Add to the cart</button>
+  //     `;
+
+  //     // Add click handler for cart button
+  //     const addButton = productElement.querySelector('.recommend-add-to-cart');
+  //     addButton.onclick = () => cartManager.addItem(product.product_id);
+
+  //     grid.appendChild(productElement);
+  //   });
+
+  //   // Find and update the recommendations section
+  //   const existingRecommendations = document.querySelector('.recommendations-container');
+  //   if (existingRecommendations) {
+  //     existingRecommendations.replaceWith(container);
+  //   } else {
+  //     document.querySelector('.grid-container').after(container);
+  //   }
+  // },
+async renderRecommendations() {
+  const container = document.createElement('div');
+  container.className = 'recommendations-container';
+  container.innerHTML = `
+    <h3>${i18nManager.translate('ui.labels.youMightAlsoLike')}</h3>
+    <div class="recommendations-grid"></div>
+  `;
+
+  const grid = container.querySelector('.recommendations-grid');
+  
+  // Set product data in ratingManager before rendering
+  ratingManager.setProductData(this.state.recommendedProducts);
+
+  this.state.recommendedProducts.forEach(product => {
+    const productElement = document.createElement('div');
+    productElement.className = 'recommended-product';
+    
+    // Create rating HTML using ratingManager
+    const ratingHTML = ratingManager.createProductRating(
+      product.product_id,
+      product.average_rating || 0,
+      product.total_ratings || 0
+    );
+
+    productElement.innerHTML = `
+      <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
+      <h4>${product.name}</h4>
+      <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
+      ${ratingHTML}
+      <button class="recommend-add-to-cart">Add to the cart</button>
     `;
 
-    const grid = container.querySelector('.recommendations-grid');
+    // Add click handler for cart button
+    const addButton = productElement.querySelector('.recommend-add-to-cart');
+    addButton.onclick = () => cartManager.addItem(product.product_id);
 
-    this.state.recommendedProducts.forEach(product => {
-      const productElement = document.createElement('div');
-      productElement.className = 'recommended-product';
-      
-      // Create rating HTML using ratingManager
-      const ratingHTML = ratingManager.createProductRating(
-        product.product_id,
-        product.average_rating || 0,
-        product.total_ratings || 0
-      );
+    grid.appendChild(productElement);
+  });
 
-      productElement.innerHTML = `
-        <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
-        <h4>${product.name}</h4>
-        <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
-        ${ratingHTML}
-        <button class="recommend-add-to-cart">Add to the cart</button>
-      `;
-
-      // Add click handler for cart button
-      const addButton = productElement.querySelector('.recommend-add-to-cart');
-      addButton.onclick = () => cartManager.addItem(product.product_id);
-
-      grid.appendChild(productElement);
-    });
-
-    // Find and update the recommendations section
-    const existingRecommendations = document.querySelector('.recommendations-container');
-    if (existingRecommendations) {
-      existingRecommendations.replaceWith(container);
-    } else {
-      document.querySelector('.grid-container').after(container);
-    }
-  },
+  // Find and update the recommendations section
+  const existingRecommendations = document.querySelector('.recommendations-container');
+  if (existingRecommendations) {
+    existingRecommendations.replaceWith(container);
+  } else {
+    document.querySelector('.grid-container').after(container);
+  }
+},
 
   initialize() {
     // Add click handlers to product grid items to show recommendations
