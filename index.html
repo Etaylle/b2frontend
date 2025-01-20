@@ -688,7 +688,10 @@
             saveMessages() {
                 localStorage.setItem('chatMessages', JSON.stringify(this.messages));
             }
-
+        scrollToLatestMessage() {
+            // This ensures the chat window scrolls to the bottom where the latest message is
+            this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+        }
             loadMessages() {
                 const savedMessages = localStorage.getItem('chatMessages');
                 if (savedMessages) {
