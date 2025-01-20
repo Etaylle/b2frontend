@@ -2050,10 +2050,11 @@ const recommendationManager = {
   //     document.querySelector('.grid-container').after(container);
   //   }
   // },
-async renderRecommendations() {
+ // Render recommendations in the UI
+  async renderRecommendations() {
     console.log('Starting renderRecommendations');
     console.log('Raw recommended products:', JSON.stringify(this.state.recommendedProducts, null, 2));
-
+    
     const container = document.createElement('div');
     container.className = 'recommendations-container';
     container.innerHTML = `
@@ -2062,20 +2063,24 @@ async renderRecommendations() {
     `;
 
     const grid = container.querySelector('.recommendations-grid');
-
-    // Update ratingManager with current product data
+    
+    // Set product data in ratingManager before rendering
+    console.log('Setting product data in ratingManager...');
     ratingManager.setProductData(this.state.recommendedProducts);
 
     this.state.recommendedProducts.forEach(product => {
+      // Log the complete product object to see all available properties
+      console.log('Full product object:', JSON.stringify(product, null, 2));
+      
+      // Here we use ratingManager's method to create the rating display
+      const ratingHTML = ratingManager.createProductRating(
+        product.product_id.toString(), 
+        product.average_rating || 0 // Use existing rating or default to 0 if not present
+      );
+
       const productElement = document.createElement('div');
       productElement.className = 'recommended-product';
       
-      // Use ratingManager to create rating HTML, but we'll only use average_rating here
-      const ratingHTML = ratingManager.createProductRating(
-        product.product_id.toString(),
-        product.average_rating || 0 // Use the product's average rating directly
-      );
-
       productElement.innerHTML = `
         <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
         <h4>${product.name}</h4>
