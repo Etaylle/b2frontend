@@ -277,54 +277,130 @@ async addItem(productId) {
       showNotification('Failed to update quantity', 'error');
     }
   },
-    async clearCart(afterPurchase = false) {
+//     async clearCart(afterPurchase = false) {
+//       if (!currentUser) {
+//     await ensureGuestSession();
+//   }try {
+//         const response = await fetch('https://backend-3mvr.onrender.com/api/cart/clear', {
+//           method: 'DELETE',
+//           credentials: 'include',
+//           headers: { 
+//             'Content-Type': 'application/json'
+//           },
+//           body: JSON.stringify({ afterPurchase })
+//         });
+
+//         if (!response.ok) {
+//           const errorData = await response.json();
+//           throw new Error(errorData.message);
+//         }
+
+//         const result = await response.json();
+
+//         // Update the UI
+//         const cartContainer = document.getElementById('cart-items');
+//         const cartTotal = document.getElementById('cart-total');
+
+//         if (cartContainer) {
+//           cartContainer.innerHTML = `<li data-i18n="ui.messages.cartEmpty">Your cart is empty</li>`;
+//           cartContainer.classList.add('hidden');
+//         }
+
+//         if (cartTotal) {
+//           cartTotal.textContent = i18nManager.translate('ui.labels.cartTotal') + ': 0';
+//         }
+//         // Update translations for the container text
+// const emptyCartMessage = cartContainer.querySelector('li[data-i18n]');
+// if (emptyCartMessage) {
+//   emptyCartMessage.textContent = i18nManager.translate(emptyCartMessage.getAttribute('data-i18n'));
+// }
+//         showNotification(
+//   afterPurchase ? 
+//   i18nManager.translate('ui.messages.purchaseCompleted') : 
+//   i18nManager.translate('ui.messages.cartCleared'), 
+//   'success');
+//       } catch (error) {
+//         console.error('Error clearing cart:', error);
+//         showNotification('failedToClearCart', 'error');
+//       }
+//     },
+  async clearCart(afterPurchase = false) {
+    try {
+      // First ensure guest session is active if needed
       if (!currentUser) {
-    await ensureGuestSession();
-  }try {
-        const response = await fetch('https://backend-3mvr.onrender.com/api/cart/clear', {
-          method: 'DELETE',
-          credentials: 'include',
-          headers: { 
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ afterPurchase })
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message);
-        }
-
-        const result = await response.json();
-
-        // Update the UI
-        const cartContainer = document.getElementById('cart-items');
-        const cartTotal = document.getElementById('cart-total');
-
-        if (cartContainer) {
-          cartContainer.innerHTML = `<li data-i18n="ui.messages.cartEmpty">Your cart is empty</li>`;
-          cartContainer.classList.add('hidden');
-        }
-
-        if (cartTotal) {
-          cartTotal.textContent = i18nManager.translate('ui.labels.cartTotal') + ': 0';
-        }
-        // Update translations for the container text
-const emptyCartMessage = cartContainer.querySelector('li[data-i18n]');
-if (emptyCartMessage) {
-  emptyCartMessage.textContent = i18nManager.translate(emptyCartMessage.getAttribute('data-i18n'));
-}
-        showNotification(
-  afterPurchase ? 
-  i18nManager.translate('ui.messages.purchaseCompleted') : 
-  i18nManager.translate('ui.messages.cartCleared'), 
-  'success');
-      } catch (error) {
-        console.error('Error clearing cart:', error);
-        showNotification('failedToClearCart', 'error');
+        await ensureGuestSession();
       }
-    },
-    async updateDisplay() {
+
+      // Add retry logic with proper error handling
+      const clearCartWithRetry = async (retryCount = 0) => {
+        try {
+          const response = await fetch('https://backend-3mvr.onrender.com/api/cart/clear', {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: { 
+              'Content-Type': 'application/json',
+              'X-Guest-User': !currentUser ? localStorage.getItem('guestId') : undefined
+            },
+            body: JSON.stringify({ afterPurchase })
+          });
+
+          // Check if we got a 500 error
+          if (response.status === 500 && retryCount < 1) {
+            // Wait a short delay before retrying
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return await clearCartWithRetry(retryCount + 1);
+          }
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: 'Failed to clear cart' }));
+            throw new Error(errorData.message);
+          }
+
+          // Try to parse the response, but handle cases where it might be empty
+          const result = await response.json().catch(() => ({}));
+
+          // Update the UI
+          const cartContainer = document.getElementById('cart-items');
+          const cartTotal = document.getElementById('cart-total');
+
+          if (cartContainer) {
+            cartContainer.innerHTML = `<li data-i18n="ui.messages.cartEmpty">${i18nManager.translate('ui.messages.cartEmpty')}</li>`;
+            cartContainer.classList.add('hidden');
+          }
+
+          if (cartTotal) {
+            cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: 0`;
+          }
+
+          // Show success notification
+          showNotification(
+            afterPurchase ? 
+              i18nManager.translate('ui.messages.purchaseCompleted') : 
+              i18nManager.translate('ui.messages.cartCleared'), 
+            'success'
+          );
+
+          return result;
+        } catch (error) {
+          if (retryCount < 1) {
+            // Wait and retry once
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return await clearCartWithRetry(retryCount + 1);
+          }
+          throw error;
+        }
+      };
+
+      // Execute the clear cart operation with retry logic
+      await clearCartWithRetry();
+
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      showNotification(i18nManager.translate('ui.errors.failedToClearCart'), 'error');
+      throw error; // Re-throw to allow caller to handle if needed
+    }
+  },    
+async updateDisplay() {
     const cart = await this.fetchCart();
     const cartContainer = document.getElementById('cart-items');
     const cartTotal = document.getElementById('cart-total');
