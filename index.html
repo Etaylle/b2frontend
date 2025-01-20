@@ -14,41 +14,7 @@
     <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        #chatButton {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 15px 32px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
-            border-radius: 10px;
-        }
     
-        #chatWindow {
-            display: none;
-            position: fixed;
-            bottom: 0;
-            right: 0;
-            width: 300px;
-            height: 400px;
-            background-color: #fff;
-            border: 1px solid #ccc;
-        }
-    
-        #chatMessages {
-            height: 300px;
-            overflow-y: auto;
-        }
-    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -311,25 +277,48 @@
         <!-- User Info Display -->
         <div id="user-info-display" style="display: none;"></div>
     
+    <div id="chat-widget" class="chat-widget">
+        <button id="chat-toggle" class="chat-toggle">
+            <i class="fas fa-comments"></i>
+            Chat Support
+        </button>
     
-    <button id="chatButton">Chat with us</button>
-    
-    <div id="chatWindow">
-        <h2>Chat Support</h2>
-        <div id="chatMessages"></div>
-        <input type="text" id="chatInput" style="width:80%;">
-        <button onclick="sendMessage()">Send</button>
+        <div id="chat-window" class="chat-window">
+            <div class="chat-header">
+                <h3>Chat Support</h3>
+                <div class="chat-controls">
+                    <button id="minimize-chat" class="control-button">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <button id="close-chat" class="control-button">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="chat-messages" class="chat-messages"></div>
+            <div class="chat-input-container">
+                <form id="chat-form" class="chat-form">
+                    <input type="text" id="chat-input" class="chat-input" placeholder="Type your message..."
+                        autocomplete="off">
+                    <button type="submit" class="chat-send">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
+    
     </main>
     
     <!-- Scripts -->
     <script defer src="scripts/index.js"></script>
     
     <script>
-        document.addEventListener("DOMContentLoaded", initChat, () => {
+        document.addEventListener("DOMContentLoaded", () => {
             startPanoramaSlideshow();
             setupUserInterface();
             setupModalHandlers();
+            new ChatWidget();
             
 
             const currentUser = localStorage.getItem("currentUser");
@@ -360,38 +349,7 @@
             const currentUser = localStorage.getItem("currentUser");
             updateUIVisibility(currentUser);
         }
-    function initChat() {
-        document.getElementById('chatButton').addEventListener('click', function () {
-            var chatWindow = document.getElementById('chatWindow');
-            if (chatWindow.style.display === "none") {
-                chatWindow.style.display = "block";
-                // Simulate a welcome message from support
-                addMessage('Support', 'Hello! How can we assist you today?');
-            } else {
-                chatWindow.style.display = "none";
-            }
-        });
-    }
 
-    function addMessage(sender, message) {
-        var messages = document.getElementById('chatMessages');
-        var msgDiv = document.createElement('div');
-        msgDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
-        messages.appendChild(msgDiv);
-        messages.scrollTop = messages.scrollHeight; // Scroll to bottom
-    }
-
-    function sendMessage() {
-        var input = document.getElementById('chatInput');
-        if (input.value.trim() !== "") {
-            addMessage('You', input.value);
-            // Simulate support response
-            setTimeout(function () {
-                addMessage('Support', 'Thanks for your message. We are processing your query.');
-            }, 1000);
-            input.value = '';
-        }
-    }
         function updateUIVisibility(currentUser) {
             const elements = {
                 loginBtn: document.getElementById("login-btn"),
@@ -543,7 +501,90 @@
             });
         });
     });
-        
+     class ChatWidget {
+            constructor() {
+                this.initializeElements();
+                this.bindEvents();
+                this.messages = [];
+                this.isMinimized = false;
+            }
+
+            initializeElements() {
+                this.chatToggle = document.getElementById('chat-toggle');
+                this.chatWindow = document.getElementById('chat-window');
+                this.chatMessages = document.getElementById('chat-messages');
+                this.chatForm = document.getElementById('chat-form');
+                this.chatInput = document.getElementById('chat-input');
+                this.minimizeButton = document.getElementById('minimize-chat');
+                this.closeButton = document.getElementById('close-chat');
+            }
+
+            bindEvents() {
+                this.chatToggle.addEventListener('click', () => this.toggleChat());
+                this.chatForm.addEventListener('submit', (e) => this.handleSubmit(e));
+                this.minimizeButton.addEventListener('click', () => this.minimizeChat());
+                this.closeButton.addEventListener('click', () => this.closeChat());
+            }
+
+            toggleChat() {
+                this.chatWindow.style.display = this.chatWindow.style.display === 'none' || !this.chatWindow.style.display ? 'flex' : 'none';
+                this.chatToggle.style.display = 'none';
+
+                if (this.chatWindow.style.display === 'flex' && this.messages.length === 0) {
+                    this.addMessage('Hello! How can I help you today?', 'support');
+                }
+            }
+
+            minimizeChat() {
+                this.isMinimized = !this.isMinimized;
+                this.chatWindow.classList.toggle('minimized');
+            }
+
+            closeChat() {
+                this.chatWindow.style.display = 'none';
+                this.chatToggle.style.display = 'flex';
+            }
+
+            handleSubmit(e) {
+                e.preventDefault();
+                const message = this.chatInput.value.trim();
+                if (!message) return;
+
+                this.addMessage(message, 'user');
+                this.chatInput.value = '';
+
+                // Simulate support response
+                setTimeout(() => {
+                    this.addMessage('Thank you for your message. Our team will get back to you shortly.', 'support');
+                }, 1000);
+            }
+
+            addMessage(text, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', sender, 'message-animation');
+
+                const messageText = document.createElement('span');
+                messageText.textContent = text;
+
+                const timeSpan = document.createElement('span');
+                timeSpan.classList.add('message-time');
+                timeSpan.textContent = new Date().toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                messageDiv.appendChild(messageText);
+                messageDiv.appendChild(timeSpan);
+
+                this.chatMessages.appendChild(messageDiv);
+                this.scrollToBottom();
+                this.messages.push({ text, sender, time: new Date() });
+            }
+
+            scrollToBottom() {
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+        }   
     </script>
 </body>
 
