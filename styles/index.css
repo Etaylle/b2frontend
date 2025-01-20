@@ -327,18 +327,17 @@ body {
   z-index: 9999;
   opacity: 1;
   visibility: visible;
-  /* Corrected typo from vissible to visible */
   display: block !important;
   animation: fadeInOut 3s ease forwards;
   color: white;
   text-align: center;
 }
 
-.notification.success {
+.notification.success-message {
   background-color: #4CAF50;
 }
 
-.notification.error {
+.notification.error-message {
   background-color: #f44336;
 }
 
