@@ -1065,8 +1065,8 @@ const ratingManager = {
 //       });
 //     });
 //   },
-  setProductData(products) {
-    console.log('setProductData called with:', products);
+setProductData(products) {
+    console.log('setProductData called with:', JSON.stringify(products, null, 2));
     
     if (!Array.isArray(products)) {
       console.error('Expected array of products, received:', typeof products);
@@ -1079,8 +1079,8 @@ const ratingManager = {
       if (product && product.product_id) {
         const productData = {
           name: product.name,
-          average_rating: product.average_rating || 0,
-          total_ratings: product.total_ratings || 0
+          average_rating: parseFloat(product.average_rating) || 0,
+          total_ratings: parseInt(product.total_ratings) || 0
         };
         
         console.log(`Storing product data for ID ${product.product_id}:`, productData);
@@ -1090,10 +1090,11 @@ const ratingManager = {
       }
     });
     
-    console.log('Current products in state:', Array.from(this.state.products.entries()));
+    console.log('Current products in state:', 
+      Array.from(this.state.products.entries())
+        .map(([id, data]) => ({id, ...data}))
+    );
     
-    // Update any existing rating displays
-    console.log('Updating all product ratings...');
     this.updateAllProductRatings();
   },
   findProduct(productId) {
@@ -2051,7 +2052,7 @@ const recommendationManager = {
   // },
 async renderRecommendations() {
   console.log('Starting renderRecommendations');
-  console.log('Recommended products:', this.state.recommendedProducts);
+  console.log('Raw recommended products:', JSON.stringify(this.state.recommendedProducts, null, 2));
   
   const container = document.createElement('div');
   container.className = 'recommendations-container';
@@ -2067,28 +2068,33 @@ async renderRecommendations() {
   ratingManager.setProductData(this.state.recommendedProducts);
 
   this.state.recommendedProducts.forEach(product => {
-    console.log('Processing recommended product:', {
+    // Log the complete product object to see all available properties
+    console.log('Full product object:', JSON.stringify(product, null, 2));
+    
+    // Ensure we're using the correct property names
+    const productInfo = {
       id: product.product_id,
       name: product.name,
-      rating: product.average_rating,
-      totalRatings: product.total_ratings
-    });
+      average_rating: parseFloat(product.average_rating) || 0,
+      total_ratings: parseInt(product.total_ratings) || 0
+    };
+    
+    console.log('Processed product info:', productInfo);
     
     const productElement = document.createElement('div');
     productElement.className = 'recommended-product';
     
-    // Create rating HTML using ratingManager
-    console.log(`Creating rating HTML for product ${product.product_id}`);
+    // Create rating HTML using ratingManager with the correct properties
+    console.log(`Creating rating HTML for product ${productInfo.id} with rating ${productInfo.average_rating}`);
     const ratingHTML = ratingManager.createProductRating(
-      product.product_id,
-      product.average_rating || 0,
-      product.total_ratings || 0
+      productInfo.id,
+      productInfo.average_rating,
+      productInfo.total_ratings
     );
-    console.log(`Generated rating HTML: ${ratingHTML}`);
 
     productElement.innerHTML = `
-      <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
-      <h4>${product.name}</h4>
+      <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${productInfo.name}">
+      <h4>${productInfo.name}</h4>
       <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
       ${ratingHTML}
       <button class="recommend-add-to-cart">Add to the cart</button>
@@ -2096,12 +2102,12 @@ async renderRecommendations() {
 
     // Add click handler for cart button
     const addButton = productElement.querySelector('.recommend-add-to-cart');
-    addButton.onclick = () => cartManager.addItem(product.product_id);
+    addButton.onclick = () => cartManager.addItem(productInfo.id);
 
     grid.appendChild(productElement);
   });
 
-  console.log('Checking for existing recommendations container...');
+  // Find and update the recommendations section
   const existingRecommendations = document.querySelector('.recommendations-container');
   if (existingRecommendations) {
     console.log('Replacing existing recommendations');
