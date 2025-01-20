@@ -202,7 +202,7 @@ async addItem(productId) {
     }
 
     await this.updateDisplay();
-    showNotification('Added to cart!', 'success');
+    showNotification('itemAddedToCart', 'success');
   } catch (error) {
     console.error('Error:', error);
     showNotification(error.message || 'Out of stock!', 'error');
@@ -2189,7 +2189,12 @@ state: {
             removeItem: "Remove this item from the cart",
             showCryptoPrices: "Show Crypto Prices",
             adminPanel: "Admin Panel",
-          }
+          },
+          messages: {
+            itemAddedToCart: "Item added to cart",
+            itemRemovedFromCart: "Item removed from cart",
+            errorOccurred: "An error occurred"
+          },
         }
       },
       srb: {
@@ -2234,7 +2239,12 @@ state: {
             removeItem: "Уклони овај производ из корпе",
             showCryptoPrices: "Прикажи цене криптовалута",
             adminPanel: "Админ Панел"
-          }
+          },
+          messages: {
+            itemAddedToCart: "Artikal dodat u korpu",
+            itemRemovedFromCart: "Artikal uklonjen iz korpe",
+            errorOccurred: "Došlo je do greške"
+          },
         }
       },
       de: {
@@ -2279,7 +2289,15 @@ state: {
             removeItem: "Diesen Artikel aus dem Warenkorb entfernen",
             showCryptoPrices: "Krypto-Preise anzeigen",
             adminPanel: "Admin-Bereich",
-          }
+          },
+          messages: {
+            itemAddedToCart: "Artikel wurde zum Warenkorb hinzugefügt",
+            itemRemovedFromCart: "Artikel wurde aus dem Warenkorb entfernt",
+            errorOccurred: "Ein Fehler ist aufgetreten",
+            itemAddedToCart: "Artikal dodat u korpu",
+            itemRemovedFromCart: "Artikal uklonjen iz korpe",
+            errorOccurred: "Došlo je do greške",
+          },
         }
       }
     }
@@ -3657,10 +3675,26 @@ function setupEventListeners() {
 };
 
 
-function showNotification(message, type = 'success',) {
+// function showNotification(message, type = 'success',) {
+//   const notification = document.createElement('div');
+//   notification.textContent = message;
+//   notification.className = `notification ${type}-message`;
+//   document.body.appendChild(notification);
+
+//   notification.style.animation = 'slideIn 0.3s ease-out';
+
+//   setTimeout(() => {
+//     notification.style.animation = 'slideOut 0.3s ease-out';
+//     setTimeout(() => notification.remove(), 300);
+//   }, 2000);
+// }
+function showNotification(messageKey, type = 'success') {
+  // Use the i18nManager to get the translated message
+  const translatedMessage = i18nManager.translate(`ui.messages.${messageKey}`);
+
   const notification = document.createElement('div');
-  notification.textContent = message;
-  notification.className = `notification ${type}-message`;
+  notification.textContent = translatedMessage;
+  notification.className = `notification ${type}`;
   document.body.appendChild(notification);
 
   notification.style.animation = 'slideIn 0.3s ease-out';
