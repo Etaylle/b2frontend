@@ -326,7 +326,8 @@ body {
   border-radius: 4px;
   z-index: 9999;
   opacity: 1;
-  visibility: hidden;
+  visibility: vissible;
+  display:block !important;
   animation: fadeInOut 3s ease forwards;
   color: white;
   text-align: center;
