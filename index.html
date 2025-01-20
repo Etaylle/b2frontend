@@ -111,28 +111,29 @@
                     }
                 </style>
                 
-            <ul class="nav-list">
-                <li id="login-btn" data-i18n="ui.buttons.login">
-                    <i class="fas fa-sign-in-alt"></i>
-                    <span>Login</span>
-                </li>
-                <li id="register-btn" data-i18n="ui.buttons.register">
-                    <i class="fas fa-user-plus"></i>
-                    <span>Register</span>
-                </li>
-                <li id="logout-button" style="display: none;" data-i18n="ui.buttons.logout">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
-                </li>
-                <li data-i18n="ui.buttons.cart">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span>Cart</span>
-                </li>
-                <li data-i18n="ui.buttons.orderHistory">
-                    <i class="fas fa-history"></i>
-                    <span>Order History</span>
-                </li>
-            </ul>
+<ul class="nav-list">
+    <li id="login-btn">
+        <i class="fas fa-sign-in-alt"></i>
+        <!-- Use data attributes for translation or directly call translation function -->
+        <span data-i18n="nav.login">Login</span>
+    </li>
+    <li id="register-btn">
+        <i class="fas fa-user-plus"></i>
+        <span data-i18n="nav.register">Register</span>
+    </li>
+    <li id="logout-button" style="display: none;">
+        <i class="fas fa-sign-out-alt"></i>
+        <span data-i18n="nav.logout">Logout</span>
+    </li>
+    <li>
+        <i class="fas fa-shopping-cart"></i>
+        <span data-i18n="nav.cart">Cart</span>
+    </li>
+    <li>
+        <i class="fas fa-history"></i>
+        <span data-i18n="nav.orderHistory">Order History</span>
+    </li>
+</ul>
                 
             <div id="user-avatar-display" class="user-avatar-display">
                 <div class="admin-dropdown" style="display: none;">
