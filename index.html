@@ -595,11 +595,17 @@
             }
 
             toggleChat() {
-                this.chatWindow.style.display = this.chatWindow.style.display === 'none' || !this.chatWindow.style.display ? 'flex' : 'none';
-                this.chatToggle.style.display = 'none';
+                this.isVisible = !this.isVisible;  // Toggle visibility state
+                this.chatWindow.style.display = this.isVisible ? 'flex' : 'none';
+                this.chatToggle.style.display = this.isVisible ? 'none' : 'flex';
 
-                if (this.chatWindow.style.display === 'flex' && this.messages.length === 0) {
+                if (this.isVisible && this.messages.length === 0) {
                     this.addMessage('Hello! How can I help you today?', 'support');
+                } else if (!this.isVisible) {
+                    // Optionally, clear the messages from the DOM when closing, but keep them in memory
+                    while (this.chatMessages.firstChild) {
+                        this.chatMessages.removeChild(this.chatMessages.firstChild);
+                    }
                 }
             }
 
@@ -651,6 +657,28 @@
             }
 
             addMessage(text, sender) {
+                // const messageDiv = document.createElement('div');
+                // messageDiv.classList.add('message', sender, 'message-animation');
+
+                // const messageText = document.createElement('span');
+                // messageText.textContent = text;
+
+                // const timeSpan = document.createElement('span');
+                // timeSpan.classList.add('message-time');
+                // timeSpan.textContent = new Date().toLocaleTimeString([], {
+                //     hour: '2-digit',
+                //     minute: '2-digit'
+                // });
+
+                // messageDiv.appendChild(messageText);
+                // messageDiv.appendChild(timeSpan);
+
+                // this.chatMessages.appendChild(messageDiv);
+                // this.scrollToBottom();
+                // this.messages.push({ text, sender, time: new Date() });
+
+                // // Save messages to localStorage
+                // this.saveMessages();
                 const messageDiv = document.createElement('div');
                 messageDiv.classList.add('message', sender, 'message-animation');
 
@@ -671,7 +699,6 @@
                 this.scrollToBottom();
                 this.messages.push({ text, sender, time: new Date() });
 
-                // Save messages to localStorage
                 this.saveMessages();
             }
 
