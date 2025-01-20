@@ -2158,6 +2158,8 @@ const recommendationManager = {
       recommendations = recommendations
         .filter(p => p.product_id.toString() !== productId.toString())
         .slice(0, 4);
+ // First, ensure ratingManager has loaded user ratings
+    await ratingManager.fetchUserRatings();
 
       // Only update state and re-render if recommendations have changed
       if (JSON.stringify(this.state.recommendedProducts) !== JSON.stringify(recommendations)) {
@@ -2166,6 +2168,7 @@ const recommendationManager = {
         // Set product data in ratingManager once
         ratingManager.setProductData(recommendations);
         
+        await this.renderRecommendations();
         await this.renderRecommendations();
       }
     } catch (error) {
@@ -2185,25 +2188,26 @@ const recommendationManager = {
     const grid = container.querySelector('.recommendations-grid');
 
     this.state.recommendedProducts.forEach(product => {
-      const productElement = document.createElement('div');
-      productElement.className = 'recommended-product';
-      
-      // Add data-product-id to the product element for rating functionality
-      productElement.setAttribute('data-product-id', product.product_id.toString());
-      
-      const ratingHTML = ratingManager.createProductRating(
-        product.product_id.toString(),
-        product.average_rating || 0,
-        product.total_ratings || 0
-      );
+    const productElement = document.createElement('div');
+    productElement.className = 'recommended-product';
+    productElement.setAttribute('data-product-id', product.product_id.toString());
+    
+    // Get the latest rating data from ratingManager
+    const productWithRatings = ratingManager.findProduct(product.product_id);
+    
+    const ratingHTML = ratingManager.createProductRating(
+      product.product_id.toString(),
+      productWithRatings.average_rating,
+      productWithRatings.total_ratings
+    );
 
-      productElement.innerHTML = `
-        <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
-        <h4>${product.name}</h4>
-        <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
-        ${ratingHTML}
-        <button class="recommend-add-to-cart">Add to the cart</button>
-      `;
+    productElement.innerHTML = `
+      <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
+      <h4>${product.name}</h4>
+      <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
+      ${ratingHTML}
+      <button class="recommend-add-to-cart">Add to the cart</button>
+    `;
 
       // Add click handler for cart button
       const addButton = productElement.querySelector('.recommend-add-to-cart');
