@@ -2356,11 +2356,6 @@ state: {
             share: "Share",
             rate: "Rate",
             all: "All",
-            login: "Login",
-            logout: "Logout",
-            register: "Register",
-            cart: "Cart",
-            orderHistory: "Order History",
             clearHistory: "Clear History",
             checkout: "Checkout",
             emptyCart: "Empty Cart",
@@ -2398,6 +2393,13 @@ state: {
             errorOccurred: "An error occurred",
             failedToClearCart: "Failed to clear cart",
           },
+          nav: {
+            login: "Login",
+            logout: "Logout",
+            register: "Register",
+            cart: "Cart",
+            orderHistory: "Order History",
+          },
         }
       },
       srb: {
@@ -2407,11 +2409,7 @@ state: {
             share: "Подели",
             rate: "Оцени",
             all: "Све",
-            login: "Пријава",
-            logout: "Одјава",
-            register: "Регистрација",
-            cart: "Корпа",
-            orderHistory: "Историја поруџбина",
+            
             clearHistory: "Обриши историју претрага",
             checkout: "Купи",
             emptyCart: "Очисти корпу",
@@ -2449,6 +2447,12 @@ state: {
             errorOccurred: "Дошло је до грешке",
             failedToClearCart: "Korpa couldn't geleert werden",
           },
+          nav: {
+            login: "Пријава",
+            logout: "Одјава",
+            register: "Регистрација",
+            cart: "Корпа",
+            orderHistory: "Историја поруџбина",},
         }
       },
       de: {
@@ -2458,11 +2462,7 @@ state: {
             share: "Teilen",
             rate: "Bewerten",
             all: "Alle",
-            login: "Anmelden",
-            logout: "Abmelden",
-            register: "Registrieren",
-            cart: "Warenkorb",
-            orderHistory: "Bestellverlauf",
+            
             clearHistory: "Suchverlauf löschen",
             checkout: "Kassenbestellen",
             emptyCart: "Warenkorb leeren",
@@ -2504,6 +2504,12 @@ state: {
             failedToClearCart: "Kann Warenkorb nicht leeren!", 
 
           },
+          nav: {
+            login: "Anmelden",
+            logout: "Abmelden",
+            register: "Registrieren",
+            cart: "Warenkorb",
+            orderHistory: "Bestellverlauf",},
         }
       }
     }
