@@ -224,7 +224,7 @@ async addItem(productId) {
 
       if (!response.ok) throw new Error('Failed to remove item');
       await this.updateDisplay();
-      showNotification('Item removed from cart', 'success');
+      showNotification('itemRemovedFromCart', 'success');
     } catch (error) {
       console.error('Error:', error);
       showNotification('Failed to remove item', 'error');
@@ -548,7 +548,7 @@ async login(formData) {
       return false;
     }
   } catch (error) {
-    showNotification(error.message, 'error');
+    showNotification(error.message, 'errorOccured');
     return false;
   }
 },
