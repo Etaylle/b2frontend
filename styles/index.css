@@ -363,7 +363,7 @@ body {
     visibility: hidden;
   }
 }
-.message {
+/* .message {
   margin-top: 1rem;
   padding: 0.75rem;
   border-radius: 8px;
@@ -384,7 +384,7 @@ body {
 .message.error {
   background: #f8d7da;
   color: #721c24;
-}
+} */
 
 .switch-form-text {
   margin-top: 1rem;
