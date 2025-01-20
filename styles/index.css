@@ -1070,7 +1070,8 @@ main {
   cursor: pointer;
   border-radius: 4px;
 }
-CHAT .chat-widget {
+CHAT
+.chat-widget {
   position: fixed;
   bottom: 20px;
   right: 20px;
@@ -1245,6 +1246,17 @@ CHAT .chat-widget {
     transform: translateY(0);
   }
 }
+
+  /* Utility Classes */
+  .visible {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  
+.hidden {
+opacity: 0 !important;
+visibility: hidden !important;
+  }
 
   .no-scroll {
     overflow: hidden;
