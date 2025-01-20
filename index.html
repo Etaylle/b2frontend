@@ -14,7 +14,41 @@
     <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        #chatButton {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 10px;
+        }
     
+        #chatWindow {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            width: 300px;
+            height: 400px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+        }
+    
+        #chatMessages {
+            height: 300px;
+            overflow-y: auto;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -280,7 +314,14 @@
     
     
     </main>
+    <button id="chatButton">Chat with us</button>
     
+    <div id="chatWindow">
+        <h2>Chat Support</h2>
+        <div id="chatMessages"></div>
+        <input type="text" id="chatInput" style="width:80%;">
+        <button onclick="sendMessage()">Send</button>
+    </div>
     <!-- Scripts -->
     <script defer src="scripts/index.js"></script>
     
@@ -314,7 +355,40 @@
                 }
             };
         });
+        function initChat() {
+                document.getElementById('chatButton').addEventListener('click', function () {
+                    var chatWindow = document.getElementById('chatWindow');
+                    if (chatWindow.style.display === "none") {
+                        chatWindow.style.display = "block";
+                        // Simulate a welcome message from support
+                        addMessage('Support', 'Hello! How can we assist you today?');
+                    } else {
+                        chatWindow.style.display = "none";
+                    }
+                });
+            }
 
+            function addMessage(sender, message) {
+                var messages = document.getElementById('chatMessages');
+                var msgDiv = document.createElement('div');
+                msgDiv.innerHTML = `<strong>${sender}:</strong> ${message}`;
+                messages.appendChild(msgDiv);
+                messages.scrollTop = messages.scrollHeight; // Scroll to bottom
+            }
+
+            function sendMessage() {
+                var input = document.getElementById('chatInput');
+                if (input.value.trim() !== "") {
+                    addMessage('You', input.value);
+                    // Simulate support response
+                    setTimeout(function () {
+                        addMessage('Support', 'Thanks for your message. We are processing your query.');
+                    }, 1000);
+                    input.value = '';
+                }
+            }
+            // Start the chat system when the page loads
+                document.addEventListener('DOMContentLoaded', initChat);
         function setupUserInterface() {
             const currentUser = localStorage.getItem("currentUser");
             updateUIVisibility(currentUser);
