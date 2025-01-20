@@ -599,8 +599,13 @@
             this.chatWindow.classList.toggle('visible');
             this.chatToggle.style.display = this.isVisible ? 'none' : 'flex';
 
-            if (this.isVisible && this.messages.length === 0) {
-                this.addMessage('Hello! How can I help you today?', 'support');
+            if (this.isVisible) {
+                if (this.messages.length === 0) {
+                    this.addMessage('Hello! How can I help you today?', 'support');
+                } else {
+                    // Scroll to the latest message when opening the chat
+                    this.scrollToLatestMessage();
+                }
             }
         }
 
