@@ -49,7 +49,53 @@ async function ensureGuestSession() {
 
 //CartManager
 const CartEnhancements = {
-  initializeGuestMode() {
+  // initializeGuestMode() {
+  //   // Set guest user ID in localStorage for persistence
+  //   if (!localStorage.getItem('guestId')) {
+  //     localStorage.setItem('guestId', '999999');
+  //   }
+    
+  //   // Enhance all fetch requests with guest header
+  //   const originalFetch = window.fetch;
+  //   window.fetch = function(...args) {
+  //     if (args[0].includes('backend-3mvr.onrender.com/api/')) {
+  //       const options = args[1] || {};
+  //       options.headers = {
+  //         ...options.headers,
+  //         'X-Guest-User': localStorage.getItem('guestId')
+  //       };
+  //       args[1] = options;
+  //     }
+  //     return originalFetch.apply(this, args);
+  //   };
+  // },
+
+//   async setupGuestSession() {
+//     try {
+//       const response = await fetch('https://backend-3mvr.onrender.com/api/guest-login', {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json'
+//         },
+//         credentials: 'include',
+//         body: JSON.stringify({
+//           username: 'guest_user',
+//           password: 'not_accessible'
+//         })
+//       });
+      
+//       if (response.ok) {
+//         localStorage.setItem('isGuest', 'true');
+//         return true;
+//       }
+//       return false;
+//     } catch (error) {
+//       console.error('Guest session setup failed:', error);
+//       return false;
+//     }
+//   }
+// };
+ initializeGuestMode() {
     // Set guest user ID in localStorage for persistence
     if (!localStorage.getItem('guestId')) {
       localStorage.setItem('guestId', '999999');
@@ -58,16 +104,31 @@ const CartEnhancements = {
     // Enhance all fetch requests with guest header
     const originalFetch = window.fetch;
     window.fetch = function(...args) {
-      if (args[0].includes('backend-3mvr.onrender.com/api/')) {
-        const options = args[1] || {};
+      // Only modify API calls to our backend
+      if (typeof args[0] === 'string' && args[0].includes('backend-3mvr.onrender.com/api/')) {
+        let options = args[1] || {};
+        
         options.headers = {
-          ...options.headers,
+          ...(options.headers || {}),
           'X-Guest-User': localStorage.getItem('guestId')
         };
+        
         args[1] = options;
       }
+      
+      // Call the original fetch with the modified arguments
       return originalFetch.apply(this, args);
     };
+  },
+
+  // Helper method to check if user is in guest mode
+  isGuestMode() {
+    return !currentUser && localStorage.getItem('guestId') !== null;
+  },
+
+  // Helper method to get current guest ID
+  getGuestId() {
+    return localStorage.getItem('guestId');
   },
 
   async setupGuestSession() {
@@ -96,6 +157,14 @@ const CartEnhancements = {
   }
 };
 
+// Safety check before initializing
+try {
+  if (typeof window !== 'undefined' && window.fetch) {
+    CartEnhancements.initializeGuestMode();
+  }
+} catch (error) {
+  console.error('Failed to initialize guest mode:', error);
+}
 // Initialize guest mode
 document.addEventListener('DOMContentLoaded', () => {
   CartEnhancements.initializeGuestMode();
