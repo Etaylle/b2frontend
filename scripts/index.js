@@ -2155,22 +2155,31 @@ const recommendationManager = {
       let recommendations = categoryData.success ? categoryData.products : categoryData;
 
       // Filter out current product and limit to 4
-      recommendations = recommendations
-        .filter(p => p.product_id.toString() !== productId.toString())
-        .slice(0, 4);
- // First, ensure ratingManager has loaded user ratings
+          recommendations = recommendations
+      .filter(p => p.product_id.toString() !== productId.toString())
+      .slice(0, 4);
+
+    // Wait for user ratings to be loaded
     await ratingManager.fetchUserRatings();
 
-      // Only update state and re-render if recommendations have changed
-      if (JSON.stringify(this.state.recommendedProducts) !== JSON.stringify(recommendations)) {
-        this.state.recommendedProducts = recommendations;
-        
-        // Set product data in ratingManager once
-        ratingManager.setProductData(recommendations);
-        
-        await this.renderRecommendations();
-        await this.renderRecommendations();
-      }
+    if (JSON.stringify(this.state.recommendedProducts) !== JSON.stringify(recommendations)) {
+      this.state.recommendedProducts = recommendations;
+      
+      // Calculate average ratings from userRatings
+      const productsWithRatings = recommendations.map(product => {
+        const rating = ratingManager.state.userRatings.get(product.product_id.toString());
+        return {
+          product_id: product.product_id,
+          name: product.name,
+          average_rating: rating || 0,
+          total_ratings: rating ? 1 : 0  // Count if rated
+        };
+      });
+
+      ratingManager.setProductData(productsWithRatings);
+      
+      await this.renderRecommendations();
+    }
     } catch (error) {
       console.error("Error getting recommendations:", error);
       showNotification(error.message, "error");
