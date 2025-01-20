@@ -1110,6 +1110,13 @@ main {
   border-radius: 10px;
   box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
   flex-direction: column;
+  z-index: 1001;
+  /* Add this to ensure it's above other elements */
+}
+
+.chat-window.active {
+  display: flex !important;
+  /* Add !important to override any conflicting styles */
 }
 
 .chat-window.minimized {
