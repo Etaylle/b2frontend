@@ -321,7 +321,7 @@ if (emptyCartMessage) {
   'success');
       } catch (error) {
         console.error('Error clearing cart:', error);
-        showNotification(error.message || 'Failed to clear cart', 'error');
+        showNotification('failedToClearCart', 'error');
       }
     },
     async updateDisplay() {
@@ -2193,7 +2193,8 @@ state: {
           messages: {
             itemAddedToCart: "Item added to cart",
             itemRemovedFromCart: "Item removed from cart",
-            errorOccurred: "An error occurred"
+            errorOccurred: "An error occurred",
+            failedToClearCart: "Failed to clear cart",
           },
         }
       },
@@ -2243,7 +2244,8 @@ state: {
           messages: {
             itemAddedToCart: "Артикал је додат у корпу",
             itemRemovedFromCart: "Артикал уклоњен из корпе",
-            errorOccurred: "Дошло је до грешке"
+            errorOccurred: "Дошло је до грешке",
+            failedToClearCart: "Korpa couldn't geleert werden",
           },
         }
       },
@@ -2294,9 +2296,11 @@ state: {
             itemAddedToCart: "Artikel wurde zum Warenkorb hinzugefügt",
             itemRemovedFromCart: "Artikel wurde aus dem Warenkorb entfernt",
             errorOccurred: "Ein Fehler ist aufgetreten",
-            itemAddedToCart: "Artikal dodat u korpu",
-            itemRemovedFromCart: "Artikal uklonjen iz korpe",
-            errorOccurred: "Došlo je do greške",
+            itemAddedToCart: "Artikel wurde zum Warenkorb hinzugefügt",
+            itemRemovedFromCart: "Artikal wurde aus dem Warenkorb entefrnt",
+            errorOccurred: "Es kam zu einem Fehler!",
+            failedToClearCart: "Kann Warenkorb nicht leeren!", 
+
           },
         }
       }
