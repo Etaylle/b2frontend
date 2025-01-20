@@ -1509,6 +1509,53 @@ createInteractiveStars(userRating = null) {
     </div>
   `;
 },
+   renderRecommendations(products) {
+    const container = document.createElement('div');
+    container.className = 'recommendations-container';
+    container.innerHTML = `
+      <h3>${i18nManager.translate('ui.labels.youMightAlsoLike')}</h3>
+      <div class="recommendations-grid"></div>
+    `;
+
+    const grid = container.querySelector('.recommendations-grid');
+
+    products.forEach(product => {
+      const productElement = document.createElement('div');
+      productElement.className = 'recommended-product';
+      productElement.setAttribute('data-product-id', product.product_id.toString());
+      
+      const ratingHTML = this.createProductRating(
+        product.product_id.toString(),
+        product.average_rating || 0,
+        product.total_ratings || 0
+      );
+
+      productElement.innerHTML = `
+        <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
+        <h4>${product.name}</h4>
+        <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
+        ${ratingHTML}
+        <button class="recommend-add-to-cart">Add to the cart</button>
+      `;
+
+      // Add click handler for cart button
+      const addButton = productElement.querySelector('.recommend-add-to-cart');
+      addButton.onclick = () => cartManager.addItem(product.product_id);
+
+      grid.appendChild(productElement);
+    });
+
+    // Find and update the recommendations section
+    const existingRecommendations = document.querySelector('.recommendations-container');
+    if (existingRecommendations) {
+      existingRecommendations.replaceWith(container);
+    } else {
+      const gridContainer = document.querySelector('.grid-container');
+      if (gridContainer) {
+        gridContainer.after(container);
+      }
+    }
+  },
   createRatingBreakdown(distribution) {
     console.log('Creating breakdown with distribution:', distribution);
     const total = distribution.reduce((a, b) => a + b, 0);
@@ -2155,85 +2202,32 @@ const recommendationManager = {
       let recommendations = categoryData.success ? categoryData.products : categoryData;
 
       // Filter out current product and limit to 4
-          recommendations = recommendations
-      .filter(p => p.product_id.toString() !== productId.toString())
-      .slice(0, 4);
+      recommendations = recommendations
+        .filter(p => p.product_id.toString() !== productId.toString())
+        .slice(0, 4);
 
-    // Wait for user ratings to be loaded
-    await ratingManager.fetchUserRatings();
+      // Wait for user ratings to be loaded
+      await ratingManager.fetchUserRatings();
 
-    if (JSON.stringify(this.state.recommendedProducts) !== JSON.stringify(recommendations)) {
-      this.state.recommendedProducts = recommendations;
-      
-      // Calculate average ratings from userRatings
-      const productsWithRatings = recommendations.map(product => {
-        const rating = ratingManager.state.userRatings.get(product.product_id.toString());
-        return {
-          product_id: product.product_id,
-          name: product.name,
-          average_rating: rating || 0,
-          total_ratings: rating ? 1 : 0  // Count if rated
-        };
-      });
+      if (JSON.stringify(this.state.recommendedProducts) !== JSON.stringify(recommendations)) {
+        this.state.recommendedProducts = recommendations;
+        
+        // Calculate average ratings from userRatings
+        const productsWithRatings = recommendations.map(product => {
+          const rating = ratingManager.state.userRatings.get(product.product_id.toString()) || 0;
+          return {
+            ...product,
+            average_rating: rating,
+            total_ratings: rating ? 1 : 0  // Count if rated
+          };
+        });
 
-      ratingManager.setProductData(productsWithRatings);
-      
-      await this.renderRecommendations();
-    }
+        ratingManager.setProductData(productsWithRatings);
+        ratingManager.renderRecommendations(productsWithRatings); // Use new method from ratingManager
+      }
     } catch (error) {
       console.error("Error getting recommendations:", error);
       showNotification(error.message, "error");
-    }
-  },
-
-  async renderRecommendations() {
-    const container = document.createElement('div');
-    container.className = 'recommendations-container';
-    container.innerHTML = `
-      <h3>${i18nManager.translate('ui.labels.youMightAlsoLike')}</h3>
-      <div class="recommendations-grid"></div>
-    `;
-
-    const grid = container.querySelector('.recommendations-grid');
-
-    this.state.recommendedProducts.forEach(product => {
-    const productElement = document.createElement('div');
-    productElement.className = 'recommended-product';
-    productElement.setAttribute('data-product-id', product.product_id.toString());
-    
-    // Get the latest rating data from ratingManager
-    const productWithRatings = ratingManager.findProduct(product.product_id);
-    
-    const ratingHTML = ratingManager.createProductRating(
-      product.product_id.toString(),
-      productWithRatings.average_rating,
-      productWithRatings.total_ratings
-    );
-
-    productElement.innerHTML = `
-      <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
-      <h4>${product.name}</h4>
-      <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
-      ${ratingHTML}
-      <button class="recommend-add-to-cart">Add to the cart</button>
-    `;
-
-      // Add click handler for cart button
-      const addButton = productElement.querySelector('.recommend-add-to-cart');
-      addButton.onclick = () => cartManager.addItem(product.product_id);
-
-      grid.appendChild(productElement);
-    });
-
-    // Find and update the recommendations section
-    const existingRecommendations = document.querySelector('.recommendations-container');
-    if (existingRecommendations) {
-      existingRecommendations.replaceWith(container);
-    } else {
-      const gridContainer = document.querySelector('.grid-container');
-      if (gridContainer) {
-        gridContainer.after(container);
-      }
     }
   },
 
