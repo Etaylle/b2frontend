@@ -2124,12 +2124,18 @@ window.addEventListener('unload', () => {
 const recommendationManager = {
   state: {
     currentProduct: null,
-    recommendedProducts: []
+    recommendedProducts: [],
+    lastProductId: null // Add this to track last loaded product
   },
 
-  // Get recommendations based on current product's category
   async getRecommendations(productId) {
     try {
+      // Prevent duplicate loading of the same product
+      if (this.state.lastProductId === productId) {
+        return;
+      }
+      this.state.lastProductId = productId;
+
       const response = await fetch('https://backend-3mvr.onrender.com/api/products');
       if (!response.ok) throw new Error("Failed to fetch products");
       const data = await response.json();
@@ -2137,7 +2143,6 @@ const recommendationManager = {
 
       const currentProduct = products.find(p => p.product_id.toString() === productId.toString());
       if (!currentProduct) {
-        console.log('Available products:', products);
         console.log('Looking for product ID:', productId);
         throw new Error("Product not found");
       }
@@ -2149,16 +2154,20 @@ const recommendationManager = {
       const categoryData = await categoryResponse.json();
       let recommendations = categoryData.success ? categoryData.products : categoryData;
 
+      // Filter out current product and limit to 4
       recommendations = recommendations
         .filter(p => p.product_id.toString() !== productId.toString())
         .slice(0, 4);
 
-      this.state.recommendedProducts = recommendations;
-      
-      // First set the product data in ratingManager
-      ratingManager.setProductData(recommendations);
-      
-      await this.renderRecommendations();
+      // Only update state and re-render if recommendations have changed
+      if (JSON.stringify(this.state.recommendedProducts) !== JSON.stringify(recommendations)) {
+        this.state.recommendedProducts = recommendations;
+        
+        // Set product data in ratingManager once
+        ratingManager.setProductData(recommendations);
+        
+        await this.renderRecommendations();
+      }
     } catch (error) {
       console.error("Error getting recommendations:", error);
       showNotification(error.message, "error");
@@ -2166,8 +2175,6 @@ const recommendationManager = {
   },
 
   async renderRecommendations() {
-    console.log('Starting renderRecommendations');
-    
     const container = document.createElement('div');
     container.className = 'recommendations-container';
     container.innerHTML = `
@@ -2178,12 +2185,12 @@ const recommendationManager = {
     const grid = container.querySelector('.recommendations-grid');
 
     this.state.recommendedProducts.forEach(product => {
-      // Create the product element
       const productElement = document.createElement('div');
       productElement.className = 'recommended-product';
       
-      // Get rating HTML from ratingManager
-      // Note: product_id must be a string for ratingManager
+      // Add data-product-id to the product element for rating functionality
+      productElement.setAttribute('data-product-id', product.product_id.toString());
+      
       const ratingHTML = ratingManager.createProductRating(
         product.product_id.toString(),
         product.average_rating || 0,
@@ -2210,12 +2217,15 @@ const recommendationManager = {
     if (existingRecommendations) {
       existingRecommendations.replaceWith(container);
     } else {
-      document.querySelector('.grid-container').after(container);
+      const gridContainer = document.querySelector('.grid-container');
+      if (gridContainer) {
+        gridContainer.after(container);
+      }
     }
   },
 
   initialize() {
-    document.querySelector('.grid-container').addEventListener('click', (e) => {
+    document.querySelector('.grid-container')?.addEventListener('click', (e) => {
       const gridItem = e.target.closest('.grid-item');
       if (gridItem) {
         const productId = gridItem.getAttribute('data-product-id');
