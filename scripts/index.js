@@ -1960,6 +1960,167 @@ window.addEventListener('unload', () => {
     cryptoManager.stopUpdateInterval();
   }
 });
+// const recommendationManager = {
+//   state: {
+//     currentProduct: null,
+//     recommendedProducts: []
+//   },
+
+//   // Get recommendations based on current product's category
+//   async getRecommendations(productId) {
+//     try {
+//       // First get all products
+//       const response = await fetch('https://backend-3mvr.onrender.com/api/products');
+//       if (!response.ok) throw new Error("Failed to fetch products");
+//       const data = await response.json();
+//       const products = data.success ? data.products : data;
+
+//       // Find the current product
+//       // Convert productId to string to match ratingManager's approach
+//       const currentProduct = products.find(p => p.product_id.toString() === productId.toString());
+//       if (!currentProduct) {
+//         console.log('Available products:', products);
+//         console.log('Looking for product ID:', productId);
+//         throw new Error("Product not found");
+//       }
+      
+//       this.state.currentProduct = currentProduct;
+
+//       // Get products from the same category
+//       const categoryResponse = await fetch(`https://backend-3mvr.onrender.com/api/products/category/${currentProduct.category_id}`);
+//       if (!categoryResponse.ok) throw new Error("Failed to fetch recommendations");
+//       const categoryData = await categoryResponse.json();
+//       let recommendations = categoryData.success ? categoryData.products : categoryData;
+
+//       // Filter out the current product and limit to 4 recommendations
+//       recommendations = recommendations
+//         .filter(p => p.product_id.toString() !== productId.toString())
+//         .slice(0, 4);
+
+//       this.state.recommendedProducts = recommendations;
+//       await this.renderRecommendations();
+//     } catch (error) {
+//       console.error("Error getting recommendations:", error);
+//       showNotification(error.message, "error");
+//     }
+//   },
+
+//   // Render recommendations in the UI
+//   // async renderRecommendations() {
+//   //   const container = document.createElement('div');
+//   //   container.className = 'recommendations-container';
+//   //   container.innerHTML = `
+//   //     <h3>${i18nManager.translate('ui.labels.youMightAlsoLike')}</h3>
+//   //     <div class="recommendations-grid"></div>
+//   //   `;
+
+//   //   const grid = container.querySelector('.recommendations-grid');
+
+//   //   this.state.recommendedProducts.forEach(product => {
+//   //     const productElement = document.createElement('div');
+//   //     productElement.className = 'recommended-product';
+      
+//   //     // Create rating HTML using ratingManager
+//   //     const ratingHTML = ratingManager.createProductRating(
+//   //       product.product_id,
+//   //       product.average_rating || 0,
+//   //       product.total_ratings || 0
+//   //     );
+
+//   //     productElement.innerHTML = `
+//   //       <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
+//   //       <h4>${product.name}</h4>
+//   //       <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
+//   //       ${ratingHTML}
+//   //       <button class="recommend-add-to-cart">Add to the cart</button>
+//   //     `;
+
+//   //     // Add click handler for cart button
+//   //     const addButton = productElement.querySelector('.recommend-add-to-cart');
+//   //     addButton.onclick = () => cartManager.addItem(product.product_id);
+
+//   //     grid.appendChild(productElement);
+//   //   });
+
+//   //   // Find and update the recommendations section
+//   //   const existingRecommendations = document.querySelector('.recommendations-container');
+//   //   if (existingRecommendations) {
+//   //     existingRecommendations.replaceWith(container);
+//   //   } else {
+//   //     document.querySelector('.grid-container').after(container);
+//   //   }
+//   // },
+//  // Render recommendations in the UI
+//   async renderRecommendations() {
+//     console.log('Starting renderRecommendations');
+//     console.log('Raw recommended products:', JSON.stringify(this.state.recommendedProducts, null, 2));
+    
+//     const container = document.createElement('div');
+//     container.className = 'recommendations-container';
+//     container.innerHTML = `
+//       <h3>${i18nManager.translate('ui.labels.youMightAlsoLike')}</h3>
+//       <div class="recommendations-grid"></div>
+//     `;
+
+//     const grid = container.querySelector('.recommendations-grid');
+    
+//     // Set product data in ratingManager before rendering
+//     console.log('Setting product data in ratingManager...');
+//     ratingManager.setProductData(this.state.recommendedProducts);
+
+//     this.state.recommendedProducts.forEach(product => {
+//       // Log the complete product object to see all available properties
+//       console.log('Full product object:', JSON.stringify(product, null, 2));
+      
+//       // Here we use ratingManager's method to create the rating display
+//       const ratingHTML = ratingManager.createProductRating(
+//         product.product_id.toString(), 
+//         product.average_rating || 0 // Use existing rating or default to 0 if not present
+//       );
+
+//       const productElement = document.createElement('div');
+//       productElement.className = 'recommended-product';
+      
+//       productElement.innerHTML = `
+//         <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
+//         <h4>${product.name}</h4>
+//         <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
+//         ${ratingHTML}
+//         <button class="recommend-add-to-cart">Add to the cart</button>
+//       `;
+
+//       // Add click handler for cart button
+//       const addButton = productElement.querySelector('.recommend-add-to-cart');
+//       addButton.onclick = () => cartManager.addItem(product.product_id);
+
+//       grid.appendChild(productElement);
+//     });
+
+//     // Find and update the recommendations section
+//     const existingRecommendations = document.querySelector('.recommendations-container');
+//     if (existingRecommendations) {
+//       console.log('Replacing existing recommendations');
+//       existingRecommendations.replaceWith(container);
+//     } else {
+//       console.log('Adding new recommendations container');
+//       document.querySelector('.grid-container').after(container);
+//     }
+//     console.log('Finished rendering recommendations');
+//   },
+//   initialize() {
+//     // Add click handlers to product grid items to show recommendations
+//     document.querySelector('.grid-container').addEventListener('click', (e) => {
+//       const gridItem = e.target.closest('.grid-item');
+//       if (gridItem) {
+//         const productId = gridItem.getAttribute('data-product-id');
+//         if (productId) {
+//           this.getRecommendations(productId);
+//         }
+//       }
+//     });
+//   }
+// }
+// ;
 const recommendationManager = {
   state: {
     currentProduct: null,
@@ -1969,14 +2130,11 @@ const recommendationManager = {
   // Get recommendations based on current product's category
   async getRecommendations(productId) {
     try {
-      // First get all products
       const response = await fetch('https://backend-3mvr.onrender.com/api/products');
       if (!response.ok) throw new Error("Failed to fetch products");
       const data = await response.json();
       const products = data.success ? data.products : data;
 
-      // Find the current product
-      // Convert productId to string to match ratingManager's approach
       const currentProduct = products.find(p => p.product_id.toString() === productId.toString());
       if (!currentProduct) {
         console.log('Available products:', products);
@@ -1986,18 +2144,20 @@ const recommendationManager = {
       
       this.state.currentProduct = currentProduct;
 
-      // Get products from the same category
       const categoryResponse = await fetch(`https://backend-3mvr.onrender.com/api/products/category/${currentProduct.category_id}`);
       if (!categoryResponse.ok) throw new Error("Failed to fetch recommendations");
       const categoryData = await categoryResponse.json();
       let recommendations = categoryData.success ? categoryData.products : categoryData;
 
-      // Filter out the current product and limit to 4 recommendations
       recommendations = recommendations
         .filter(p => p.product_id.toString() !== productId.toString())
         .slice(0, 4);
 
       this.state.recommendedProducts = recommendations;
+      
+      // First set the product data in ratingManager
+      ratingManager.setProductData(recommendations);
+      
       await this.renderRecommendations();
     } catch (error) {
       console.error("Error getting recommendations:", error);
@@ -2005,55 +2165,8 @@ const recommendationManager = {
     }
   },
 
-  // Render recommendations in the UI
-  // async renderRecommendations() {
-  //   const container = document.createElement('div');
-  //   container.className = 'recommendations-container';
-  //   container.innerHTML = `
-  //     <h3>${i18nManager.translate('ui.labels.youMightAlsoLike')}</h3>
-  //     <div class="recommendations-grid"></div>
-  //   `;
-
-  //   const grid = container.querySelector('.recommendations-grid');
-
-  //   this.state.recommendedProducts.forEach(product => {
-  //     const productElement = document.createElement('div');
-  //     productElement.className = 'recommended-product';
-      
-  //     // Create rating HTML using ratingManager
-  //     const ratingHTML = ratingManager.createProductRating(
-  //       product.product_id,
-  //       product.average_rating || 0,
-  //       product.total_ratings || 0
-  //     );
-
-  //     productElement.innerHTML = `
-  //       <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
-  //       <h4>${product.name}</h4>
-  //       <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
-  //       ${ratingHTML}
-  //       <button class="recommend-add-to-cart">Add to the cart</button>
-  //     `;
-
-  //     // Add click handler for cart button
-  //     const addButton = productElement.querySelector('.recommend-add-to-cart');
-  //     addButton.onclick = () => cartManager.addItem(product.product_id);
-
-  //     grid.appendChild(productElement);
-  //   });
-
-  //   // Find and update the recommendations section
-  //   const existingRecommendations = document.querySelector('.recommendations-container');
-  //   if (existingRecommendations) {
-  //     existingRecommendations.replaceWith(container);
-  //   } else {
-  //     document.querySelector('.grid-container').after(container);
-  //   }
-  // },
- // Render recommendations in the UI
   async renderRecommendations() {
     console.log('Starting renderRecommendations');
-    console.log('Raw recommended products:', JSON.stringify(this.state.recommendedProducts, null, 2));
     
     const container = document.createElement('div');
     container.className = 'recommendations-container';
@@ -2063,24 +2176,20 @@ const recommendationManager = {
     `;
 
     const grid = container.querySelector('.recommendations-grid');
-    
-    // Set product data in ratingManager before rendering
-    console.log('Setting product data in ratingManager...');
-    ratingManager.setProductData(this.state.recommendedProducts);
 
     this.state.recommendedProducts.forEach(product => {
-      // Log the complete product object to see all available properties
-      console.log('Full product object:', JSON.stringify(product, null, 2));
-      
-      // Here we use ratingManager's method to create the rating display
-      const ratingHTML = ratingManager.createProductRating(
-        product.product_id.toString(), 
-        product.average_rating || 0 // Use existing rating or default to 0 if not present
-      );
-
+      // Create the product element
       const productElement = document.createElement('div');
       productElement.className = 'recommended-product';
       
+      // Get rating HTML from ratingManager
+      // Note: product_id must be a string for ratingManager
+      const ratingHTML = ratingManager.createProductRating(
+        product.product_id.toString(),
+        product.average_rating || 0,
+        product.total_ratings || 0
+      );
+
       productElement.innerHTML = `
         <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
         <h4>${product.name}</h4>
@@ -2099,16 +2208,13 @@ const recommendationManager = {
     // Find and update the recommendations section
     const existingRecommendations = document.querySelector('.recommendations-container');
     if (existingRecommendations) {
-      console.log('Replacing existing recommendations');
       existingRecommendations.replaceWith(container);
     } else {
-      console.log('Adding new recommendations container');
       document.querySelector('.grid-container').after(container);
     }
-    console.log('Finished rendering recommendations');
   },
+
   initialize() {
-    // Add click handlers to product grid items to show recommendations
     document.querySelector('.grid-container').addEventListener('click', (e) => {
       const gridItem = e.target.closest('.grid-item');
       if (gridItem) {
@@ -2119,9 +2225,7 @@ const recommendationManager = {
       }
     });
   }
-}
-;
-
+};
 const productPageManager = {
   state: {
     products: [],
