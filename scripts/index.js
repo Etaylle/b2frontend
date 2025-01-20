@@ -513,36 +513,79 @@ const uiManager = {
 
 // Auth Management
 const authManager = {
+// async fetchCurrentUser() {
+//     try {
+//       const response = await fetch('https://backend-3mvr.onrender.com/api/users/current', {
+//         ...fetchConfig,
+//         credentials: 'include'
+//       });
+//       if (!response.ok) throw new Error('Auth failed');
+//       return await response.json();
+//     } catch (error) {
+//       console.error(error);
+//       return null;
+//     }
+//   },
 async fetchCurrentUser() {
-    try {
-      const response = await fetch('https://backend-3mvr.onrender.com/api/users/current', {
-        ...fetchConfig,
-        credentials: 'include'
-      });
-      if (!response.ok) throw new Error('Auth failed');
-      return await response.json();
-    } catch (error) {
-      console.error(error);
-      return null;
+  try {
+    const response = await fetch('https://backend-3mvr.onrender.com/api/users/current', {
+      ...fetchConfig,
+      credentials: 'include'
+    });
+    if (!response.ok) throw new Error('Auth failed');
+    const user = await response.json();
+    
+    if (user) {
+      // Clear the guest ID header if a user is found
+      delete fetchConfig.headers['X-Guest-User'];
     }
-  },
+    return user;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+},
+// async login(formData) {
+//   try {
+//     const response = await fetch("https://backend-3mvr.onrender.com/api/auth/login", {
+//       ...fetchConfig,
+//       method: "POST",
+//       body: JSON.stringify({
+//         email: formData.email,
+//         password: formData.password
+//       })
+//     });
 
+//     const data = await response.json();
+    
+//     if (response.ok) {
+//       showNotification('Login successful!', 'success');
+//       return true;  // Remove window.location.reload() from here
+//     } else {
+//       showNotification(data.message, 'error');
+//       return false;
+//     }
+//   } catch (error) {
+//     showNotification(error.message, 'errorOccured');
+//     return false;
+//   }
+// },
 async login(formData) {
   try {
     const response = await fetch("https://backend-3mvr.onrender.com/api/auth/login", {
       ...fetchConfig,
       method: "POST",
-      body: JSON.stringify({
-        email: formData.email,
-        password: formData.password
-      })
+      body: JSON.stringify(formData)
     });
 
     const data = await response.json();
     
     if (response.ok) {
+      // Clear guest ID here
+      delete fetchConfig.headers['X-Guest-User']; // Assuming this is how you set the header
+      
       showNotification('Login successful!', 'success');
-      return true;  // Remove window.location.reload() from here
+      return true;
     } else {
       showNotification(data.message, 'error');
       return false;
@@ -552,7 +595,6 @@ async login(formData) {
     return false;
   }
 },
-
 // In AuthModal's handleLogin
 if (success) {
     this.showMessage('login-message', 'Login successful!', 'success');
