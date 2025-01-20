@@ -1013,7 +1013,20 @@ main {
   border-radius: 4px;
   cursor: pointer;
 }
+.recommended-product .rating-summary {
+  margin: 8px 0;
+  justify-content: center;
+}
 
+.recommended-product .rating-stars {
+  display: flex;
+  gap: 2px;
+}
+
+.recommended-product .rating-count {
+  font-size: 0.9rem;
+  color: #666;
+}
 
   /* Responsive Design */
   @media (max-width: 768px) {
