@@ -166,7 +166,7 @@ const cartManager = {
   },
 async addItem(productId) {
   try {
-    // First try to use guest session
+    // First try to guest session
     if (!currentUser) {
       const guestLoginResponse = await fetch('https://backend-3mvr.onrender.com/api/guest-login', {
         method: 'POST',
@@ -206,7 +206,7 @@ async addItem(productId) {
     showNotification('itemAddedToCart', 'success');
   } catch (error) {
     console.error('Error:', error);
-    showNotification('outOfStock!', 'error');
+    showNotification(error.message || 'Out of stock!', 'error');
   }
 },
   async removeItem(productId) {
@@ -228,7 +228,7 @@ async addItem(productId) {
       showNotification('itemRemovedFromCart', 'success');
     } catch (error) {
       console.error('Error:', error);
-      showNotification('failedToRemoveItem', 'error');
+      showNotification('Failed to remove item', 'error');
     }
   },
 
@@ -254,60 +254,31 @@ async addItem(productId) {
       return true;
     } catch (error) {
       console.error('Error completing purchase:', error);
-      showNotification('failedToCompletePurchase', 'error');
+      showNotification(error.message || 'Failed to complete purchase', 'error');
       return false;
     }
   
   },
-  // async updateQuantity(productId, quantity) {
+  async updateQuantity(productId, quantity) {
 
-  //   if (!currentUser) {
-  //   await ensureGuestSession();
-  // }try {
-  //     const response = await fetch('https://backend-3mvr.onrender.com/api/cart/update', {
-  //       method: 'PUT',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify({ productId, quantity }),
-  //       credentials: 'include'
-  //     });
-
-  //     if (!response.ok) throw new Error('Failed to update quantity');
-  //     await this.updateDisplay();
-  //   } catch (error) {
-  //     console.error('Error updating quantity:', error);
-  //     showNotification('failedToUpdateQuantity', 'error');
-  //   }
-  // },
-async updateQuantity(productId, quantity) {
-  if (!currentUser) {
+    if (!currentUser) {
     await ensureGuestSession();
-  }
-  
-  try {
-    const response = await fetch('https://backend-3mvr.onrender.com/api/cart/update', {
-      method: 'PUT',
-      headers: { 
-        'Content-Type': 'application/json',
-        // Add language header to inform backend of current language
-        'Accept-Language': i18nManager.getCurrentLanguage()
-      },
-      body: JSON.stringify({ productId, quantity }),
-      credentials: 'include'
-    });
+  }try {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/update', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, quantity }),
+        credentials: 'include'
+      });
 
-    if (!response.ok) {
-      throw new Error(i18nManager.translate('ui.messages.failedToUpdateQuantity'));
+      if (!response.ok) throw new Error('Failed to update quantity');
+      await this.updateDisplay();
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+      showNotification('Failed to update quantity', 'error');
     }
-
-    await this.updateDisplay();
-    showNotification(i18nManager.translate('ui.messages.quantityUpdated'), 'success');
-  } catch (error) {
-    console.error('Error updating quantity:', error);
-    showNotification(i18nManager.translate('ui.messages.failedToUpdateQuantity'), 'error');
-  }
-},
-
-async clearCart(afterPurchase = false) {
+  },
+  async clearCart(afterPurchase = false) {
     try {
       // First ensure guest session is active if needed
       if (!currentUser) {
@@ -460,15 +431,6 @@ async updateDisplay() {
   }
 };
 
-// Add language change listener to refresh cart display
-window.addEventListener('languageChanged', async () => {
-  try {
-    await cartManager.updateDisplay();
-  } catch (error) {
-    console.error('Error refreshing cart after language change:', error);
-    showNotification(i18nManager.translate('ui.messages.errorOccurred'), 'error');
-  }
-});
 // UI Management
 const uiManager = {
   // Modal functions
@@ -571,7 +533,7 @@ async login(formData) {
       // Clear guest ID here
       delete fetchConfig.headers['X-Guest-User']; // Assuming this is how you set the header
       
-      showNotification('loginSuccessful!', 'success');
+      showNotification('Login successful!', 'success');
       return true;
     } else {
       showNotification(data.message, 'error');
@@ -608,7 +570,7 @@ if (success) {
       });
 
       if (response.ok) {
-        showNotification('registrationSuccessful!', 'success');
+        showNotification('Registration successful!', 'success');
         return true;
       } else {
         const data = await response.json();
@@ -1028,7 +990,7 @@ setProductData(products) {
       
       this.state.userRatings.set(productId.toString(), rating);
       this.updateProductRatingDisplay(productId, result.averageRating, result.totalRatings);
-      showNotification('ratingSubmitted', 'success');
+      showNotification('Rating submitted successfully!', 'success');
       return result;
     } catch (error) {
       console.error('Error submitting rating:', error);
@@ -1092,11 +1054,11 @@ setProductData(products) {
       // Remove from userRatings Map
       this.state.userRatings.delete(productId.toString());
       this.updateProductRatingDisplay(productId, result.averageRating, result.totalRatings);
-      
+      showNotification('Rating removed successfully', 'success');
       return result;
     } catch (error) {
       console.error('Error removing rating:', error);
-      
+      showNotification('Failed to remove rating', 'error');
       throw error;
     }
   },
@@ -1158,6 +1120,7 @@ setProductData(products) {
       
     } catch (error) {
       console.error('Error in openRatingModal:', error);
+      showNotification('Failed to load rating details', 'error');
     }
   },
   closeRatingModal() {
@@ -1667,6 +1630,7 @@ const cryptoManager = {
       }
     } catch (error) {
       console.error("Error fetching crypto rates:", error);
+      showNotification("Failed to fetch crypto rates. Retrying in 1 minute...", "error");
       setTimeout(() => this.fetchCryptoRates(), 60000);
     }
   },
@@ -1759,6 +1723,7 @@ createCryptoToggle() {
       this.updateAllProductPrices();
     } catch (error) {
       console.error("Error initializing crypto manager:", error);
+      showNotification("Failed to initialize cryptocurrency features", "error");
     }
   },
 
@@ -1845,6 +1810,7 @@ const recommendationManager = {
       }
     } catch (error) {
       console.error("Error getting recommendations:", error);
+      showNotification(error.message, "error");
     }
   },
 
@@ -2100,6 +2066,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     
   } catch (error) {
     console.error("Error during initialization:", error);
+    showNotification("Error initializing application", "error");
   }
 });
 const socialSharingManager = {
@@ -2216,17 +2183,6 @@ state: {
             itemRemovedFromCart: "Item removed from cart",
             errorOccurred: "An error occurred",
             failedToClearCart: "Failed to clear cart",
-            failedToUpdateQuantity: "Failed to update quantity",
-            quantityUpdated: "Quantity updated successfully",
-            cartEmpty: "Your cart is empty",
-            guestLoginFailed: "Guest login failed",
-            failedToAddToCart: "Failed to add item to the cart",
-            outOfStock: "Item is out of stock!",
-            failedToRemoveItem: "Failed to remove item from the cart",
-            logginSuccesful: "Logged in successfully!",
-            registrationSuccessful: "Registered successfully!",
-
-
           },
           nav: {
             login: "Login",
@@ -2280,16 +2236,7 @@ state: {
             itemAddedToCart: "Артикал је додат у корпу",
             itemRemovedFromCart: "Артикал уклоњен из корпе",
             errorOccurred: "Дошло је до грешке",
-            failedToClearCart: "Дошло је до грешке",
-            failedToUpdateQuantity: "Ажурирање количине није успело",
-            quantityUpdated: "Количина је успешно ажурирана",
-            cartEmpty: "Ваш корпа ��е празна",
-            guestLoginFailed: "Гостева при��ава ни��е успела",
-            failedToAddToCart: "Додава��е артикала у корпу ни��е успело",
-            outOfStock: "Ова�� производ ни��е на располага��у!",
-            failedToRemoveItem: "Укло��е��е артикала из корпе ни��е успело",
-            logginSuccesful: "Успешно при��ав��ен",
-            registrationSuccessful: "Успешно регистриран",
+            failedToClearCart: "Korpa couldn't geleert werden",
           },
           nav: {
             login: "Пријава",
@@ -2345,16 +2292,7 @@ state: {
             itemAddedToCart: "Artikel wurde zum Warenkorb hinzugefügt",
             itemRemovedFromCart: "Artikal wurde aus dem Warenkorb entefrnt",
             errorOccurred: "Es kam zu einem Fehler!",
-            failedToClearCart: "Kann Warenkorb nicht leeren!",
-            failedToUpdateQuantity: "Menge konnte nicht aktualisiert werden",
-            quantityUpdated: "Menge erfolgreich aktualisiert",
-            cartEmpty: "Ihr Warenkorb ist leer",
-            guestLoginFailed: "Ein Gastlogin ist fehlgeschlagen",
-            failedToAddToCart: "Es ist ein Fehler beim Hinzufügen eines Artikels zum Warenkorb aufgetreten",
-            outOfStock: "Dieser Artikel ist nicht auf Lager!",
-            failedToRemoveItem: "Es ist ein Fehler beim Entfernen eines Artikels aus dem Warenkorb aufgetreten",
-            logginSuccesful: "Sie wurden erfolgreich angemeldet",
-            registrationSuccessful: "Sie wurden erfolgreich registriert", 
+            failedToClearCart: "Kann Warenkorb nicht leeren!", 
 
           },
           nav: {
