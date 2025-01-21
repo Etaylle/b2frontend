@@ -206,7 +206,7 @@ async addItem(productId) {
     showNotification('itemAddedToCart', 'success');
   } catch (error) {
     console.error('Error:', error);
-    showNotification(error.message || 'Out of stock!', 'error');
+    showNotification('outOfStock!', 'error');
   }
 },
   async removeItem(productId) {
@@ -228,7 +228,7 @@ async addItem(productId) {
       showNotification('itemRemovedFromCart', 'success');
     } catch (error) {
       console.error('Error:', error);
-      showNotification('Failed to remove item', 'error');
+      showNotification('failedToRemoveItem', 'error');
     }
   },
 
@@ -254,33 +254,63 @@ async addItem(productId) {
       return true;
     } catch (error) {
       console.error('Error completing purchase:', error);
-      showNotification(error.message || 'Failed to complete purchase', 'error');
+      showNotification('failedToCompletePurchase', 'error');
       return false;
     }
   
   },
-  async updateQuantity(productId, quantity) {
-console.log('Sending quantity:', quantity);
-let quantity = parseFloat(document.querySelector('.quantity-input').value.replace(/,/g, '.'));
-if (isNaN(quantity)) quantity = 1; 
-    if (!currentUser) {
-    await ensureGuestSession();
-  }try {
-      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/update', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, quantity }),
-        credentials: 'include'
-      });
+  // async updateQuantity(productId, quantity) {
 
-      if (!response.ok) throw new Error('Failed to update quantity');
-      await this.updateDisplay();
-    } catch (error) {
-      console.error('Error updating quantity:', error);
-      showNotification('Failed to update quantity', 'error');
+  //   if (!currentUser) {
+  //   await ensureGuestSession();
+  // }try {
+  //     const response = await fetch('https://backend-3mvr.onrender.com/api/cart/update', {
+  //       method: 'PUT',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ productId, quantity }),
+  //       credentials: 'include'
+  //     });
+
+  //     if (!response.ok) throw new Error('Failed to update quantity');
+  //     await this.updateDisplay();
+  //   } catch (error) {
+  //     console.error('Error updating quantity:', error);
+  //     showNotification('failedToUpdateQuantity', 'error');
+  //   }
+  // },
+  async updateQuantity(productId, quantity) {
+  console.log('Sending quantity:', quantity);
+
+  // Use the passed quantity if it's valid; otherwise, fetch from DOM
+  let sanitizedQuantity = !isNaN(quantity) ? parseFloat(quantity) : parseFloat(document.querySelector('.quantity-input').value.replace(/,|\s/g, '.'));
+
+  if (isNaN(sanitizedQuantity)) {
+    sanitizedQuantity = 1; // Default to 1 or handle appropriately
+  }
+
+  if (!currentUser) {
+    await ensureGuestSession();
+  }
+
+  try {
+    const response = await fetch('https://backend-3mvr.onrender.com/api/cart/update', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productId, quantity: sanitizedQuantity }),
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to update quantity');
     }
-  },
-  async clearCart(afterPurchase = false) {
+    await this.updateDisplay();
+  } catch (error) {
+    console.error('Error updating quantity:', error);
+    showNotification('failedToUpdateQuantity', 'error');
+  }
+},
+async clearCart(afterPurchase = false) {
     try {
       // First ensure guest session is active if needed
       if (!currentUser) {
