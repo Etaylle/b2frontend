@@ -428,102 +428,71 @@ document.addEventListener('DOMContentLoaded', () => {
 //         this.removeItem(productId);
 //       });
 //     });
-//   }
+//   },
+ 
 // };
+
 const cartManager = {
+  // Cache for current cart state
+  _cartCache: null,
+
+  // Constants
+  GUEST_ID: '999999',
+
   async fetchCart() {
-    if (!currentUser) {
-      await ensureGuestSession();
-    }
     try {
+      // Ensure consistent guest session
+      if (!currentUser) {
+        await ensureGuestSession();
+      }
+
       const response = await fetch('https://backend-3mvr.onrender.com/api/cart', {
-        ...fetchConfig,
         credentials: 'include',
         headers: {
-          ...fetchConfig.headers,
-          'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined,
-          'Accept-Language': i18nManager.getCurrentLanguage()
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'X-Guest-User': !currentUser ? this.GUEST_ID : undefined
         }
       });
       
       if (!response.ok) {
-        return { items: [], total: 0 };
+        throw new Error('Failed to fetch cart');
       }
+
       const data = await response.json();
-      return data.cart;
+      this._cartCache = data.cart;
+      return this._cartCache;
     } catch (error) {
       console.error('Error fetching cart:', error);
       return { items: [], total: 0 };
     }
   },
 
-  async addItem(productId) {
+  async updateQuantity(productId, quantity) {
     try {
       if (!currentUser) {
-        const guestLoginResponse = await fetch('https://backend-3mvr.onrender.com/api/guest-login', {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept-Language': i18nManager.getCurrentLanguage()
-          },
-          body: JSON.stringify({
-            email: 'guest@example.com',
-            password: 'not_accessible'
-          })
-        });
-        
-        if (!guestLoginResponse.ok) {
-          throw new Error(i18nManager.translate('ui.messages.guestLoginFailed'));
-        }
+        await ensureGuestSession();
       }
 
-      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
-        method: 'POST',
+      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/update', {
+        method: 'PUT',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'X-Guest-User': !currentUser ? '999999' : undefined,
-          'Accept-Language': i18nManager.getCurrentLanguage()
+          'X-Guest-User': !currentUser ? this.GUEST_ID : undefined
         },
-        body: JSON.stringify({ productId, quantity: 1 })
+        body: JSON.stringify({ productId, quantity })
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || i18nManager.translate('ui.messages.failedToAddToCart'));
+        throw new Error('Failed to update quantity');
       }
 
       await this.updateDisplay();
-      showNotification(i18nManager.translate('ui.messages.itemAddedToCart'), 'success');
+      showNotification(i18nManager.translate('ui.messages.itemUpdated'), 'success');
     } catch (error) {
-      console.error('Error:', error);
-      showNotification(i18nManager.translate('ui.messages.outOfStock'), 'error');
-    }
-  },
-
-  async removeItem(productId) {
-    if (!currentUser) {
-      await ensureGuestSession();
-    }
-    try {
-      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/remove', {
-        method: 'DELETE',
-        headers: { 
-          'Content-Type': 'application/json',
-          'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined,
-          'Accept-Language': i18nManager.getCurrentLanguage()
-        },
-        body: JSON.stringify({ productId }),
-        credentials: 'include',
-      });
-
-      if (!response.ok) throw new Error(i18nManager.translate('ui.messages.failedToRemoveItem'));
-      await this.updateDisplay();
-      showNotification(i18nManager.translate('ui.messages.itemRemovedFromCart'), 'success');
-    } catch (error) {
-      console.error('Error:', error);
-      showNotification(i18nManager.translate('ui.messages.failedToRemoveItem'), 'error');
+      console.error('Error updating quantity:', error);
+      showNotification(i18nManager.translate('ui.messages.failedToUpdateQuantity'), 'error');
     }
   },
 
@@ -532,6 +501,11 @@ const cartManager = {
     const cartContainer = document.getElementById('cart-items');
     const cartTotal = document.getElementById('cart-total');
     
+    if (!cartContainer || !cartTotal) {
+      console.error('Cart DOM elements not found');
+      return;
+    }
+
     cartContainer.innerHTML = '';
 
     if (!cart.items || cart.items.length === 0) {
@@ -548,8 +522,9 @@ const cartManager = {
       const listItem = document.createElement('li');
       listItem.className = 'cart-item';
 
+      // Get translated product name if available
+      const productName = i18nManager.getProductTranslation(item, 'name') || 'Unknown Product';
       const imageUrl = item.images?.[0] || item.image_url || '/images/1.jpg';
-      const productName = i18nManager.getProductTranslation(item, 'name');
       const productPrice = item.price || 0;
       const productId = item.product_id;
 
@@ -570,7 +545,8 @@ const cartManager = {
           <button class="remove-btn" data-id="${productId}" 
             title="${i18nManager.translate('ui.tooltips.removeItem')}" 
             aria-label="${i18nManager.translate('ui.ariaLabels.removeItem')}">
-            ${i18nManager.translate('ui.buttons.removeItem')}</button>
+            ${i18nManager.translate('ui.buttons.removeItem')}
+          </button>
         </div>
       `;
 
@@ -581,17 +557,53 @@ const cartManager = {
     cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: ${total.toFixed(2)}`;
     this.attachEventListeners();
   },
+
+  attachEventListeners() {
+    // Remove old event listeners
+    document.querySelectorAll('.quantity-btn, .remove-btn').forEach(btn => {
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+    });
+
+    // Attach new event listeners
+    document.querySelectorAll('.quantity-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const productId = e.target.getAttribute('data-id');
+        const listItem = e.target.closest('.cart-item');
+        const quantityElement = listItem.querySelector('.item-quantity');
+        let currentQuantity = parseInt(quantityElement.textContent.match(/\d+/)[0]);
+        
+        if (e.target.classList.contains('plus')) {
+          currentQuantity += 1;
+        } else {
+          currentQuantity = Math.max(1, currentQuantity - 1);
+        }
+        
+        await this.updateQuantity(productId, currentQuantity);
+      });
+    });
+
+    document.querySelectorAll('.remove-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const productId = e.target.getAttribute('data-id');
+        await this.removeItem(productId);
+      });
+    });
+  }
 };
 
-// Add language change listener to refresh cart display
+// Update language change handler
 window.addEventListener('languageChanged', async () => {
   try {
+    // Clear cart cache to force fresh fetch with new language
+    cartManager._cartCache = null;
     await cartManager.updateDisplay();
   } catch (error) {
     console.error('Error refreshing cart after language change:', error);
     showNotification(i18nManager.translate('ui.messages.errorOccurred'), 'error');
   }
 });
+
 // UI Management
 const uiManager = {
   // Modal functions
