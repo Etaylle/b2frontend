@@ -1323,7 +1323,7 @@ setProductData(products) {
       
       this.state.userRatings.set(productId.toString(), rating);
       this.updateProductRatingDisplay(productId, result.averageRating, result.totalRatings);
-      showNotification(i18nManager.translate('ui.messages.ratingSubmitted'), 'success');
+      showNotification(i18nManager.translate('ratingSubmitted'), 'success');
       return result;
     } catch (error) {
       console.error('Error submitting rating:', error);
