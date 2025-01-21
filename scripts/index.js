@@ -206,7 +206,7 @@ async addItem(productId) {
     showNotification('itemAddedToCart', 'success');
   } catch (error) {
     console.error('Error:', error);
-    showNotification(error.message || 'Out of stock!', 'error');
+    showNotification(i18nManager.translate('ui.messages.outOfStock'), 'error');
   }
 },
   async removeItem(productId) {
@@ -228,7 +228,7 @@ async addItem(productId) {
       showNotification('itemRemovedFromCart', 'success');
     } catch (error) {
       console.error('Error:', error);
-      showNotification('Failed to remove item', 'error');
+      showNotification(i18nManager.translate('ui.messages.failedToRemoveItem'), 'error');
     }
   },
 
@@ -254,7 +254,7 @@ async addItem(productId) {
       return true;
     } catch (error) {
       console.error('Error completing purchase:', error);
-      showNotification(error.message || 'Failed to complete purchase', 'error');
+      showNotification(i18nManager.translate('ui.messages.failedToCompletePurchase'), 'error');
       return false;
     }
   
@@ -275,7 +275,7 @@ async addItem(productId) {
       await this.updateDisplay();
     } catch (error) {
       console.error('Error updating quantity:', error);
-      showNotification('Failed to update quantity', 'error');
+      showNotification(i18nManager.translate('ui.messages.failedToUpdateQuantity'), 'error');
     }
   },
   async clearCart(afterPurchase = false) {
@@ -2183,6 +2183,16 @@ state: {
             itemRemovedFromCart: "Item removed from cart",
             errorOccurred: "An error occurred",
             failedToClearCart: "Failed to clear cart",
+            itemAddedToCart: "Item added to cart",
+            itemRemovedFromCart: "Item removed from cart",
+            outOfStock: "Out of stock!",
+            failedToUpdateQuantity: "Failed to update quantity",
+            failedToRemoveItem: "Failed to remove item",
+            failedToCompletePurchase: "Failed to complete purchase",
+            errorOccurred: "An error occurred",
+            cartEmpty: "Your cart is empty",
+            purchaseCompleted: "Purchase completed",
+            cartCleared: "Cart cleared",
           },
           nav: {
             login: "Login",
@@ -2235,8 +2245,14 @@ state: {
           messages: {
             itemAddedToCart: "Артикал је додат у корпу",
             itemRemovedFromCart: "Артикал уклоњен из корпе",
+            outOfStock: "Нема на залихи!",
+            failedToUpdateQuantity: "Није успело ажурирање количине",
+            failedToRemoveItem: "Није успело уклањање артикла",
+            failedToCompletePurchase: "Није успело завршавање куповине",
             errorOccurred: "Дошло је до грешке",
-            failedToClearCart: "Korpa couldn't geleert werden",
+            cartEmpty: "Ваша корпа је празна",
+            purchaseCompleted: "Куповина је завршена",
+            cartCleared: "Корпа је очишћена",
           },
           nav: {
             login: "Пријава",
@@ -2293,6 +2309,16 @@ state: {
             itemRemovedFromCart: "Artikal wurde aus dem Warenkorb entefrnt",
             errorOccurred: "Es kam zu einem Fehler!",
             failedToClearCart: "Kann Warenkorb nicht leeren!", 
+            itemAddedToCart: "Artikel wurde zum Warenkorb hinzugefügt",
+            itemRemovedFromCart: "Artikel wurde aus dem Warenkorb entfernt",
+            outOfStock: "Ausverkauft!",
+            failedToUpdateQuantity: "Menge konnte nicht aktualisiert werden",
+            failedToRemoveItem: "Artikel konnte nicht entfernt werden",
+            failedToCompletePurchase: "Einkauf konnte nicht abgeschlossen werden",
+            errorOccurred: "Ein Fehler ist aufgetreten",
+            cartEmpty: "Ihr Warenkorb ist leer",
+            purchaseCompleted: "Kauf abgeschlossen",
+            cartCleared: "Warenkorb geleert",
 
           },
           nav: {
