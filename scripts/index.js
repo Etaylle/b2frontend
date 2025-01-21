@@ -546,10 +546,10 @@ async login(formData) {
 },
 // In AuthModal's handleLogin
 if (success) {
-    this.showMessage('login-message', 'loginSuccessful!', 'success');
+    this.showMessage('login-message', 'Login Successful!', 'success');
     setTimeout(() => {
         this.hideModal();
-        window.location.reload();  // Move it here
+        window.location.reload();
     }, 1500);
 },
 
