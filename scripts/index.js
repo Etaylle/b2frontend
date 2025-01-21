@@ -2471,7 +2471,7 @@ state: {
             all: "Alle",
             
             clearHistory: "Suchverlauf löschen",
-            checkout: "Kassenbestellen",
+            checkout: "Kaufen",
             emptyCart: "Warenkorb leeren",
             removeItem: "Entfernen",
             adminPanel: "Admin-Bereich",
