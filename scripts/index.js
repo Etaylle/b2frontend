@@ -138,19 +138,311 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 // CART MANAGER
-const cartManager = {
+// const cartManager = {
 
+//   async fetchCart() {
+//     if (!currentUser) {
+//     await ensureGuestSession();
+//   }
+//     try {
+//       const response = await fetch('https://backend-3mvr.onrender.com/api/cart', {
+//         ...fetchConfig,
+//         credentials: 'include',
+//         headers: {
+//           ...fetchConfig.headers,
+//           'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
+//         }
+//       });
+      
+//       if (!response.ok) {
+//         return { items: [], total: 0 };
+//       }
+//       const data = await response.json();
+//       return data.cart;
+//     } catch (error) {
+//       console.error('Error fetching cart:', error);
+//       return { items: [], total: 0 };
+//     }
+//   },
+// async addItem(productId) {
+//   try {
+//     // First try to guest session
+//     if (!currentUser) {
+//       const guestLoginResponse = await fetch('https://backend-3mvr.onrender.com/api/guest-login', {
+//         method: 'POST',
+//         credentials: 'include',
+//         headers: {
+//           'Content-Type': 'application/json'
+//         },
+//         body: JSON.stringify({
+//           email: 'guest@example.com',
+//           password: 'not_accessible'
+//         })
+        
+//       });
+      
+//       if (!guestLoginResponse.ok) {
+//         throw new Error('Guest login failed');
+//       }
+//     }
+
+//     // Then try to add to cart
+//     const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
+//       method: 'POST',
+//       credentials: 'include',
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'X-Guest-User': !currentUser ? '999999' : undefined
+//       },
+//       body: JSON.stringify({ productId, quantity: 1 })
+//     });
+
+//     if (!response.ok) {
+//       const errorData = await response.json();
+//       throw new Error(errorData.message || 'Failed to add to cart');
+//     }
+
+//     await this.updateDisplay();
+//     showNotification('itemAddedToCart', 'success');
+//   } catch (error) {
+//     console.error('Error:', error);
+//     showNotification(i18nManager.translate('outOfStock'), 'error');
+//   }
+// },
+//   async removeItem(productId) {
+//     if (!currentUser) {
+//     await ensureGuestSession();
+//   }try {
+//       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/remove', {
+//         method: 'DELETE',
+//         headers: { 
+//           'Content-Type': 'application/json',
+//           'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
+//         },
+//         body: JSON.stringify({ productId }),
+//         credentials: 'include',
+//       });
+
+//       if (!response.ok) throw new Error('Failed to remove item');
+//       await this.updateDisplay();
+//       showNotification('itemRemovedFromCart', 'success');
+//     } catch (error) {
+//       console.error('Error:', error);
+//       showNotification(i18nManager.translate('failedToRemoveItem'), 'error');
+//     }
+//   },
+
+//   async completePurchase() {
+//     if (!currentUser) {
+//     await ensureGuestSession();
+//   }try {
+//       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/complete-purchase', {
+//         method: 'POST',
+//         credentials: 'include',
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
+//         }
+//       });
+
+//       if (!response.ok) {
+//         const errorData = await response.json();
+//         throw new Error(errorData.message);
+//       }
+
+//       await this.clearCart(true);
+//       return true;
+//     } catch (error) {
+//       console.error('Error completing purchase:', error);
+//       showNotification(i18nManager.translate('failedToCompletePurchase'), 'error');
+//       return false;
+//     }
+  
+//   },
+//   async updateQuantity(productId, quantity) {
+
+//     if (!currentUser) {
+//     await ensureGuestSession();
+//   }try {
+//       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/update', {
+//         method: 'PUT',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify({ productId, quantity }),
+//         credentials: 'include'
+//       });
+
+//       if (!response.ok) throw new Error('Failed to update quantity');
+//       await this.updateDisplay();
+//     } catch (error) {
+//       console.error('Error updating quantity:', error);
+//       showNotification(i18nManager.translate('failedToUpdateQuantity'), 'error');
+//     }
+//   },
+//   async clearCart(afterPurchase = false) {
+//     try {
+//       // First ensure guest session is active if needed
+//       if (!currentUser) {
+//         await ensureGuestSession();
+//       }
+
+//       // Add retry logic with proper error handling
+//       const clearCartWithRetry = async (retryCount = 0) => {
+//         try {
+//           const response = await fetch('https://backend-3mvr.onrender.com/api/cart/clear', {
+//             method: 'DELETE',
+//             credentials: 'include',
+//             headers: { 
+//               'Content-Type': 'application/json',
+//               'X-Guest-User': !currentUser ? localStorage.getItem('guestId') : undefined
+//             },
+//             body: JSON.stringify({ afterPurchase })
+//           });
+
+//           // Check if we got a 500 error
+//           if (response.status === 500 && retryCount < 1) {
+//             // Wait a short delay before retrying
+//             await new Promise(resolve => setTimeout(resolve, 1000));
+//             return await clearCartWithRetry(retryCount + 1);
+//           }
+
+//           if (!response.ok) {
+//             const errorData = await response.json().catch(() => ({ message: 'Failed to clear cart' }));
+//             throw new Error(errorData.message);
+//           }
+
+//           // Try to parse the response, but handle cases where it might be empty
+//           const result = await response.json().catch(() => ({}));
+
+//           // Update the UI
+//           const cartContainer = document.getElementById('cart-items');
+//           const cartTotal = document.getElementById('cart-total');
+
+//           if (cartContainer) {
+//             cartContainer.innerHTML = `<li data-i18n="ui.messages.cartEmpty">${i18nManager.translate('ui.messages.cartEmpty')}</li>`;
+//             cartContainer.classList.add('hidden');
+//           }
+
+//           if (cartTotal) {
+//             cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: 0`;
+//           }
+
+//           // Show success notification
+//           showNotification(
+//             afterPurchase ? 
+//               i18nManager.translate('purchaseCompleted') : 
+//               i18nManager.translate('cartCleared'), 
+//             'success'
+//           );
+
+//           return result;
+//         } catch (error) {
+//           if (retryCount < 1) {
+//             // Wait and retry once
+//             await new Promise(resolve => setTimeout(resolve, 1000));
+//             return await clearCartWithRetry(retryCount + 1);
+//           }
+//           throw error;
+//         }
+//       };
+
+//       // Execute the clear cart operation with retry logic
+//       await clearCartWithRetry();
+
+//     } catch (error) {
+//       console.error('Error clearing cart:', error);
+//       showNotification(i18nManager.translate('ui.errors.failedToClearCart'), 'error');
+//       throw error; // Re-throw to allow caller to handle if needed
+//     }
+//   },    
+// async updateDisplay() {
+//     const cart = await this.fetchCart();
+//     const cartContainer = document.getElementById('cart-items');
+//     const cartTotal = document.getElementById('cart-total');
+    
+//     cartContainer.innerHTML = '';
+
+//     if (!cart.items || cart.items.length === 0) {
+//       cartContainer.innerHTML = '<li>Your cart is empty</li>';
+//       cartTotal.textContent =  ': 0';
+//       cartContainer.classList.add('hidden');
+//       return;
+//     }
+
+//     cartContainer.classList.remove('hidden');
+//     let total = 0;
+
+//     cart.items.forEach(item => {
+//       const listItem = document.createElement('li');
+//       listItem.className = 'cart-item';
+
+//       const imageUrl = item.images?.[0] || item.image_url || '/images/1.jpg';
+//       const productName = item.name || 'Unknown Product';
+//       const productPrice = item.price || 0;
+//       const productId = item.product_id;
+
+//       listItem.innerHTML = `
+//       <img src="${imageUrl}" alt="${productName}" class="cart-item-image">
+//       <div class="cart-item-details">
+//         <span class="item-name">${productName} | </span>
+//         <span class="item-price">${parseFloat(productPrice).toFixed(2)} $ |</span>
+//         <span class="item-quantity">${i18nManager.translate('ui.labels.quantity')}: ${item.quantity}</span>
+//       </div>
+//       <div class="cart-item-controls">
+//         <button class="quantity-btn minus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.decreaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.decreaseQuantity')}">-</button>
+//         <button class="quantity-btn plus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.increaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.increaseQuantity')}">+</button>
+//         <button class="remove-btn" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.removeItem')}" aria-label="${i18nManager.translate('ui.ariaLabels.removeItem')}">${i18nManager.translate('ui.buttons.removeItem')}</button>
+//       </div>
+//     `;
+
+
+//       cartContainer.appendChild(listItem);
+//       total += productPrice * item.quantity;
+//     });
+
+//     cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: ${total.toFixed(2)}`;
+//     this.attachEventListeners();
+//   },
+
+//   attachEventListeners() {
+//     document.querySelectorAll('.quantity-btn').forEach(btn => {
+//       btn.addEventListener('click', (e) => {
+//         const productId = e.target.getAttribute('data-id');
+//         const listItem = e.target.closest('.cart-item');
+//         const quantityElement = listItem.querySelector('.item-quantity');
+//         let currentQuantity = parseInt(quantityElement.textContent.replace('Quantity: ', ''));
+        
+//         if (e.target.classList.contains('plus')) {
+//           currentQuantity += 1;
+//         } else {
+//           currentQuantity = Math.max(1, currentQuantity - 1);
+//         }
+        
+//         this.updateQuantity(productId, currentQuantity);
+//       });
+//     });
+
+// // Then append this button to your cart item or wherever it belongs
+//     document.querySelectorAll('.remove-btn').forEach(btn => {
+//       btn.addEventListener('click', (e) => {
+//         const productId = e.target.getAttribute('data-id');
+//         this.removeItem(productId);
+//       });
+//     });
+//   }
+// };
+const cartManager = {
   async fetchCart() {
     if (!currentUser) {
-    await ensureGuestSession();
-  }
+      await ensureGuestSession();
+    }
     try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/cart', {
         ...fetchConfig,
         credentials: 'include',
         headers: {
           ...fetchConfig.headers,
-          'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
+          'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined,
+          'Accept-Language': i18nManager.getCurrentLanguage()
         }
       });
       
@@ -164,197 +456,78 @@ const cartManager = {
       return { items: [], total: 0 };
     }
   },
-async addItem(productId) {
-  try {
-    // First try to guest session
-    if (!currentUser) {
-      const guestLoginResponse = await fetch('https://backend-3mvr.onrender.com/api/guest-login', {
+
+  async addItem(productId) {
+    try {
+      if (!currentUser) {
+        const guestLoginResponse = await fetch('https://backend-3mvr.onrender.com/api/guest-login', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept-Language': i18nManager.getCurrentLanguage()
+          },
+          body: JSON.stringify({
+            email: 'guest@example.com',
+            password: 'not_accessible'
+          })
+        });
+        
+        if (!guestLoginResponse.ok) {
+          throw new Error(i18nManager.translate('ui.messages.guestLoginFailed'));
+        }
+      }
+
+      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
         method: 'POST',
         credentials: 'include',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-Guest-User': !currentUser ? '999999' : undefined,
+          'Accept-Language': i18nManager.getCurrentLanguage()
         },
-        body: JSON.stringify({
-          email: 'guest@example.com',
-          password: 'not_accessible'
-        })
-        
+        body: JSON.stringify({ productId, quantity: 1 })
       });
-      
-      if (!guestLoginResponse.ok) {
-        throw new Error('Guest login failed');
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || i18nManager.translate('ui.messages.failedToAddToCart'));
       }
+
+      await this.updateDisplay();
+      showNotification(i18nManager.translate('ui.messages.itemAddedToCart'), 'success');
+    } catch (error) {
+      console.error('Error:', error);
+      showNotification(i18nManager.translate('ui.messages.outOfStock'), 'error');
     }
+  },
 
-    // Then try to add to cart
-    const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Guest-User': !currentUser ? '999999' : undefined
-      },
-      body: JSON.stringify({ productId, quantity: 1 })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to add to cart');
-    }
-
-    await this.updateDisplay();
-    showNotification('itemAddedToCart', 'success');
-  } catch (error) {
-    console.error('Error:', error);
-    showNotification(i18nManager.translate('outOfStock'), 'error');
-  }
-},
   async removeItem(productId) {
     if (!currentUser) {
-    await ensureGuestSession();
-  }try {
+      await ensureGuestSession();
+    }
+    try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/remove', {
         method: 'DELETE',
         headers: { 
           'Content-Type': 'application/json',
-          'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
+          'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined,
+          'Accept-Language': i18nManager.getCurrentLanguage()
         },
         body: JSON.stringify({ productId }),
         credentials: 'include',
       });
 
-      if (!response.ok) throw new Error('Failed to remove item');
+      if (!response.ok) throw new Error(i18nManager.translate('ui.messages.failedToRemoveItem'));
       await this.updateDisplay();
-      showNotification('itemRemovedFromCart', 'success');
+      showNotification(i18nManager.translate('ui.messages.itemRemovedFromCart'), 'success');
     } catch (error) {
       console.error('Error:', error);
-      showNotification(i18nManager.translate('failedToRemoveItem'), 'error');
+      showNotification(i18nManager.translate('ui.messages.failedToRemoveItem'), 'error');
     }
   },
 
-  async completePurchase() {
-    if (!currentUser) {
-    await ensureGuestSession();
-  }try {
-      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/complete-purchase', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
-        }
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message);
-      }
-
-      await this.clearCart(true);
-      return true;
-    } catch (error) {
-      console.error('Error completing purchase:', error);
-      showNotification(i18nManager.translate('failedToCompletePurchase'), 'error');
-      return false;
-    }
-  
-  },
-  async updateQuantity(productId, quantity) {
-
-    if (!currentUser) {
-    await ensureGuestSession();
-  }try {
-      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/update', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, quantity }),
-        credentials: 'include'
-      });
-
-      if (!response.ok) throw new Error('Failed to update quantity');
-      await this.updateDisplay();
-    } catch (error) {
-      console.error('Error updating quantity:', error);
-      showNotification(i18nManager.translate('failedToUpdateQuantity'), 'error');
-    }
-  },
-  async clearCart(afterPurchase = false) {
-    try {
-      // First ensure guest session is active if needed
-      if (!currentUser) {
-        await ensureGuestSession();
-      }
-
-      // Add retry logic with proper error handling
-      const clearCartWithRetry = async (retryCount = 0) => {
-        try {
-          const response = await fetch('https://backend-3mvr.onrender.com/api/cart/clear', {
-            method: 'DELETE',
-            credentials: 'include',
-            headers: { 
-              'Content-Type': 'application/json',
-              'X-Guest-User': !currentUser ? localStorage.getItem('guestId') : undefined
-            },
-            body: JSON.stringify({ afterPurchase })
-          });
-
-          // Check if we got a 500 error
-          if (response.status === 500 && retryCount < 1) {
-            // Wait a short delay before retrying
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            return await clearCartWithRetry(retryCount + 1);
-          }
-
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ message: 'Failed to clear cart' }));
-            throw new Error(errorData.message);
-          }
-
-          // Try to parse the response, but handle cases where it might be empty
-          const result = await response.json().catch(() => ({}));
-
-          // Update the UI
-          const cartContainer = document.getElementById('cart-items');
-          const cartTotal = document.getElementById('cart-total');
-
-          if (cartContainer) {
-            cartContainer.innerHTML = `<li data-i18n="ui.messages.cartEmpty">${i18nManager.translate('ui.messages.cartEmpty')}</li>`;
-            cartContainer.classList.add('hidden');
-          }
-
-          if (cartTotal) {
-            cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: 0`;
-          }
-
-          // Show success notification
-          showNotification(
-            afterPurchase ? 
-              i18nManager.translate('purchaseCompleted') : 
-              i18nManager.translate('cartCleared'), 
-            'success'
-          );
-
-          return result;
-        } catch (error) {
-          if (retryCount < 1) {
-            // Wait and retry once
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            return await clearCartWithRetry(retryCount + 1);
-          }
-          throw error;
-        }
-      };
-
-      // Execute the clear cart operation with retry logic
-      await clearCartWithRetry();
-
-    } catch (error) {
-      console.error('Error clearing cart:', error);
-      showNotification(i18nManager.translate('ui.errors.failedToClearCart'), 'error');
-      throw error; // Re-throw to allow caller to handle if needed
-    }
-  },    
-async updateDisplay() {
+  async updateDisplay() {
     const cart = await this.fetchCart();
     const cartContainer = document.getElementById('cart-items');
     const cartTotal = document.getElementById('cart-total');
@@ -362,8 +535,8 @@ async updateDisplay() {
     cartContainer.innerHTML = '';
 
     if (!cart.items || cart.items.length === 0) {
-      cartContainer.innerHTML = '<li>Your cart is empty</li>';
-      cartTotal.textContent =  ': 0';
+      cartContainer.innerHTML = `<li>${i18nManager.translate('ui.messages.cartEmpty')}</li>`;
+      cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: 0`;
       cartContainer.classList.add('hidden');
       return;
     }
@@ -376,24 +549,30 @@ async updateDisplay() {
       listItem.className = 'cart-item';
 
       const imageUrl = item.images?.[0] || item.image_url || '/images/1.jpg';
-      const productName = item.name || 'Unknown Product';
+      const productName = i18nManager.getProductTranslation(item, 'name');
       const productPrice = item.price || 0;
       const productId = item.product_id;
 
       listItem.innerHTML = `
-      <img src="${imageUrl}" alt="${productName}" class="cart-item-image">
-      <div class="cart-item-details">
-        <span class="item-name">${productName} | </span>
-        <span class="item-price">${parseFloat(productPrice).toFixed(2)} $ |</span>
-        <span class="item-quantity">${i18nManager.translate('ui.labels.quantity')}: ${item.quantity}</span>
-      </div>
-      <div class="cart-item-controls">
-        <button class="quantity-btn minus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.decreaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.decreaseQuantity')}">-</button>
-        <button class="quantity-btn plus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.increaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.increaseQuantity')}">+</button>
-        <button class="remove-btn" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.removeItem')}" aria-label="${i18nManager.translate('ui.ariaLabels.removeItem')}">${i18nManager.translate('ui.buttons.removeItem')}</button>
-      </div>
-    `;
-
+        <img src="${imageUrl}" alt="${productName}" class="cart-item-image">
+        <div class="cart-item-details">
+          <span class="item-name">${productName} | </span>
+          <span class="item-price">${parseFloat(productPrice).toFixed(2)} $ |</span>
+          <span class="item-quantity">${i18nManager.translate('ui.labels.quantity')}: ${item.quantity}</span>
+        </div>
+        <div class="cart-item-controls">
+          <button class="quantity-btn minus" data-id="${productId}" 
+            title="${i18nManager.translate('ui.tooltips.decreaseQuantity')}" 
+            aria-label="${i18nManager.translate('ui.ariaLabels.decreaseQuantity')}">-</button>
+          <button class="quantity-btn plus" data-id="${productId}" 
+            title="${i18nManager.translate('ui.tooltips.increaseQuantity')}" 
+            aria-label="${i18nManager.translate('ui.ariaLabels.increaseQuantity')}">+</button>
+          <button class="remove-btn" data-id="${productId}" 
+            title="${i18nManager.translate('ui.tooltips.removeItem')}" 
+            aria-label="${i18nManager.translate('ui.ariaLabels.removeItem')}">
+            ${i18nManager.translate('ui.buttons.removeItem')}</button>
+        </div>
+      `;
 
       cartContainer.appendChild(listItem);
       total += productPrice * item.quantity;
@@ -402,35 +581,17 @@ async updateDisplay() {
     cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: ${total.toFixed(2)}`;
     this.attachEventListeners();
   },
-
-  attachEventListeners() {
-    document.querySelectorAll('.quantity-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const productId = e.target.getAttribute('data-id');
-        const listItem = e.target.closest('.cart-item');
-        const quantityElement = listItem.querySelector('.item-quantity');
-        let currentQuantity = parseInt(quantityElement.textContent.replace('Quantity: ', ''));
-        
-        if (e.target.classList.contains('plus')) {
-          currentQuantity += 1;
-        } else {
-          currentQuantity = Math.max(1, currentQuantity - 1);
-        }
-        
-        this.updateQuantity(productId, currentQuantity);
-      });
-    });
-
-// Then append this button to your cart item or wherever it belongs
-    document.querySelectorAll('.remove-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const productId = e.target.getAttribute('data-id');
-        this.removeItem(productId);
-      });
-    });
-  }
 };
 
+// Add language change listener to refresh cart display
+window.addEventListener('languageChanged', async () => {
+  try {
+    await cartManager.updateDisplay();
+  } catch (error) {
+    console.error('Error refreshing cart after language change:', error);
+    showNotification(i18nManager.translate('ui.messages.errorOccurred'), 'error');
+  }
+});
 // UI Management
 const uiManager = {
   // Modal functions
