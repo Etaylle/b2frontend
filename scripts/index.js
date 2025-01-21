@@ -509,6 +509,34 @@ const cartManager = {
     }
   },
 
+  async completePurchase() {
+    if (!currentUser) {
+      await ensureGuestSession();
+    }
+    try {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/complete-purchase', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message);
+      }
+
+      await this.clearCart(true);
+      return true;
+    } catch (error) {
+      console.error('Error completing purchase:', error);
+      showNotification(i18nManager.translate('failedToCompletePurchase'), 'error');
+      return false;
+    }
+  },
+
   async updateQuantity(productId, quantity) {
     if (!currentUser) {
       await ensureGuestSession();
@@ -529,6 +557,73 @@ const cartManager = {
     } catch (error) {
       console.error('Error updating quantity:', error);
       showNotification(i18nManager.translate('failedToUpdateQuantity'), 'error');
+    }
+  },
+
+  async clearCart(afterPurchase = false) {
+    try {
+      if (!currentUser) {
+        await ensureGuestSession();
+      }
+
+      const clearCartWithRetry = async (retryCount = 0) => {
+        try {
+          const response = await fetch('https://backend-3mvr.onrender.com/api/cart/clear', {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: { 
+              'Content-Type': 'application/json',
+              'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
+            },
+            body: JSON.stringify({ afterPurchase })
+          });
+
+          if (response.status === 500 && retryCount < 1) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return await clearCartWithRetry(retryCount + 1);
+          }
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: 'Failed to clear cart' }));
+            throw new Error(errorData.message);
+          }
+
+          const result = await response.json().catch(() => ({}));
+
+          const cartContainer = document.getElementById('cart-items');
+          const cartTotal = document.getElementById('cart-total');
+
+          if (cartContainer) {
+            cartContainer.innerHTML = `<li data-i18n="ui.messages.cartEmpty">${i18nManager.translate('ui.messages.cartEmpty')}</li>`;
+            cartContainer.classList.add('hidden');
+          }
+
+          if (cartTotal) {
+            cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: 0`;
+          }
+
+          showNotification(
+            afterPurchase ? 
+              i18nManager.translate('purchaseCompleted') : 
+              i18nManager.translate('cartCleared'), 
+            'success'
+          );
+
+          return result;
+        } catch (error) {
+          if (retryCount < 1) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return await clearCartWithRetry(retryCount + 1);
+          }
+          throw error;
+        }
+      };
+
+      await clearCartWithRetry();
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      showNotification(i18nManager.translate('ui.errors.failedToClearCart'), 'error');
+      throw error;
     }
   },
 
@@ -589,7 +684,8 @@ const cartManager = {
         const listItem = e.target.closest('.cart-item');
         const quantityElement = listItem.querySelector('.item-quantity');
         const currentText = quantityElement.textContent;
-        const currentQuantity = parseInt(currentText.match(/\d+/)[0]);
+        const matches = currentText.match(/\d+/);
+        const currentQuantity = matches ? parseInt(matches[0]) : 1;
         
         let newQuantity = currentQuantity;
         if (e.target.classList.contains('plus')) {
