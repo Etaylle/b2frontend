@@ -2223,6 +2223,8 @@ state: {
             failedToAddToCart: "Failed to add item to the cart",
             outOfStock: "Item is out of stock!",
             failedToRemoveItem: "Failed to remove item from the cart",
+            logginSuccesful: "Logged in successfully!",
+            registrationSuccessful: "Registered successfully!",
 
 
           },
@@ -2286,6 +2288,8 @@ state: {
             failedToAddToCart: "Додава��е артикала у корпу ни��е успело",
             outOfStock: "Ова�� производ ни��е на располага��у!",
             failedToRemoveItem: "Укло��е��е артикала из корпе ни��е успело",
+            logginSuccesful: "Успешно при��ав��ен",
+            registrationSuccessful: "Успешно регистриран",
           },
           nav: {
             login: "Пријава",
@@ -2348,7 +2352,9 @@ state: {
             guestLoginFailed: "Ein Gastlogin ist fehlgeschlagen",
             failedToAddToCart: "Es ist ein Fehler beim Hinzufügen eines Artikels zum Warenkorb aufgetreten",
             outOfStock: "Dieser Artikel ist nicht auf Lager!",
-            failedToRemoveItem: "Es ist ein Fehler beim Entfernen eines Artikels aus dem Warenkorb aufgetreten", 
+            failedToRemoveItem: "Es ist ein Fehler beim Entfernen eines Artikels aus dem Warenkorb aufgetreten",
+            logginSuccesful: "Sie wurden erfolgreich angemeldet",
+            registrationSuccessful: "Sie wurden erfolgreich registriert", 
 
           },
           nav: {
