@@ -2640,6 +2640,7 @@ state: {
       }
     }
   },
+  
  initialize() {
     const savedLang = localStorage.getItem('preferred_language');
     const browserLang = navigator.language.split('-')[0];
