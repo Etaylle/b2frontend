@@ -334,6 +334,25 @@
                     console.error('Error:', error);
                 }
             };
+            const cartSection = document.getElementById('cart');
+
+            // Cart navigation
+            document.getElementById('cart-nav').addEventListener('click', (event) => {
+                event.preventDefault(); // Prevent default link behavior if it was an anchor tag
+                if (cartSection) {
+                    // Scroll to the cart section
+                    cartSection.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+
+            // Order History navigation
+            document.getElementById('order-history-nav').addEventListener('click', (event) => {
+                event.preventDefault();
+                window.location.href = 'orderHistory.html';
+            });
         });
 
         function setupUserInterface() {
