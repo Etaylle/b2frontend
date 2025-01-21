@@ -16,7 +16,7 @@ body {
 }
 
 .navbar {
-  position: relative;
+  position: sticky;
   height: 280px;
   overflow: hidden;
   background: var(--primary-color);
@@ -1308,7 +1308,7 @@ main {
 
 /* Back to Top Button */
 .back-to-top {
-  position: fixed;
+  position: relative;
   bottom: 20px;
   right: 20px;
   background-color: #007BFF;
