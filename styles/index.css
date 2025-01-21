@@ -1277,7 +1277,57 @@ main {
     font-size: 14px;
   }
 }
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  /* Ensure it's above other content */
+  background-color: #333;
+  /* or whatever your background color is */
+}
 
+.categories-section {
+  position: sticky;
+  top: 60px;
+  /* Adjust based on your navbar height */
+  z-index: 999;
+  /* Below navbar but above content */
+  background-color: #f0f0f0;
+  /* or match your site's background */
+}
+
+/* Main content area to allow scrolling */
+main {
+  overflow-y: auto;
+  height: calc(100vh - 60px);
+  /* Adjust for the navbar height */
+  padding-top: 120px;
+  /* Space for navbar and categories */
+  box-sizing: border-box;
+}
+
+/* Back to Top Button */
+.back-to-top {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  padding: 10px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.back-to-top:hover {
+  background-color: #0056b3;
+}
+
+.back-to-top.show {
+  opacity: 1;
+}
 
   /* Utility Classes */
   .visible {
