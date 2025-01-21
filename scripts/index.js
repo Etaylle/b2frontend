@@ -754,6 +754,55 @@ updateTranslations() {
     });
 },
 
+initialize() {
+    // Add event listener for language changes
+    window.addEventListener('languageChanged', () => {
+        this.updateTranslations();
+    });
+},
+
+attachEventListeners() {
+    document.querySelectorAll('.quantity-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const productId = e.target.getAttribute('data-id');
+            const listItem = e.target.closest('.cart-item');
+            const quantityElement = listItem.querySelector('.item-quantity');
+            const currentText = quantityElement.textContent;
+            const matches = currentText.match(/\d+/);
+            const currentQuantity = matches ? parseInt(matches[0]) : 1;
+            
+            let newQuantity = currentQuantity;
+            if (e.target.classList.contains('plus')) {
+                newQuantity = currentQuantity + 1;
+            } else {
+                newQuantity = Math.max(1, currentQuantity - 1);
+            }
+            
+            await this.updateQuantity(productId, newQuantity);
+        });
+    });
+
+    document.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const productId = e.target.getAttribute('data-id');
+            this.removeItem(productId);
+        });
+    });
+},
+
+// Add a method to update translations
+updateTranslations() {
+    // Update remove buttons
+    document.querySelectorAll('.remove-btn').forEach(btn => {
+        const translationKey = btn.getAttribute('data-translation-key');
+        if (translationKey) {
+            btn.textContent = i18nManager.translate(translationKey);
+            btn.setAttribute('title', i18nManager.translate('ui.tooltips.removeItem'));
+            btn.setAttribute('aria-label', i18nManager.translate('ui.ariaLabels.removeItem'));
+        }
+    });
+},
+
 attachEventListeners() {
     document.querySelectorAll('.quantity-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
