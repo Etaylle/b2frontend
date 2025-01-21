@@ -47,56 +47,11 @@ async function ensureGuestSession() {
   }
 };
 
-//CartManager
+//CART ADDITION FOR GUEST USER
 const CartEnhancements = {
-  // initializeGuestMode() {
-  //   // Set guest user ID in localStorage for persistence
-  //   if (!localStorage.getItem('guestId')) {
-  //     localStorage.setItem('guestId', '999999');
-  //   }
-    
-  //   // Enhance all fetch requests with guest header
-  //   const originalFetch = window.fetch;
-  //   window.fetch = function(...args) {
-  //     if (args[0].includes('backend-3mvr.onrender.com/api/')) {
-  //       const options = args[1] || {};
-  //       options.headers = {
-  //         ...options.headers,
-  //         'X-Guest-User': localStorage.getItem('guestId')
-  //       };
-  //       args[1] = options;
-  //     }
-  //     return originalFetch.apply(this, args);
-  //   };
-  // },
 
-//   async setupGuestSession() {
-//     try {
-//       const response = await fetch('https://backend-3mvr.onrender.com/api/guest-login', {
-//         method: 'POST',
-//         headers: {
-//           'Content-Type': 'application/json'
-//         },
-//         credentials: 'include',
-//         body: JSON.stringify({
-//           username: 'guest_user',
-//           password: 'not_accessible'
-//         })
-//       });
-      
-//       if (response.ok) {
-//         localStorage.setItem('isGuest', 'true');
-//         return true;
-//       }
-//       return false;
-//     } catch (error) {
-//       console.error('Guest session setup failed:', error);
-//       return false;
-//     }
-//   }
-// };
  initializeGuestMode() {
-    // Set guest user ID in localStorage for persistence
+    // GuestID gets set in localStorage, due to complications
     if (!localStorage.getItem('guestId')) {
       localStorage.setItem('guestId', '999999');
     }
@@ -182,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
-// Cart state management
+// CART MANAGER
 const cartManager = {
 
   async fetchCart() {
@@ -209,32 +164,9 @@ const cartManager = {
       return { items: [], total: 0 };
     }
   },
-
-  // async addItem(productId) {
-  //   if (!currentUser) {
-  //   await ensureGuestSession();
-  // }try {
-  //     const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
-  //       method: 'POST',
-  //       credentials: 'include',
-  //       headers: {
-  //         ...fetchConfig.headers,
-  //         'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
-  //       },
-  //       body: JSON.stringify({ productId, quantity: 1 })
-  //     });
-
-  //     if (!response.ok) throw new Error('Failed to add to cart');
-  //     await this.updateDisplay();
-  //     showNotification('Added to cart!', 'success');
-  //   } catch (error) {
-  //     console.error('Error:', error);
-  //     showNotification('Out of stock!', 'error');
-  //   }
-  // },
 async addItem(productId) {
   try {
-    // First ensure guest session
+    // First try to use guest session
     if (!currentUser) {
       const guestLoginResponse = await fetch('https://backend-3mvr.onrender.com/api/guest-login', {
         method: 'POST',
@@ -328,7 +260,9 @@ async addItem(productId) {
   
   },
   async updateQuantity(productId, quantity) {
-
+console.log('Sending quantity:', quantity);
+let quantity = parseFloat(document.querySelector('.quantity-input').value.replace(/,/g, '.'));
+if (isNaN(quantity)) quantity = 1; 
     if (!currentUser) {
     await ensureGuestSession();
   }try {
@@ -346,53 +280,6 @@ async addItem(productId) {
       showNotification('Failed to update quantity', 'error');
     }
   },
-//     async clearCart(afterPurchase = false) {
-//       if (!currentUser) {
-//     await ensureGuestSession();
-//   }try {
-//         const response = await fetch('https://backend-3mvr.onrender.com/api/cart/clear', {
-//           method: 'DELETE',
-//           credentials: 'include',
-//           headers: { 
-//             'Content-Type': 'application/json'
-//           },
-//           body: JSON.stringify({ afterPurchase })
-//         });
-
-//         if (!response.ok) {
-//           const errorData = await response.json();
-//           throw new Error(errorData.message);
-//         }
-
-//         const result = await response.json();
-
-//         // Update the UI
-//         const cartContainer = document.getElementById('cart-items');
-//         const cartTotal = document.getElementById('cart-total');
-
-//         if (cartContainer) {
-//           cartContainer.innerHTML = `<li data-i18n="ui.messages.cartEmpty">Your cart is empty</li>`;
-//           cartContainer.classList.add('hidden');
-//         }
-
-//         if (cartTotal) {
-//           cartTotal.textContent = i18nManager.translate('ui.labels.cartTotal') + ': 0';
-//         }
-//         // Update translations for the container text
-// const emptyCartMessage = cartContainer.querySelector('li[data-i18n]');
-// if (emptyCartMessage) {
-//   emptyCartMessage.textContent = i18nManager.translate(emptyCartMessage.getAttribute('data-i18n'));
-// }
-//         showNotification(
-//   afterPurchase ? 
-//   i18nManager.translate('ui.messages.purchaseCompleted') : 
-//   i18nManager.translate('ui.messages.cartCleared'), 
-//   'success');
-//       } catch (error) {
-//         console.error('Error clearing cart:', error);
-//         showNotification('failedToClearCart', 'error');
-//       }
-//     },
   async clearCart(afterPurchase = false) {
     try {
       // First ensure guest session is active if needed
@@ -568,44 +455,6 @@ const uiManager = {
     const registerContainer = document.querySelector("#register");
     registerContainer.style.display = "none";
   },
-// updateButtonVisibility: function(currentUser) {
-//   const elements = {
-//     loginBtn: document.getElementById("login-btn"),
-//     registerBtn: document.getElementById("register-btn"),
-//     logoutButton: document.getElementById("logout-button"),
-//     userAvatarDisplay: document.getElementById("user-avatar-display"),
-//     navbar: document.querySelector('.navbar')
-//   };
-
-//   elements.loginBtn.style.display = currentUser ? "none" : "block";
-//   elements.registerBtn.style.display = currentUser ? "none" : "block";
-//   elements.logoutButton.style.display = currentUser ? "block" : "none";
-
-//   if (currentUser) {
-//     const isAdmin = currentUser.role === 'admin';
-//     console.log('User is admin:', isAdmin);
-    
-//     // Clear existing content before adding new
-//     elements.userAvatarDisplay.innerHTML = `
-//       <img src="/images/avatar.jpg" alt="User Avatar">
-//     `;
-
-//     if (isAdmin) {
-//       // Add admin link dynamically
-//       const adminLink = document.createElement('a');
-//       adminLink.href = '/admin';
-//       adminLink.className = 'admin-link';
-//       adminLink.textContent = i18nManager.translate('ui.buttons.adminPanel');
-//       adminLink.setAttribute('aria-label', i18nManager.translate('ui.ariaLabels.adminPanel'));
-      
-//       // Append the admin link to userAvatarDisplay
-//       elements.userAvatarDisplay.appendChild(adminLink);
-//     }
-//   } else {
-//     // Clear the content if no user is logged in
-//     elements.userAvatarDisplay.innerHTML = '';
-//   }
-// }
   updateButtonVisibility: (currentUser) => {
     const loginBtn = document.getElementById("login-btn");
     const registerBtn = document.getElementById("register-btn");
@@ -672,64 +521,6 @@ async fetchCurrentUser() {
     }
   },
 
-// async fetchCurrentUser() {
-//   try {
-//     const response = await fetch('https://backend-3mvr.onrender.com/api/users/current', {
-//       ...fetchConfig,
-//       credentials: 'include'
-//     });
-
-//     if (!response.ok) {
-//       if (response.status === 401 || response.status === 403) {
-//         // If authentication failed (e.g., user not logged in), set or maintain guest ID
-//         fetchConfig.headers['X-Guest-User'] = fetchConfig.headers['X-Guest-User'] || generateGuestId();
-//       }
-//       throw new Error('Auth failed');
-//     }
-    
-//     const user = await response.json();
-    
-//     if (user) {
-//       // Clear the guest ID header since a user is found
-//       delete fetchConfig.headers['X-Guest-User'];
-//     } else {
-//       // If no user is returned but the response was OK, consider this case as well
-//       fetchConfig.headers['X-Guest-User'] = fetchConfig.headers['X-Guest-User'] || generateGuestId();
-//     }
-    
-//     return user;
-//   } catch (error) {
-//     console.error(error);
-//     // Ensure guest ID is set even if an error occurs (like network issues)
-//     fetchConfig.headers['X-Guest-User'] = fetchConfig.headers['X-Guest-User'] || generateGuestId();
-//     return null;
-//   }
-// },
-// async login(formData) {
-//   try {
-//     const response = await fetch("https://backend-3mvr.onrender.com/api/auth/login", {
-//       ...fetchConfig,
-//       method: "POST",
-//       body: JSON.stringify({
-//         email: formData.email,
-//         password: formData.password
-//       })
-//     });
-
-//     const data = await response.json();
-    
-//     if (response.ok) {
-//       showNotification('Login successful!', 'success');
-//       return true;  // Remove window.location.reload() from here
-//     } else {
-//       showNotification(data.message, 'error');
-//       return false;
-//     }
-//   } catch (error) {
-//     showNotification(error.message, 'errorOccured');
-//     return false;
-//   }
-// },
 async login(formData) {
   try {
     const response = await fetch("https://backend-3mvr.onrender.com/api/auth/login", {
@@ -1845,51 +1636,6 @@ const cryptoManager = {
       setTimeout(() => this.fetchCryptoRates(), 60000);
     }
   },
-
-//   createCryptoToggle() {
-//     const navbarRight = document.querySelector(".navbar-right");
-//     if (!navbarRight) return;
-
-//     // Remove existing toggle if present
-//     const existingToggle = document.querySelector(".crypto-toggle-container");
-//     if (existingToggle) {
-//       existingToggle.remove();
-//     }
-
-//     const toggleContainer = document.createElement("div");
-//     toggleContainer.className = "crypto-toggle-container";
-//     toggleContainer.innerHTML = `
-//       <label class="crypto-switch">
-//         <input type="checkbox" id="crypto-toggle">
-//         <span class="slider round"></span>
-//       </label>
-//       <span class="crypto-label">
-//   <a href="#" aria-label="${i18nManager.translate('ui.ariaLabels.showCryptoPrices')}">${i18nManager.translate('ui.labels.showCryptoPrices')}</a>
-// </span>
-      
-//     `;
-
-//     navbarRight.insertBefore(toggleContainer, navbarRight.firstChild);
-
-//     const toggle = document.getElementById("crypto-toggle");
-//     if (toggle) {
-//       // Set initial state
-//       toggle.checked = this.state.cryptoPricesEnabled;
-      
-//       // Add event listener
-//       toggle.addEventListener("change", async (e) => {
-//         this.state.cryptoPricesEnabled = e.target.checked;
-//         localStorage.setItem("cryptoPricesEnabled", this.state.cryptoPricesEnabled);
-        
-//         // Fetch fresh rates if enabled
-//         if (this.state.cryptoPricesEnabled) {
-//           await this.fetchCryptoRates();
-//         }
-//         console.log("update ALL PRODUCT PRICES CALL");
-//         this.updateAllProductPrices();
-//       });
-//     }
-//   },
 createCryptoToggle() {
     const navbarRight = document.querySelector(".navbar-right");
     if (!navbarRight) return;
@@ -2007,167 +1753,6 @@ window.addEventListener('unload', () => {
     cryptoManager.stopUpdateInterval();
   }
 });
-// const recommendationManager = {
-//   state: {
-//     currentProduct: null,
-//     recommendedProducts: []
-//   },
-
-//   // Get recommendations based on current product's category
-//   async getRecommendations(productId) {
-//     try {
-//       // First get all products
-//       const response = await fetch('https://backend-3mvr.onrender.com/api/products');
-//       if (!response.ok) throw new Error("Failed to fetch products");
-//       const data = await response.json();
-//       const products = data.success ? data.products : data;
-
-//       // Find the current product
-//       // Convert productId to string to match ratingManager's approach
-//       const currentProduct = products.find(p => p.product_id.toString() === productId.toString());
-//       if (!currentProduct) {
-//         console.log('Available products:', products);
-//         console.log('Looking for product ID:', productId);
-//         throw new Error("Product not found");
-//       }
-      
-//       this.state.currentProduct = currentProduct;
-
-//       // Get products from the same category
-//       const categoryResponse = await fetch(`https://backend-3mvr.onrender.com/api/products/category/${currentProduct.category_id}`);
-//       if (!categoryResponse.ok) throw new Error("Failed to fetch recommendations");
-//       const categoryData = await categoryResponse.json();
-//       let recommendations = categoryData.success ? categoryData.products : categoryData;
-
-//       // Filter out the current product and limit to 4 recommendations
-//       recommendations = recommendations
-//         .filter(p => p.product_id.toString() !== productId.toString())
-//         .slice(0, 4);
-
-//       this.state.recommendedProducts = recommendations;
-//       await this.renderRecommendations();
-//     } catch (error) {
-//       console.error("Error getting recommendations:", error);
-//       showNotification(error.message, "error");
-//     }
-//   },
-
-//   // Render recommendations in the UI
-//   // async renderRecommendations() {
-//   //   const container = document.createElement('div');
-//   //   container.className = 'recommendations-container';
-//   //   container.innerHTML = `
-//   //     <h3>${i18nManager.translate('ui.labels.youMightAlsoLike')}</h3>
-//   //     <div class="recommendations-grid"></div>
-//   //   `;
-
-//   //   const grid = container.querySelector('.recommendations-grid');
-
-//   //   this.state.recommendedProducts.forEach(product => {
-//   //     const productElement = document.createElement('div');
-//   //     productElement.className = 'recommended-product';
-      
-//   //     // Create rating HTML using ratingManager
-//   //     const ratingHTML = ratingManager.createProductRating(
-//   //       product.product_id,
-//   //       product.average_rating || 0,
-//   //       product.total_ratings || 0
-//   //     );
-
-//   //     productElement.innerHTML = `
-//   //       <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
-//   //       <h4>${product.name}</h4>
-//   //       <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
-//   //       ${ratingHTML}
-//   //       <button class="recommend-add-to-cart">Add to the cart</button>
-//   //     `;
-
-//   //     // Add click handler for cart button
-//   //     const addButton = productElement.querySelector('.recommend-add-to-cart');
-//   //     addButton.onclick = () => cartManager.addItem(product.product_id);
-
-//   //     grid.appendChild(productElement);
-//   //   });
-
-//   //   // Find and update the recommendations section
-//   //   const existingRecommendations = document.querySelector('.recommendations-container');
-//   //   if (existingRecommendations) {
-//   //     existingRecommendations.replaceWith(container);
-//   //   } else {
-//   //     document.querySelector('.grid-container').after(container);
-//   //   }
-//   // },
-//  // Render recommendations in the UI
-//   async renderRecommendations() {
-//     console.log('Starting renderRecommendations');
-//     console.log('Raw recommended products:', JSON.stringify(this.state.recommendedProducts, null, 2));
-    
-//     const container = document.createElement('div');
-//     container.className = 'recommendations-container';
-//     container.innerHTML = `
-//       <h3>${i18nManager.translate('ui.labels.youMightAlsoLike')}</h3>
-//       <div class="recommendations-grid"></div>
-//     `;
-
-//     const grid = container.querySelector('.recommendations-grid');
-    
-//     // Set product data in ratingManager before rendering
-//     console.log('Setting product data in ratingManager...');
-//     ratingManager.setProductData(this.state.recommendedProducts);
-
-//     this.state.recommendedProducts.forEach(product => {
-//       // Log the complete product object to see all available properties
-//       console.log('Full product object:', JSON.stringify(product, null, 2));
-      
-//       // Here we use ratingManager's method to create the rating display
-//       const ratingHTML = ratingManager.createProductRating(
-//         product.product_id.toString(), 
-//         product.average_rating || 0 // Use existing rating or default to 0 if not present
-//       );
-
-//       const productElement = document.createElement('div');
-//       productElement.className = 'recommended-product';
-      
-//       productElement.innerHTML = `
-//         <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
-//         <h4>${product.name}</h4>
-//         <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
-//         ${ratingHTML}
-//         <button class="recommend-add-to-cart">Add to the cart</button>
-//       `;
-
-//       // Add click handler for cart button
-//       const addButton = productElement.querySelector('.recommend-add-to-cart');
-//       addButton.onclick = () => cartManager.addItem(product.product_id);
-
-//       grid.appendChild(productElement);
-//     });
-
-//     // Find and update the recommendations section
-//     const existingRecommendations = document.querySelector('.recommendations-container');
-//     if (existingRecommendations) {
-//       console.log('Replacing existing recommendations');
-//       existingRecommendations.replaceWith(container);
-//     } else {
-//       console.log('Adding new recommendations container');
-//       document.querySelector('.grid-container').after(container);
-//     }
-//     console.log('Finished rendering recommendations');
-//   },
-//   initialize() {
-//     // Add click handlers to product grid items to show recommendations
-//     document.querySelector('.grid-container').addEventListener('click', (e) => {
-//       const gridItem = e.target.closest('.grid-item');
-//       if (gridItem) {
-//         const productId = gridItem.getAttribute('data-product-id');
-//         if (productId) {
-//           this.getRecommendations(productId);
-//         }
-//       }
-//     });
-//   }
-// }
-// ;
 const recommendationManager = {
   state: {
     currentProduct: null,
@@ -3249,25 +2834,6 @@ renderCategories() {
     container.appendChild(fragment);
     this.ensureCategoryStylesExist();
   },
-
-// async selectCategory(categoryId) {
-//     console.log('Selecting category:', categoryId);
-//     this.state.selectedCategory = categoryId;
-//     console.log('After setting:', this.state.selectedCategory);
-//     await this.renderCategories();
-//     await this.fetchProducts(categoryId);
-//   const products = this.state.products;
-//  // Ensure this only contains the category-specific products
-// await this.renderProducts(this.state.products);
-
-//   // ... rest of the method
-
-    
-   
-    
-//     // Add debug logging to verify state after fetch
-//     console.log('Current products after category selection:', this.state.products);
-// },
  async selectCategory(categoryId) {
     console.log('Selecting category:', categoryId);
     this.state.selectedCategory = categoryId;
@@ -3931,47 +3497,6 @@ async updateRelatedManagers() {
   this.initializeImageSliders();
 },
 };
-// document.addEventListener("DOMContentLoaded", async () => {
-//   try {
-//     // Initialize all managers in parallel with proper error handling
-//     await Promise.allSettled([
-//       i18nManager.initialize(),
-//       categoryManager.initialize(),
-//       cryptoManager.initialize(),
-//       ratingManager.initialize(),
-//       paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl'),
-//       recommendationManager.initialize(),
-//       productPageManager.initialize(),
-      
-     
-//     ]).then(results => {
-//       // Log any failures during initialization
-//       results.forEach((result, index) => {
-//         if (result.status === 'rejected') {
-//           console.error(`Manager ${index} failed to initialize:`, result.reason);
-//         }
-//       });
-//     });
-
-//     // Fetch user data and update UI
-//     currentUser = await authManager.fetchCurrentUser();
-    
-//     // Initialize UI components
-//     authManager.displayUserInfo();
-//     authManager.displayUserAvatar();
-//     cartManager.updateDisplay();
-    
-//     setupEventListeners();
-//     uiManager.updateButtonVisibility(currentUser);
-    
-//     // Handle direct navigation last, after all initialization is complete
-//     productPageManager.handleNavigation();
-    
-//   } catch (error) {
-//     console.error("Error during initialization:", error);
-//     showNotification("Error initializing application", "error");
-//   }
-// });
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     // Initialize all managers in parallel with proper error handling
@@ -4085,29 +3610,9 @@ function setupEventListeners() {
   if (elements.logoutBtn) {
     elements.logoutBtn.addEventListener("click", () => authManager.logout());
   }
-  // if (elements.checkoutButton) {
-  //   elements.checkoutButton.addEventListener("click", () => paymentManager.initiateCheckout());
-  // }
-  // if (elements.emptyCartButton) {
-  //   elements.emptyCartButton.addEventListener("click", () => cartManager.clearCart());
-  // }
+ 
   uiManager.updateButtonVisibility(currentUser);
 };
-
-
-// function showNotification(message, type = 'success',) {
-//   const notification = document.createElement('div');
-//   notification.textContent = message;
-//   notification.className = `notification ${type}-message`;
-//   document.body.appendChild(notification);
-
-//   notification.style.animation = 'slideIn 0.3s ease-out';
-
-//   setTimeout(() => {
-//     notification.style.animation = 'slideOut 0.3s ease-out';
-//     setTimeout(() => notification.remove(), 300);
-//   }, 2000);
-// }
 function showNotification(messageKey, type = 'success') {
   // Use the i18nManager to get the translated message
   const translatedMessage = i18nManager.translate(`ui.messages.${messageKey}`);
