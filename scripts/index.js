@@ -428,71 +428,107 @@ document.addEventListener('DOMContentLoaded', () => {
 //         this.removeItem(productId);
 //       });
 //     });
-//   },
- 
+//   }
 // };
-
 const cartManager = {
-  // Cache for current cart state
-  _cartCache: null,
-
-  // Constants
-  GUEST_ID: '999999',
-
   async fetchCart() {
+    if (!currentUser) {
+      await ensureGuestSession();
+    }
     try {
-      // Ensure consistent guest session
-      if (!currentUser) {
-        await ensureGuestSession();
-      }
-
       const response = await fetch('https://backend-3mvr.onrender.com/api/cart', {
+        ...fetchConfig,
         credentials: 'include',
         headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'X-Guest-User': !currentUser ? this.GUEST_ID : undefined
+          ...fetchConfig.headers,
+          'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
         }
       });
       
       if (!response.ok) {
-        throw new Error('Failed to fetch cart');
+        return { items: [], total: 0 };
       }
-
       const data = await response.json();
-      this._cartCache = data.cart;
-      return this._cartCache;
+      return data.cart;
     } catch (error) {
       console.error('Error fetching cart:', error);
       return { items: [], total: 0 };
     }
   },
 
-  async updateQuantity(productId, quantity) {
+  async addItem(productId) {
     try {
       if (!currentUser) {
         await ensureGuestSession();
       }
 
-      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/update', {
-        method: 'PUT',
+      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
+        method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'X-Guest-User': !currentUser ? this.GUEST_ID : undefined
+          'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
         },
-        body: JSON.stringify({ productId, quantity })
+        body: JSON.stringify({ productId, quantity: 1 })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update quantity');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to add to cart');
       }
 
       await this.updateDisplay();
-      showNotification(i18nManager.translate('ui.messages.itemUpdated'), 'success');
+      showNotification('itemAddedToCart', 'success');
+    } catch (error) {
+      console.error('Error:', error);
+      showNotification(i18nManager.translate('outOfStock'), 'error');
+    }
+  },
+
+  async removeItem(productId) {
+    if (!currentUser) {
+      await ensureGuestSession();
+    }
+    try {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/remove', {
+        method: 'DELETE',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
+        },
+        body: JSON.stringify({ productId }),
+        credentials: 'include',
+      });
+
+      if (!response.ok) throw new Error('Failed to remove item');
+      await this.updateDisplay();
+      showNotification('itemRemovedFromCart', 'success');
+    } catch (error) {
+      console.error('Error:', error);
+      showNotification(i18nManager.translate('failedToRemoveItem'), 'error');
+    }
+  },
+
+  async updateQuantity(productId, quantity) {
+    if (!currentUser) {
+      await ensureGuestSession();
+    }
+    try {
+      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/update', {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
+        },
+        body: JSON.stringify({ productId, quantity }),
+        credentials: 'include'
+      });
+
+      if (!response.ok) throw new Error('Failed to update quantity');
+      await this.updateDisplay();
     } catch (error) {
       console.error('Error updating quantity:', error);
-      showNotification(i18nManager.translate('ui.messages.failedToUpdateQuantity'), 'error');
+      showNotification(i18nManager.translate('failedToUpdateQuantity'), 'error');
     }
   },
 
@@ -501,11 +537,8 @@ const cartManager = {
     const cartContainer = document.getElementById('cart-items');
     const cartTotal = document.getElementById('cart-total');
     
-    if (!cartContainer || !cartTotal) {
-      console.error('Cart DOM elements not found');
-      return;
-    }
-
+    if (!cartContainer || !cartTotal) return;
+    
     cartContainer.innerHTML = '';
 
     if (!cart.items || cart.items.length === 0) {
@@ -522,9 +555,8 @@ const cartManager = {
       const listItem = document.createElement('li');
       listItem.className = 'cart-item';
 
-      // Get translated product name if available
-      const productName = i18nManager.getProductTranslation(item, 'name') || 'Unknown Product';
       const imageUrl = item.images?.[0] || item.image_url || '/images/1.jpg';
+      const productName = item.name || 'Unknown Product';
       const productPrice = item.price || 0;
       const productId = item.product_id;
 
@@ -536,17 +568,9 @@ const cartManager = {
           <span class="item-quantity">${i18nManager.translate('ui.labels.quantity')}: ${item.quantity}</span>
         </div>
         <div class="cart-item-controls">
-          <button class="quantity-btn minus" data-id="${productId}" 
-            title="${i18nManager.translate('ui.tooltips.decreaseQuantity')}" 
-            aria-label="${i18nManager.translate('ui.ariaLabels.decreaseQuantity')}">-</button>
-          <button class="quantity-btn plus" data-id="${productId}" 
-            title="${i18nManager.translate('ui.tooltips.increaseQuantity')}" 
-            aria-label="${i18nManager.translate('ui.ariaLabels.increaseQuantity')}">+</button>
-          <button class="remove-btn" data-id="${productId}" 
-            title="${i18nManager.translate('ui.tooltips.removeItem')}" 
-            aria-label="${i18nManager.translate('ui.ariaLabels.removeItem')}">
-            ${i18nManager.translate('ui.buttons.removeItem')}
-          </button>
+          <button class="quantity-btn minus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.decreaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.decreaseQuantity')}">-</button>
+          <button class="quantity-btn plus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.increaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.increaseQuantity')}">+</button>
+          <button class="remove-btn" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.removeItem')}" aria-label="${i18nManager.translate('ui.ariaLabels.removeItem')}">${i18nManager.translate('ui.buttons.removeItem')}</button>
         </div>
       `;
 
@@ -559,51 +583,33 @@ const cartManager = {
   },
 
   attachEventListeners() {
-    // Remove old event listeners
-    document.querySelectorAll('.quantity-btn, .remove-btn').forEach(btn => {
-      const newBtn = btn.cloneNode(true);
-      btn.parentNode.replaceChild(newBtn, btn);
-    });
-
-    // Attach new event listeners
     document.querySelectorAll('.quantity-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         const productId = e.target.getAttribute('data-id');
         const listItem = e.target.closest('.cart-item');
         const quantityElement = listItem.querySelector('.item-quantity');
-        let currentQuantity = parseInt(quantityElement.textContent.match(/\d+/)[0]);
+        const currentText = quantityElement.textContent;
+        const currentQuantity = parseInt(currentText.match(/\d+/)[0]);
         
+        let newQuantity = currentQuantity;
         if (e.target.classList.contains('plus')) {
-          currentQuantity += 1;
+          newQuantity = currentQuantity + 1;
         } else {
-          currentQuantity = Math.max(1, currentQuantity - 1);
+          newQuantity = Math.max(1, currentQuantity - 1);
         }
         
-        await this.updateQuantity(productId, currentQuantity);
+        await this.updateQuantity(productId, newQuantity);
       });
     });
 
     document.querySelectorAll('.remove-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
+      btn.addEventListener('click', (e) => {
         const productId = e.target.getAttribute('data-id');
-        await this.removeItem(productId);
+        this.removeItem(productId);
       });
     });
   }
 };
-
-// Update language change handler
-window.addEventListener('languageChanged', async () => {
-  try {
-    // Clear cart cache to force fresh fetch with new language
-    cartManager._cartCache = null;
-    await cartManager.updateDisplay();
-  } catch (error) {
-    console.error('Error refreshing cart after language change:', error);
-    showNotification(i18nManager.translate('ui.messages.errorOccurred'), 'error');
-  }
-});
-
 // UI Management
 const uiManager = {
   // Modal functions
