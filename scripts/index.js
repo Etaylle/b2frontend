@@ -206,7 +206,7 @@ async addItem(productId) {
     showNotification('itemAddedToCart', 'success');
   } catch (error) {
     console.error('Error:', error);
-    showNotification(i18nManager.translate('ui.messages.outOfStock'), 'error');
+    showNotification(i18nManager.translate('outOfStock'), 'error');
   }
 },
   async removeItem(productId) {
@@ -228,7 +228,7 @@ async addItem(productId) {
       showNotification('itemRemovedFromCart', 'success');
     } catch (error) {
       console.error('Error:', error);
-      showNotification(i18nManager.translate('ui.messages.failedToRemoveItem'), 'error');
+      showNotification(i18nManager.translate('failedToRemoveItem'), 'error');
     }
   },
 
@@ -254,7 +254,7 @@ async addItem(productId) {
       return true;
     } catch (error) {
       console.error('Error completing purchase:', error);
-      showNotification(i18nManager.translate('ui.messages.failedToCompletePurchase'), 'error');
+      showNotification(i18nManager.translate('failedToCompletePurchase'), 'error');
       return false;
     }
   
@@ -275,7 +275,7 @@ async addItem(productId) {
       await this.updateDisplay();
     } catch (error) {
       console.error('Error updating quantity:', error);
-      showNotification(i18nManager.translate('ui.messages.failedToUpdateQuantity'), 'error');
+      showNotification(i18nManager.translate('failedToUpdateQuantity'), 'error');
     }
   },
   async clearCart(afterPurchase = false) {
@@ -329,8 +329,8 @@ async addItem(productId) {
           // Show success notification
           showNotification(
             afterPurchase ? 
-              i18nManager.translate('ui.messages.purchaseCompleted') : 
-              i18nManager.translate('ui.messages.cartCleared'), 
+              i18nManager.translate('purchaseCompleted') : 
+              i18nManager.translate('cartCleared'), 
             'success'
           );
 
@@ -533,7 +533,7 @@ async login(formData) {
       // Clear guest ID here
       delete fetchConfig.headers['X-Guest-User']; // Assuming this is how you set the header
       
-      showNotification(i18nManager.translate('ui.messages.loginSuccessful'), 'success');
+      showNotification(i18nManager.translate('loginSuccessful'), 'success');
       return true;
     } else {
       showNotification(data.message, 'error');
@@ -570,7 +570,7 @@ if (success) {
       });
 
       if (response.ok) {
-        showNotification(i18nManager.translate('ui.messages.registrationSuccessful'), 'success');
+        showNotification(i18nManager.translate('registrationSuccessful'), 'success');
         return true;
       } else {
         const data = await response.json();
@@ -704,16 +704,16 @@ const AuthModal = {
             const success = await this.loginUser(formData);
             
             if (success) {
-                this.showMessage('login-message', i18nManager.translate('ui.messages.loginSuccessful'), 'success');
+                this.showMessage('login-message', i18nManager.translate('loginSuccessful'), 'success');
                  setTimeout(() => {
                 this.hideModal();
                 window.location.reload();
             }, 1500);
             } else {
-                this.showMessage('login-message', i18nManager.translate('ui.messages.invalidCredentials'), 'error');
+                this.showMessage('login-message', i18nManager.translate('invalidCredentials'), 'error');
             }
         } catch (error) {
-             this.showMessage('login-message', i18nManager.translate('ui.messages.errorOccurred'), 'error');
+             this.showMessage('login-message', i18nManager.translate('errorOccurred'), 'error');
         } finally {
             this.setLoading(submitBtn, false);
         }
@@ -738,13 +738,13 @@ const AuthModal = {
       const success = await this.registerUser(formData);
       
       if (success) {
-        this.showMessage('register-message', i18nManager.translate('ui.messages.registrationSuccessful'), 'success');
+        this.showMessage('register-message', i18nManager.translate('registrationSuccessful'), 'success');
         setTimeout(() => this.switchForm('login'), 1500);
       } else {
-        this.showMessage('register-message', i18nManager.translate('ui.messages.registrationFailed'), 'error');
+        this.showMessage('register-message', i18nManager.translate('registrationFailed'), 'error');
       }
     } catch (error) {
-      this.showMessage('register-message', i18nManager.translate('ui.messages.errorOccurred'), 'error');
+      this.showMessage('register-message', i18nManager.translate('errorOccurred'), 'error');
     } finally {
       this.setLoading(submitBtn, false);
     }
