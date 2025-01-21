@@ -1629,7 +1629,54 @@ createInteractiveStars(userRating = null) {
     </div>
   `;
 },
-   renderRecommendations(products) {
+  //  renderRecommendations(products) {
+  //   const container = document.createElement('div');
+  //   container.className = 'recommendations-container';
+  //   container.innerHTML = `
+  //     <h3>${i18nManager.translate('ui.labels.youMightAlsoLike')}</h3>
+  //     <div class="recommendations-grid"></div>
+  //   `;
+
+  //   const grid = container.querySelector('.recommendations-grid');
+
+  //   products.forEach(product => {
+  //     const productElement = document.createElement('div');
+  //     productElement.className = 'recommended-product';
+  //     productElement.setAttribute('data-product-id', product.product_id.toString());
+      
+  //     const ratingHTML = this.createProductRating(
+  //       product.product_id.toString(),
+  //       product.average_rating || 0,
+  //       product.total_ratings || 0
+  //     );
+
+  //     productElement.innerHTML = `
+  //       <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
+  //       <h4>${product.name}</h4>
+  //       <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
+  //       ${ratingHTML}
+  //       <button class="recommend-add-to-cart">Add to the cart</button>
+  //     `;
+
+  //     // Add click handler for cart button
+  //     const addButton = productElement.querySelector('.recommend-add-to-cart');
+  //     addButton.onclick = () => cartManager.addItem(product.product_id);
+
+  //     grid.appendChild(productElement);
+  //   });
+
+  //   // Find and update the recommendations section
+  //   const existingRecommendations = document.querySelector('.recommendations-container');
+  //   if (existingRecommendations) {
+  //     existingRecommendations.replaceWith(container);
+  //   } else {
+  //     const gridContainer = document.querySelector('.grid-container');
+  //     if (gridContainer) {
+  //       gridContainer.after(container);
+  //     }
+  //   }
+  // },
+  renderRecommendations(products) {
     const container = document.createElement('div');
     container.className = 'recommendations-container';
     container.innerHTML = `
@@ -1644,17 +1691,11 @@ createInteractiveStars(userRating = null) {
       productElement.className = 'recommended-product';
       productElement.setAttribute('data-product-id', product.product_id.toString());
       
-      const ratingHTML = this.createProductRating(
-        product.product_id.toString(),
-        product.average_rating || 0,
-        product.total_ratings || 0
-      );
-
       productElement.innerHTML = `
         <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
         <h4>${product.name}</h4>
         <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
-        ${ratingHTML}
+        <div class="rating-summary" data-product-id="${product.product_id}"></div>
         <button class="recommend-add-to-cart">Add to the cart</button>
       `;
 
@@ -1675,8 +1716,10 @@ createInteractiveStars(userRating = null) {
         gridContainer.after(container);
       }
     }
-  },
-  createRatingBreakdown(distribution) {
+
+    // Let the rating manager update all ratings
+    this.updateAllProductRatings();
+  },createRatingBreakdown(distribution) {
     console.log('Creating breakdown with distribution:', distribution);
     const total = distribution.reduce((a, b) => a + b, 0);
     console.log('Total ratings:', total);
