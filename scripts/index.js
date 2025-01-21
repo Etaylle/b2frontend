@@ -627,7 +627,56 @@ const cartManager = {
     }
   },
 
-  async updateDisplay() {
+  // async updateDisplay() {
+  //   const cart = await this.fetchCart();
+  //   const cartContainer = document.getElementById('cart-items');
+  //   const cartTotal = document.getElementById('cart-total');
+    
+  //   if (!cartContainer || !cartTotal) return;
+    
+  //   cartContainer.innerHTML = '';
+
+  //   if (!cart.items || cart.items.length === 0) {
+  //     cartContainer.innerHTML = `<li>${i18nManager.translate('ui.messages.cartEmpty')}</li>`;
+  //     cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: 0`;
+  //     cartContainer.classList.add('hidden');
+  //     return;
+  //   }
+
+  //   cartContainer.classList.remove('hidden');
+  //   let total = 0;
+
+  //   cart.items.forEach(item => {
+  //     const listItem = document.createElement('li');
+  //     listItem.className = 'cart-item';
+
+  //     const imageUrl = item.images?.[0] || item.image_url || '/images/1.jpg';
+  //     const productName = item.name || 'Unknown Product';
+  //     const productPrice = item.price || 0;
+  //     const productId = item.product_id;
+
+  //     listItem.innerHTML = `
+  //       <img src="${imageUrl}" alt="${productName}" class="cart-item-image">
+  //       <div class="cart-item-details">
+  //         <span class="item-name">${productName} | </span>
+  //         <span class="item-price">${parseFloat(productPrice).toFixed(2)} $ |</span>
+  //         <span class="item-quantity">${i18nManager.translate('ui.labels.quantity')}: ${item.quantity}</span>
+  //       </div>
+  //       <div class="cart-item-controls">
+  //         <button class="quantity-btn minus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.decreaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.decreaseQuantity')}">-</button>
+  //         <button class="quantity-btn plus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.increaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.increaseQuantity')}">+</button>
+  //         <button class="remove-btn" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.removeItem')}" aria-label="${i18nManager.translate('ui.ariaLabels.removeItem')}">${i18nManager.translate('ui.buttons.removeItem')}</button>
+  //       </div>
+  //     `;
+
+  //     cartContainer.appendChild(listItem);
+  //     total += productPrice * item.quantity;
+  //   });
+
+  //   cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: ${total.toFixed(2)}`;
+  //   this.attachEventListeners();
+  // },
+async updateDisplay() {
     const cart = await this.fetchCart();
     const cartContainer = document.getElementById('cart-items');
     const cartTotal = document.getElementById('cart-total');
@@ -655,6 +704,14 @@ const cartManager = {
       const productPrice = item.price || 0;
       const productId = item.product_id;
 
+      // Create remove button separately to handle translation
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-btn';
+      removeBtn.setAttribute('data-id', productId);
+      removeBtn.setAttribute('title', i18nManager.translate('ui.tooltips.removeItem'));
+      removeBtn.setAttribute('aria-label', i18nManager.translate('ui.ariaLabels.removeItem'));
+      removeBtn.textContent = i18nManager.translate('ui.buttons.removeItem');
+
       listItem.innerHTML = `
         <img src="${imageUrl}" alt="${productName}" class="cart-item-image">
         <div class="cart-item-details">
@@ -665,9 +722,12 @@ const cartManager = {
         <div class="cart-item-controls">
           <button class="quantity-btn minus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.decreaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.decreaseQuantity')}">-</button>
           <button class="quantity-btn plus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.increaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.increaseQuantity')}">+</button>
-          <button class="remove-btn" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.removeItem')}" aria-label="${i18nManager.translate('ui.ariaLabels.removeItem')}">${i18nManager.translate('ui.buttons.removeItem')}</button>
         </div>
       `;
+
+      // Append the remove button to the controls div
+      const controlsDiv = listItem.querySelector('.cart-item-controls');
+      controlsDiv.appendChild(removeBtn);
 
       cartContainer.appendChild(listItem);
       total += productPrice * item.quantity;
@@ -676,7 +736,6 @@ const cartManager = {
     cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: ${total.toFixed(2)}`;
     this.attachEventListeners();
   },
-
   attachEventListeners() {
     document.querySelectorAll('.quantity-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
