@@ -1689,15 +1689,18 @@ createInteractiveStars(userRating = null) {
     products.forEach(product => {
       const productElement = document.createElement('div');
       productElement.className = 'recommended-product';
-      productElement.setAttribute('data-product-id', product.product_id.toString());
+      const productId = product.product_id.toString();
+      productElement.setAttribute('data-product-id', productId);
       
-      // Get the product data from the state to ensure we have the latest ratings
-      const productData = this.findProduct(product.product_id);
+      // Get the product data from the product parameter itself
+      // and use fallback values if needed
+      const averageRating = product.average_rating || 0;
+      const totalRatings = product.total_ratings || 0;
       
       const ratingHTML = this.createProductRating(
-        product.product_id.toString(),
-        productData.average_rating || 0,
-        productData.total_ratings || 0
+        productId,
+        averageRating,
+        totalRatings
       );
 
       productElement.innerHTML = `
