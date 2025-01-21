@@ -533,7 +533,7 @@ async login(formData) {
       // Clear guest ID here
       delete fetchConfig.headers['X-Guest-User']; // Assuming this is how you set the header
       
-      showNotification('Login successful!', 'success');
+      showNotification(i18nManager.translate('ui.messages.loginSuccessful'), 'success');
       return true;
     } else {
       showNotification(data.message, 'error');
@@ -570,7 +570,7 @@ if (success) {
       });
 
       if (response.ok) {
-        showNotification('Registration successful!', 'success');
+        showNotification(i18nManager.translate('ui.messages.registrationSuccessful'), 'success');
         return true;
       } else {
         const data = await response.json();
@@ -704,52 +704,51 @@ const AuthModal = {
             const success = await this.loginUser(formData);
             
             if (success) {
-                this.showMessage('login-message', 'Login successful!', 'success');
+                this.showMessage('login-message', i18nManager.translate('ui.messages.loginSuccessful'), 'success');
                  setTimeout(() => {
                 this.hideModal();
                 window.location.reload();
             }, 1500);
             } else {
-                this.showMessage('login-message', 'Invalid credentials', 'error');
+                this.showMessage('login-message', i18nManager.translate('ui.messages.invalidCredentials'), 'error');
             }
         } catch (error) {
-            this.showMessage('login-message', 'An error occurred', 'error');
+             this.showMessage('login-message', i18nManager.translate('ui.messages.errorOccurred'), 'error');
         } finally {
             this.setLoading(submitBtn, false);
         }
     },
 
-    async handleRegister(e) {
-        e.preventDefault();
-        const form = e.target;
-        const submitBtn = form.querySelector('.submit-btn');
-        
-        try {
-            this.setLoading(submitBtn, true);
-            
-            const formData = {
-                username: form.querySelector('#register-username').value,
-                firstName: form.querySelector('#register-firstname').value,
-                lastName: form.querySelector('#register-lastname').value,
-                email: form.querySelector('#register-email').value,
-                password: form.querySelector('#register-password').value
-            };
+ async handleRegister(e) {
+    e.preventDefault();
+    const form = e.target;
+    const submitBtn = form.querySelector('.submit-btn');
+    
+    try {
+      this.setLoading(submitBtn, true);
+      
+      const formData = {
+        username: form.querySelector('#register-username').value,
+        firstName: form.querySelector('#register-firstname').value,
+        lastName: form.querySelector('#register-lastname').value,
+        email: form.querySelector('#register-email').value,
+        password: form.querySelector('#register-password').value
+      };
 
-           
-            const success = await this.registerUser(formData);
-            
-            if (success) {
-                this.showMessage('register-message', 'Registration successful!', 'success');
-                setTimeout(() => this.switchForm('login'), 1500);
-            } else {
-                this.showMessage('register-message', 'Registration failed', 'error');
-            }
-        } catch (error) {
-            this.showMessage('register-message', 'An error occurred', 'error');
-        } finally {
-            this.setLoading(submitBtn, false);
-        }
-    },
+      const success = await this.registerUser(formData);
+      
+      if (success) {
+        this.showMessage('register-message', i18nManager.translate('ui.messages.registrationSuccessful'), 'success');
+        setTimeout(() => this.switchForm('login'), 1500);
+      } else {
+        this.showMessage('register-message', i18nManager.translate('ui.messages.registrationFailed'), 'error');
+      }
+    } catch (error) {
+      this.showMessage('register-message', i18nManager.translate('ui.messages.errorOccurred'), 'error');
+    } finally {
+      this.setLoading(submitBtn, false);
+    }
+  },
 
   async loginUser(data) {
     return await authManager.login(data);
@@ -990,7 +989,7 @@ setProductData(products) {
       
       this.state.userRatings.set(productId.toString(), rating);
       this.updateProductRatingDisplay(productId, result.averageRating, result.totalRatings);
-      showNotification('Rating submitted successfully!', 'success');
+      showNotification(i18nManager.translate('ui.messages.ratingSubmitted'), 'success');
       return result;
     } catch (error) {
       console.error('Error submitting rating:', error);
@@ -1054,11 +1053,9 @@ setProductData(products) {
       // Remove from userRatings Map
       this.state.userRatings.delete(productId.toString());
       this.updateProductRatingDisplay(productId, result.averageRating, result.totalRatings);
-      showNotification('Rating removed successfully', 'success');
       return result;
     } catch (error) {
       console.error('Error removing rating:', error);
-      showNotification('Failed to remove rating', 'error');
       throw error;
     }
   },
@@ -2253,6 +2250,17 @@ state: {
             cartEmpty: "Ваша корпа је празна",
             purchaseCompleted: "Куповина је завршена",
             cartCleared: "Корпа је очишћена",
+             loginSuccessful: "Успешна пријава!",
+      registrationSuccessful: "Успешна регистрација!",
+      registrationFailed: "Регистрација није успела.",
+      logoutFailed: "Неуспела одјава.",
+      checkoutFailed: "Неуспела покретања процеса плаћања.",
+      ratingSubmitted: "Оцена је успешно послата!",
+      ratingSubmitFailed: "Неуспело слање оцене.",
+      ratingRemoved: "Оцена је успешно уклоњена.",
+      ratingRemoveFailed: "Неуспело уклањање оцене.",
+      loadRatingDetailsFailed: "Неуспело учитавање детаља оцене.",
+      invalidCredentials: "Неисправни подаци за пријаву."
           },
           nav: {
             login: "Пријава",
