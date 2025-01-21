@@ -355,6 +355,22 @@
                 event.preventDefault();
                 window.location.href = 'orderHistory.html';
             });
+            const backToTopButton = document.getElementById('back-to-top');
+
+            // Scroll to top functionality
+            backToTopButton.addEventListener('click', () => {
+                document.body.scrollTop = 0; // For Safari
+                document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+            });
+
+            // Show/hide back to top button based on scroll position
+            window.onscroll = function () {
+                if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                    backToTopButton.classList.add("show");
+                } else {
+                    backToTopButton.classList.remove("show");
+                }
+            };
         });
 
         function setupUserInterface() {
