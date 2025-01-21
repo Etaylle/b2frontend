@@ -531,7 +531,7 @@ async login(formData) {
     
     if (response.ok) {
       // Clear guest ID here
-      delete fetchConfig.headers['X-Guest-User']; // Assuming this is how you set the header
+      delete fetchConfig.headers['X-Guest-User'];
       
       showNotification(i18nManager.translate('loginSuccessful'), 'success');
       return true;
@@ -546,7 +546,7 @@ async login(formData) {
 },
 // In AuthModal's handleLogin
 if (success) {
-    this.showMessage('login-message', 'Login successful!', 'success');
+    this.showMessage('login-message', 'loginSuccessful!', 'success');
     setTimeout(() => {
         this.hideModal();
         window.location.reload();  // Move it here
