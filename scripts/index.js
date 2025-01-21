@@ -627,7 +627,56 @@ const cartManager = {
     }
   },
 
-  async updateDisplay() {
+  // async updateDisplay() {
+  //   const cart = await this.fetchCart();
+  //   const cartContainer = document.getElementById('cart-items');
+  //   const cartTotal = document.getElementById('cart-total');
+    
+  //   if (!cartContainer || !cartTotal) return;
+    
+  //   cartContainer.innerHTML = '';
+
+  //   if (!cart.items || cart.items.length === 0) {
+  //     cartContainer.innerHTML = `<li>${i18nManager.translate('ui.messages.cartEmpty')}</li>`;
+  //     cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: 0`;
+  //     cartContainer.classList.add('hidden');
+  //     return;
+  //   }
+
+  //   cartContainer.classList.remove('hidden');
+  //   let total = 0;
+
+  //   cart.items.forEach(item => {
+  //     const listItem = document.createElement('li');
+  //     listItem.className = 'cart-item';
+
+  //     const imageUrl = item.images?.[0] || item.image_url || '/images/1.jpg';
+  //     const productName = item.name || 'Unknown Product';
+  //     const productPrice = item.price || 0;
+  //     const productId = item.product_id;
+
+  //     listItem.innerHTML = `
+  //       <img src="${imageUrl}" alt="${productName}" class="cart-item-image">
+  //       <div class="cart-item-details">
+  //         <span class="item-name">${productName} | </span>
+  //         <span class="item-price">${parseFloat(productPrice).toFixed(2)} $ |</span>
+  //         <span class="item-quantity">${i18nManager.translate('ui.labels.quantity')}: ${item.quantity}</span>
+  //       </div>
+  //       <div class="cart-item-controls">
+  //         <button class="quantity-btn minus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.decreaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.decreaseQuantity')}">-</button>
+  //         <button class="quantity-btn plus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.increaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.increaseQuantity')}">+</button>
+  //         <button class="remove-btn" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.removeItem')}" aria-label="${i18nManager.translate('ui.ariaLabels.removeItem')}">${i18nManager.translate('ui.buttons.removeItem')}</button>
+  //       </div>
+  //     `;
+
+  //     cartContainer.appendChild(listItem);
+  //     total += productPrice * item.quantity;
+  //   });
+
+  //   cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: ${total.toFixed(2)}`;
+  //   this.attachEventListeners();
+  // },
+async updateDisplay() {
     const cart = await this.fetchCart();
     const cartContainer = document.getElementById('cart-items');
     const cartTotal = document.getElementById('cart-total');
@@ -637,46 +686,102 @@ const cartManager = {
     cartContainer.innerHTML = '';
 
     if (!cart.items || cart.items.length === 0) {
-      cartContainer.innerHTML = `<li>${i18nManager.translate('ui.messages.cartEmpty')}</li>`;
-      cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: 0`;
-      cartContainer.classList.add('hidden');
-      return;
+        cartContainer.innerHTML = `<li>${i18nManager.translate('ui.messages.cartEmpty')}</li>`;
+        cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: 0`;
+        cartContainer.classList.add('hidden');
+        return;
     }
 
     cartContainer.classList.remove('hidden');
     let total = 0;
 
     cart.items.forEach(item => {
-      const listItem = document.createElement('li');
-      listItem.className = 'cart-item';
+        const listItem = document.createElement('li');
+        listItem.className = 'cart-item';
 
-      const imageUrl = item.images?.[0] || item.image_url || '/images/1.jpg';
-      const productName = item.name || 'Unknown Product';
-      const productPrice = item.price || 0;
-      const productId = item.product_id;
+        const imageUrl = item.images?.[0] || item.image_url || '/images/1.jpg';
+        const productName = item.name || 'Unknown Product';
+        const productPrice = item.price || 0;
+        const productId = item.product_id;
 
-      listItem.innerHTML = `
-        <img src="${imageUrl}" alt="${productName}" class="cart-item-image">
-        <div class="cart-item-details">
-          <span class="item-name">${productName} | </span>
-          <span class="item-price">${parseFloat(productPrice).toFixed(2)} $ |</span>
-          <span class="item-quantity">${i18nManager.translate('ui.labels.quantity')}: ${item.quantity}</span>
-        </div>
-        <div class="cart-item-controls">
-          <button class="quantity-btn minus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.decreaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.decreaseQuantity')}">-</button>
-          <button class="quantity-btn plus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.increaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.increaseQuantity')}">+</button>
-          <button class="remove-btn" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.removeItem')}" aria-label="${i18nManager.translate('ui.ariaLabels.removeItem')}">${i18nManager.translate('ui.buttons.removeItem')}</button>
-        </div>
-      `;
+        // Create remove button separately to maintain a reference
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-btn';
+        removeBtn.setAttribute('data-id', productId);
+        removeBtn.setAttribute('title', i18nManager.translate('ui.tooltips.removeItem'));
+        removeBtn.setAttribute('aria-label', i18nManager.translate('ui.ariaLabels.removeItem'));
+        // Store the translation key as a data attribute
+        removeBtn.setAttribute('data-translation-key', 'ui.buttons.removeItem');
+        removeBtn.textContent = i18nManager.translate('ui.buttons.removeItem');
 
-      cartContainer.appendChild(listItem);
-      total += productPrice * item.quantity;
+        listItem.innerHTML = `
+            <img src="${imageUrl}" alt="${productName}" class="cart-item-image">
+            <div class="cart-item-details">
+                <span class="item-name">${productName} | </span>
+                <span class="item-price">${parseFloat(productPrice).toFixed(2)} $ |</span>
+                <span class="item-quantity">${i18nManager.translate('ui.labels.quantity')}: ${item.quantity}</span>
+            </div>
+            <div class="cart-item-controls">
+                <button class="quantity-btn minus" data-id="${productId}" 
+                    title="${i18nManager.translate('ui.tooltips.decreaseQuantity')}" 
+                    aria-label="${i18nManager.translate('ui.ariaLabels.decreaseQuantity')}">-</button>
+                <button class="quantity-btn plus" data-id="${productId}" 
+                    title="${i18nManager.translate('ui.tooltips.increaseQuantity')}" 
+                    aria-label="${i18nManager.translate('ui.ariaLabels.increaseQuantity')}">+</button>
+            </div>
+        `;
+
+        // Append remove button to controls div
+        listItem.querySelector('.cart-item-controls').appendChild(removeBtn);
+        cartContainer.appendChild(listItem);
+        total += productPrice * item.quantity;
     });
 
     cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: ${total.toFixed(2)}`;
     this.attachEventListeners();
-  },
+},
 
+// Add a method to update translations
+updateTranslations() {
+    // Update remove buttons
+    document.querySelectorAll('.remove-btn').forEach(btn => {
+        const translationKey = btn.getAttribute('data-translation-key');
+        if (translationKey) {
+            btn.textContent = i18nManager.translate(translationKey);
+            btn.setAttribute('title', i18nManager.translate('ui.tooltips.removeItem'));
+            btn.setAttribute('aria-label', i18nManager.translate('ui.ariaLabels.removeItem'));
+        }
+    });
+},
+
+attachEventListeners() {
+    document.querySelectorAll('.quantity-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const productId = e.target.getAttribute('data-id');
+            const listItem = e.target.closest('.cart-item');
+            const quantityElement = listItem.querySelector('.item-quantity');
+            const currentText = quantityElement.textContent;
+            const matches = currentText.match(/\d+/);
+            const currentQuantity = matches ? parseInt(matches[0]) : 1;
+            
+            let newQuantity = currentQuantity;
+            if (e.target.classList.contains('plus')) {
+                newQuantity = currentQuantity + 1;
+            } else {
+                newQuantity = Math.max(1, currentQuantity - 1);
+            }
+            
+            await this.updateQuantity(productId, newQuantity);
+        });
+    });
+
+    document.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const productId = e.target.getAttribute('data-id');
+            this.removeItem(productId);
+        });
+    });
+},
   attachEventListeners() {
     document.querySelectorAll('.quantity-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
@@ -2640,7 +2745,7 @@ state: {
       }
     }
   },
-  
+
  initialize() {
     const savedLang = localStorage.getItem('preferred_language');
     const browserLang = navigator.language.split('-')[0];
