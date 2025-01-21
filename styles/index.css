@@ -426,7 +426,7 @@ main {
   align-items: center;
   margin: 1rem auto;
   max-width: 600px;
-  position: sticky;
+  position: relative;
 }
 
 #product-search {
@@ -930,7 +930,6 @@ main {
     padding: 20px;
     background: #f5f5f5;
     border-bottom: 1px solid #ddd;
-    position: sticky;
   }
 
   .category-btn {
@@ -1280,29 +1279,27 @@ main {
 }
 
 
-
-
 /* Back to Top Button */
 .back-to-top {
-  position: relative;
-  bottom: 20px;
-  right: 20px;
-  background-color: #007BFF;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  padding: 10px;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    padding: 10px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .back-to-top:hover {
-  background-color: #0056b3;
+    background-color: #0056b3;
 }
 
 .back-to-top.show {
-  opacity: 1;
+    opacity: 1;
 }
 
   /* Utility Classes */
