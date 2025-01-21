@@ -2733,7 +2733,7 @@ async searchProducts(query) {
 
       // Show no results message in current language
       if (filteredProducts.length === 0) {
-        const noResultsMessage = i18nManager.translate('ui.messages.noProductsFound');
+        const noResultsMessage = i18nManager.translate('noProductsFound');
         showNotification(noResultsMessage, 'info');
       }
 
