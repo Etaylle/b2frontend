@@ -253,7 +253,7 @@
         </section>
     
         <!-- Cart Section -->
-        <section id="cart" class="cart-section">
+        <!-- <section id="cart" class="cart-section">
             <div id="cart-container" class="cart-container">
                 <img src="/images/cart.png" alt="Shopping Cart" class="cart-icon" />
     
@@ -261,6 +261,16 @@
                 <p id="cart-total">Total: 0</p>
                 <button class="checkout-btn" aria-label="Proceed to checkout">Checkout</button>
                 <button id="empty-cart-button" class="empty-cart-btn" aria-label="Empty the cart">Empty Cart</button>
+            </div>
+        </section> -->
+        <section id="cart" class="cart-section">
+            <div id="cart-container" class="cart-container">
+                <img src="/images/cart.png" alt="Shopping Cart" class="cart-icon" />
+                <ul id="cart-items"></ul>
+                <p id="cart-total" data-i18n="ui.labels.cartTotal">Total: 0</p>
+                <button class="checkout-btn" aria-label="Proceed to checkout" data-i18n="ui.buttons.checkout">Checkout</button>
+                <button id="empty-cart-button" class="empty-cart-btn" aria-label="Empty the cart"
+                    data-i18n="ui.buttons.emptyCart">Empty Cart</button>
             </div>
         </section>
     
