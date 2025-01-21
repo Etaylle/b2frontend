@@ -2369,7 +2369,14 @@ state: {
             errorOccurred: "An error occurred",
             failedToClearCart: "Failed to clear cart",
             failedToUpdateQuantity: "Failed to update quantity",
-            quantityUpdated: "Quantity updated successfully"
+            quantityUpdated: "Quantity updated successfully",
+            cartEmpty: "Your cart is empty",
+            guestLoginFailed: "Guest login failed",
+            failedToAddToCart: "Failed to add item to the cart",
+            outOfStock: "Item is out of stock!",
+            failedToRemoveItem: "Failed to remove item from the cart",
+
+
           },
           nav: {
             login: "Login",
@@ -2425,7 +2432,12 @@ state: {
             errorOccurred: "Дошло је до грешке",
             failedToClearCart: "Дошло је до грешке",
             failedToUpdateQuantity: "Ажурирање количине није успело",
-            quantityUpdated: "Количина је успешно ажурирана"
+            quantityUpdated: "Количина је успешно ажурирана",
+            cartEmpty: "Ваш корпа ��е празна",
+            guestLoginFailed: "Гостева при��ава ни��е успела",
+            failedToAddToCart: "Додава��е артикала у корпу ни��е успело",
+            outOfStock: "Ова�� производ ни��е на располага��у!",
+            failedToRemoveItem: "Укло��е��е артикала из корпе ни��е успело",
           },
           nav: {
             login: "Пријава",
@@ -2483,7 +2495,12 @@ state: {
             errorOccurred: "Es kam zu einem Fehler!",
             failedToClearCart: "Kann Warenkorb nicht leeren!",
             failedToUpdateQuantity: "Menge konnte nicht aktualisiert werden",
-            quantityUpdated: "Menge erfolgreich aktualisiert" 
+            quantityUpdated: "Menge erfolgreich aktualisiert",
+            cartEmpty: "Ihr Warenkorb ist leer",
+            guestLoginFailed: "Ein Gastlogin ist fehlgeschlagen",
+            failedToAddToCart: "Es ist ein Fehler beim Hinzufügen eines Artikels zum Warenkorb aufgetreten",
+            outOfStock: "Dieser Artikel ist nicht auf Lager!",
+            failedToRemoveItem: "Es ist ein Fehler beim Entfernen eines Artikels aus dem Warenkorb aufgetreten", 
 
           },
           nav: {
