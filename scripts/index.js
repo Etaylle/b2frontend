@@ -141,28 +141,7 @@ const cartManager = {
     }
   },
 
-  // async addItem(productId) {
-  //   if (!currentUser) {
-  //   await ensureGuestSession();
-  // }try {
-  //     const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
-  //       method: 'POST',
-  //       credentials: 'include',
-  //       headers: {
-  //         ...fetchConfig.headers,
-  //         'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
-  //       },
-  //       body: JSON.stringify({ productId, quantity: 1 })
-  //     });
 
-  //     if (!response.ok) throw new Error('Failed to add to cart');
-  //     await this.updateDisplay();
-  //     showNotification('Added to cart!', 'success');
-  //   } catch (error) {
-  //     console.error('Error:', error);
-  //     showNotification('Out of stock!', 'error');
-  //   }
-  // },
 async addItem(productId) {
   try {
     // First ensure guest session
@@ -391,7 +370,7 @@ if (emptyCartMessage) {
       });
     });
 
-// Then append this button to your cart item or wherever it belongs
+// Then, append this button to cart item
     document.querySelectorAll('.remove-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const productId = e.target.getAttribute('data-id');
@@ -423,44 +402,7 @@ const uiManager = {
     const registerContainer = document.querySelector("#register");
     registerContainer.style.display = "none";
   },
-// updateButtonVisibility: function(currentUser) {
-//   const elements = {
-//     loginBtn: document.getElementById("login-btn"),
-//     registerBtn: document.getElementById("register-btn"),
-//     logoutButton: document.getElementById("logout-button"),
-//     userAvatarDisplay: document.getElementById("user-avatar-display"),
-//     navbar: document.querySelector('.navbar')
-//   };
 
-//   elements.loginBtn.style.display = currentUser ? "none" : "block";
-//   elements.registerBtn.style.display = currentUser ? "none" : "block";
-//   elements.logoutButton.style.display = currentUser ? "block" : "none";
-
-//   if (currentUser) {
-//     const isAdmin = currentUser.role === 'admin';
-//     console.log('User is admin:', isAdmin);
-    
-//     // Clear existing content before adding new
-//     elements.userAvatarDisplay.innerHTML = `
-//       <img src="/images/avatar.jpg" alt="User Avatar">
-//     `;
-
-//     if (isAdmin) {
-//       // Add admin link dynamically
-//       const adminLink = document.createElement('a');
-//       adminLink.href = '/admin';
-//       adminLink.className = 'admin-link';
-//       adminLink.textContent = i18nManager.translate('ui.buttons.adminPanel');
-//       adminLink.setAttribute('aria-label', i18nManager.translate('ui.ariaLabels.adminPanel'));
-      
-//       // Append the admin link to userAvatarDisplay
-//       elements.userAvatarDisplay.appendChild(adminLink);
-//     }
-//   } else {
-//     // Clear the content if no user is logged in
-//     elements.userAvatarDisplay.innerHTML = '';
-//   }
-// }
   updateButtonVisibility: (currentUser) => {
     const loginBtn = document.getElementById("login-btn");
     const registerBtn = document.getElementById("register-btn");
@@ -542,7 +484,7 @@ async login(formData) {
     
     if (response.ok) {
       showNotification('Login successful!', 'success');
-      return true;  // Remove window.location.reload() from here
+      return true;  
     } else {
       showNotification(data.message, 'error');
       return false;
@@ -558,7 +500,7 @@ if (success) {
     this.showMessage('login-message', 'Login successful!', 'success');
     setTimeout(() => {
         this.hideModal();
-        window.location.reload();  // Move it here
+        window.location.reload();  
     }, 1500);
 },
 
@@ -709,7 +651,7 @@ const AuthModal = {
                 password: form.querySelector('#login-password').value
             };
 
-            // Use your existing login logic here
+          
             const success = await this.loginUser(formData);
             
             if (success) {
@@ -895,14 +837,15 @@ setProductData(products) {
 
     async fetchUserRatings() {
     try {
-      // Using the same format as the submit endpoint
+      console.log('Fetching user ratings...');
+      // Ensure user is logged in or guest session is active
       const response = await fetch('https://backend-3mvr.onrender.com/api/ratings/user', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          // Add any other headers your backend might need
+          
         },
-        credentials: 'include'  // Important for sending cookies
+        credentials: 'include'  // For sending cookies
       });
       
       if (!response.ok) {
@@ -932,7 +875,7 @@ setProductData(products) {
       this.updateAllProductRatings();
     } catch (error) {
       console.error('Error fetching user ratings:', error);
-      // Don't show notification to user since this is background loading
+      // No user notif., background loading
     }
   },
 
@@ -1109,7 +1052,6 @@ setProductData(products) {
 
   // Helper function to find product details
   findProduct(productId) {
-    // You'll need to adapt this based on how you store your products
     const products = document.querySelectorAll('.grid-item');
     for (const product of products) {
       if (product.dataset.productId === productId) {
@@ -1221,8 +1163,8 @@ setProductData(products) {
       }
       return;
     }
-    // Handle star rating click
-    if (e.target.matches('.star.interactive')) {  // Fixed selector
+    // Handle for star rating
+    if (e.target.matches('.star.interactive')) {  
       const productId = e.target.closest('[data-product-id]').dataset.productId;
       const rating = parseInt(e.target.dataset.rating);
       if (!isNaN(rating)) {
@@ -1246,7 +1188,7 @@ setProductData(products) {
     }
   });
 
-  // Star hover effects
+  // Hover effects for rating (stars)
   document.addEventListener('mouseover', (e) => {
     if (e.target.matches('.star.interactive')) {
       const stars = e.target.closest('.stars-container').querySelectorAll('.star.interactive');
@@ -1264,7 +1206,7 @@ setProductData(products) {
     }
   });
 },
-// Modify the createInteractiveStars method
+
 createInteractiveStars(userRating = null) {
   return `
     <div class="stars-container">
@@ -1565,51 +1507,7 @@ const cryptoManager = {
       setTimeout(() => this.fetchCryptoRates(), 60000);
     }
   },
-
-//   createCryptoToggle() {
-//     const navbarRight = document.querySelector(".navbar-right");
-//     if (!navbarRight) return;
-
-//     // Remove existing toggle if present
-//     const existingToggle = document.querySelector(".crypto-toggle-container");
-//     if (existingToggle) {
-//       existingToggle.remove();
-//     }
-
-//     const toggleContainer = document.createElement("div");
-//     toggleContainer.className = "crypto-toggle-container";
-//     toggleContainer.innerHTML = `
-//       <label class="crypto-switch">
-//         <input type="checkbox" id="crypto-toggle">
-//         <span class="slider round"></span>
-//       </label>
-//       <span class="crypto-label">
-//   <a href="#" aria-label="${i18nManager.translate('ui.ariaLabels.showCryptoPrices')}">${i18nManager.translate('ui.labels.showCryptoPrices')}</a>
-// </span>
-      
-//     `;
-
-//     navbarRight.insertBefore(toggleContainer, navbarRight.firstChild);
-
-//     const toggle = document.getElementById("crypto-toggle");
-//     if (toggle) {
-//       // Set initial state
-//       toggle.checked = this.state.cryptoPricesEnabled;
-      
-//       // Add event listener
-//       toggle.addEventListener("change", async (e) => {
-//         this.state.cryptoPricesEnabled = e.target.checked;
-//         localStorage.setItem("cryptoPricesEnabled", this.state.cryptoPricesEnabled);
-        
-//         // Fetch fresh rates if enabled
-//         if (this.state.cryptoPricesEnabled) {
-//           await this.fetchCryptoRates();
-//         }
-//         console.log("update ALL PRODUCT PRICES CALL");
-//         this.updateAllProductPrices();
-//       });
-//     }
-//   },
+  // Create the toggle switch in the navbar
 createCryptoToggle() {
     const navbarRight = document.querySelector(".navbar-right");
     if (!navbarRight) return;
@@ -1743,7 +1641,7 @@ const recommendationManager = {
       const products = data.success ? data.products : data;
 
       // Find the current product
-      // Convert productId to string to match ratingManager's approach
+      // Convert productId to string, as product_id is a string in the API
       const currentProduct = products.find(p => p.product_id.toString() === productId.toString());
       if (!currentProduct) {
         console.log('Available products:', products);
@@ -1759,7 +1657,7 @@ const recommendationManager = {
       const categoryData = await categoryResponse.json();
       let recommendations = categoryData.success ? categoryData.products : categoryData;
 
-      // Filter out the current product and limit to 4 recommendations
+      // Filter out the current product and limit to 4 recommendations 
       recommendations = recommendations
         .filter(p => p.product_id.toString() !== productId.toString())
         .slice(0, 4);
@@ -2078,7 +1976,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 const socialSharingManager = {
   getBaseUrl() {
-    // Use your custom domain or the render.com frontend URL
+    
     return window.location.origin;
   },
 
@@ -2812,24 +2710,6 @@ renderCategories() {
     this.ensureCategoryStylesExist();
   },
 
-// async selectCategory(categoryId) {
-//     console.log('Selecting category:', categoryId);
-//     this.state.selectedCategory = categoryId;
-//     console.log('After setting:', this.state.selectedCategory);
-//     await this.renderCategories();
-//     await this.fetchProducts(categoryId);
-//   const products = this.state.products;
-//  // Ensure this only contains the category-specific products
-// await this.renderProducts(this.state.products);
-
-//   // ... rest of the method
-
-    
-   
-    
-//     // Add debug logging to verify state after fetch
-//     console.log('Current products after category selection:', this.state.products);
-// },
  async selectCategory(categoryId) {
     console.log('Selecting category:', categoryId);
     this.state.selectedCategory = categoryId;
@@ -3493,47 +3373,7 @@ async updateRelatedManagers() {
   this.initializeImageSliders();
 },
 };
-// document.addEventListener("DOMContentLoaded", async () => {
-//   try {
-//     // Initialize all managers in parallel with proper error handling
-//     await Promise.allSettled([
-//       i18nManager.initialize(),
-//       categoryManager.initialize(),
-//       cryptoManager.initialize(),
-//       ratingManager.initialize(),
-//       paymentManager.initialize('pk_test_51QZ5BBGhX6Xc3FUkDACPmuOMhQWtYAsoMwr3KMyH4XaJmEc7kYC5cZjWsuJX9ZeG36PXyjHAHFKpOnWvmYQKYScV00F3qNFmnl'),
-//       recommendationManager.initialize(),
-//       productPageManager.initialize(),
-      
-     
-//     ]).then(results => {
-//       // Log any failures during initialization
-//       results.forEach((result, index) => {
-//         if (result.status === 'rejected') {
-//           console.error(`Manager ${index} failed to initialize:`, result.reason);
-//         }
-//       });
-//     });
 
-//     // Fetch user data and update UI
-//     currentUser = await authManager.fetchCurrentUser();
-    
-//     // Initialize UI components
-//     authManager.displayUserInfo();
-//     authManager.displayUserAvatar();
-//     cartManager.updateDisplay();
-    
-//     setupEventListeners();
-//     uiManager.updateButtonVisibility(currentUser);
-    
-//     // Handle direct navigation last, after all initialization is complete
-//     productPageManager.handleNavigation();
-    
-//   } catch (error) {
-//     console.error("Error during initialization:", error);
-//     showNotification("Error initializing application", "error");
-//   }
-// });
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     // Initialize all managers in parallel with proper error handling
@@ -3647,12 +3487,7 @@ function setupEventListeners() {
   if (elements.logoutBtn) {
     elements.logoutBtn.addEventListener("click", () => authManager.logout());
   }
-  // if (elements.checkoutButton) {
-  //   elements.checkoutButton.addEventListener("click", () => paymentManager.initiateCheckout());
-  // }
-  // if (elements.emptyCartButton) {
-  //   elements.emptyCartButton.addEventListener("click", () => cartManager.clearCart());
-  // }
+
   uiManager.updateButtonVisibility(currentUser);
 };
 

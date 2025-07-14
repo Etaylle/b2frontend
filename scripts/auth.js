@@ -69,7 +69,7 @@ const AuthModal = {
                 password: form.querySelector('#login-password').value
             };
 
-            // Use your existing login logic here
+           
             const success = await this.loginUser(formData);
             
             if (success) {
@@ -101,7 +101,7 @@ const AuthModal = {
                 password: form.querySelector('#register-password').value
             };
 
-            // Use your existing register logic here
+            
             const success = await this.registerUser(formData);
             
             if (success) {
@@ -198,7 +198,7 @@ async register(event) {
     }
 };
 
-// Initialize when DOM is loaded
+
 document.addEventListener('DOMContentLoaded', () => {
     AuthModal.init();
 });
