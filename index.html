@@ -111,39 +111,29 @@
                     }
                 </style>
                 
-                <ul class="nav-list">
-                    <li id="login-btn">
-                        <a href="#login" aria-label="Login" data-i18n="ui.buttons.login">
-                            <i class="fas fa-sign-in-alt"></i>
-                            Login
-                        </a>
-                    </li>
-                    <li id="register-btn">
-                        <a href="#register" aria-label="Register" data-i18n="ui.buttons.register">
-                            <i class="fas fa-user-plus"></i>
-                            Register
-                        </a>
-                    </li>
-                    <li id="logout-button" style="display: none;">
-                        <a href="#logout" aria-label="Logout" data-i18n="ui.buttons.logout">
-                            <i class="fas fa-sign-out-alt"></i>
-                            Logout
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#cart" aria-label="Cart" data-i18n="ui.buttons.cart">
-                            <i class="fas fa-shopping-cart"></i>
-                            Cart
-                        </a>
-                    </li>
-                    <li>
-                        <a href="orderHistory.html" aria-label="Order History" data-i18n="ui.buttons.orderHistory">
-                            <i class="fas fa-history"></i>
-                            Order History
-                        </a>
-                    </li>
-                </ul>
-
+<ul class="nav-list">
+    <li id="login-btn">
+        <i class="fas fa-sign-in-alt"></i>
+        <!-- Use data attributes for translation or directly call translation function -->
+        <span data-i18n="ui.nav.login">Login</span>
+    </li>
+    <li id="register-btn">
+        <i class="fas fa-user-plus"></i>
+        <span data-i18n="ui.nav.register">Register</span>
+    </li>
+    <li id="logout-button" style="display: none;">
+        <i class="fas fa-sign-out-alt"></i>
+        <span data-i18n="ui.nav.logout">Logout</span>
+    </li>
+    <li id="cart-nav">
+        <i class="fas fa-shopping-cart"></i>
+        <span data-i18n="ui.nav.cart">Cart</span>
+    </li>
+    <li id="order-history-nav">
+        <i class="fas fa-history"></i>
+        <span data-i18n="ui.nav.orderHistory">Order History</span>
+    </li>
+</ul>
                 
             <div id="user-avatar-display" class="user-avatar-display">
                 <div class="admin-dropdown" style="display: none;">
@@ -263,7 +253,7 @@
         </section>
     
         <!-- Cart Section -->
-        <section id="cart" class="cart-section">
+        <!-- <section id="cart" class="cart-section">
             <div id="cart-container" class="cart-container">
                 <img src="/images/cart.png" alt="Shopping Cart" class="cart-icon" />
     
@@ -272,13 +262,54 @@
                 <button class="checkout-btn" aria-label="Proceed to checkout">Checkout</button>
                 <button id="empty-cart-button" class="empty-cart-btn" aria-label="Empty the cart">Empty Cart</button>
             </div>
+        </section> -->
+        <section id="cart" class="cart-section">
+            <div id="cart-container" class="cart-container">
+                <img src="/images/cart.png" alt="Shopping Cart" class="cart-icon" />
+                <ul id="cart-items"></ul>
+                <p id="cart-total" data-i18n="ui.labels.cartTotal">Total: 0</p>
+                <button class="checkout-btn" aria-label="Proceed to checkout" data-i18n="ui.buttons.checkout">Checkout</button>
+                <button id="empty-cart-button" class="empty-cart-btn" aria-label="Empty the cart"
+                    data-i18n="ui.buttons.emptyCart">Empty Cart</button>
+            </div>
         </section>
     
         <!-- User Info Display -->
         <div id="user-info-display" style="display: none;"></div>
     
+    <div id="chat-widget" class="chat-widget">
+        <button id="chat-toggle" class="chat-toggle">
+            <i class="fas fa-comments"></i>
+            Chat Support
+        </button>
     
-    
+        <div id="chat-window" class="chat-window">
+            <div class="chat-header">
+                <h3>Chat Support</h3>
+                <div class="chat-controls">
+                    <button id="minimize-chat" class="control-button">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <button id="close-chat" class="control-button">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="chat-messages" class="chat-messages"></div>
+            <div class="chat-input-container">
+                <form id="chat-form" class="chat-form">
+                    <input type="text" id="chat-input" class="chat-input" placeholder="Type your message..."
+                        autocomplete="off">
+                    <button type="submit" class="chat-send">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="back-to-top" class="back-to-top" aria-label="Back to top">
+        <i class="fas fa-arrow-up"></i>
+    </div>
     </main>
     
     <!-- Scripts -->
@@ -289,6 +320,8 @@
             startPanoramaSlideshow();
             setupUserInterface();
             setupModalHandlers();
+            const chat = new ChatWidget();
+            chat.loadMessages()
             
 
             const currentUser = localStorage.getItem("currentUser");
@@ -311,6 +344,41 @@
                     }
                 } catch (error) {
                     console.error('Error:', error);
+                }
+            };
+            const cartSection = document.getElementById('cart');
+
+            // Cart navigation
+            document.getElementById('cart-nav').addEventListener('click', (event) => {
+                event.preventDefault(); // Prevent default link behavior if it was an anchor tag
+                if (cartSection) {
+                    // Scroll to the cart section
+                    cartSection.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+
+            // Order History navigation
+            document.getElementById('order-history-nav').addEventListener('click', (event) => {
+                event.preventDefault();
+                window.location.href = 'orderHistory.html';
+            });
+            const backToTopButton = document.getElementById('back-to-top');
+
+            // Scroll to top functionality
+            backToTopButton.addEventListener('click', () => {
+                document.body.scrollTop = 0; // For Safari
+                document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+            });
+
+            // Show/hide back to top button based on scroll position
+            window.onscroll = function () {
+                if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                    backToTopButton.classList.add("show");
+                } else {
+                    backToTopButton.classList.remove("show");
                 }
             };
         });
@@ -470,9 +538,294 @@
                 button.classList.add('selected');
             });
         });
-    });
-        
-    </script>
+    }); class ChatWidget {
+            constructor() {
+                this.initializeElements();
+                this.bindEvents();
+                this.messages = [];
+                this.isMinimized = false;
+                this.addStyles();
+            }
+
+            initializeElements() {
+                this.chatToggle = document.getElementById('chat-toggle');
+                this.chatWindow = document.getElementById('chat-window');
+                this.chatMessages = document.getElementById('chat-messages');
+                this.chatForm = document.getElementById('chat-form');
+                this.chatInput = document.getElementById('chat-input');
+                this.minimizeButton = document.getElementById('minimize-chat');
+                this.closeButton = document.getElementById('close-chat');
+            }
+
+            addStyles() {
+                const styles = `
+            .message {
+                max-width: 80%;
+                margin: 8px;
+                padding: 12px;
+                border-radius: 15px;
+                position: relative;
+                animation: messageSlide 0.3s ease-out;
+                clear: both;
+                word-wrap: break-word;
+            }
+
+            .message.user {
+                background-color: #007bff;
+                color: white;
+                float: right;
+                border-bottom-right-radius: 5px;
+            }
+
+            .message.support {
+                background-color: #f0f0f0;
+                color: #333;
+                float: left;
+                border-bottom-left-radius: 5px;
+            }
+
+            .message-time {
+                font-size: 0.7em;
+                opacity: 0.7;
+                margin-top: 5px;
+                display: block;
+            }
+
+            @keyframes messageSlide {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .chat-messages {
+                height: 300px;
+                overflow-y: auto;
+                padding: 10px;
+                background: white;
+            }
+
+            .message-animation {
+                animation: messageSlide 0.3s ease-out;
+            }
+
+            .chat-window.minimized {
+                height: 40px;
+                overflow: hidden;
+            }
+        `;
+
+                const styleSheet = document.createElement("style");
+                styleSheet.textContent = styles;
+                document.head.appendChild(styleSheet);
+            }
+
+            bindEvents() {
+                this.chatToggle.addEventListener('click', () => this.toggleChat());
+                this.chatForm.addEventListener('submit', (e) => this.handleSubmit(e));
+                this.minimizeButton.addEventListener('click', () => this.minimizeChat());
+                this.closeButton.addEventListener('click', () => this.closeChat());
+            }
+
+        toggleChat() {
+            this.isVisible = !this.isVisible;
+            this.chatWindow.classList.toggle('visible');
+            this.chatToggle.style.display = this.isVisible ? 'none' : 'flex';
+
+            if (this.isVisible) {
+                if (this.messages.length === 0) {
+                    this.addMessage('Hello! How can I help you today?', 'support');
+                } else {
+                    // Scroll to the latest message when opening the chat
+                    this.scrollToLatestMessage();
+                }
+            }
+        }
+
+        closeChat() {
+            this.isVisible = false;
+            this.chatWindow.classList.remove('visible');
+            this.chatToggle.style.display = 'flex';
+        }
+
+            minimizeChat() {
+                this.isMinimized = !this.isMinimized;
+                this.chatWindow.classList.toggle('minimized');
+                this.minimizeButton.querySelector('i').classList.toggle('fa-minus');
+                this.minimizeButton.querySelector('i').classList.toggle('fa-plus');
+            }
+
+            
+
+            handleSubmit(e) {
+                e.preventDefault();
+                const message = this.chatInput.value.trim();
+                if (!message) return;
+
+                this.addMessage(message, 'user');
+                this.chatInput.value = '';
+
+                // Simulate automated responses based on keywords
+                setTimeout(() => {
+                    const response = this.getAutomatedResponse(message.toLowerCase());
+                    this.addMessage(response, 'support');
+                }, 1000);
+            }
+
+            getAutomatedResponse(message) {
+                const responses = {
+                    'hello': 'Hi there! How can I assist you today?',
+                    'hi': 'Hello! How may I help you?',
+                    'price': 'Our prices vary by product. Is there a specific item you\'re interested in?',
+                    'shipping': 'We offer standard shipping (3-5 days) and express shipping (1-2 days). Would you like more details?',
+                    'return': 'Our return policy allows returns within 30 days of purchase. Would you like more information?',
+                    'help': 'I\'d be happy to help! What do you need assistance with?',
+                    'default': 'Thank you for your message. How else can I assist you?',
+                    'contact': 'Please dial the support service on: \n +43 660 57 65 091'
+                };
+
+                for (const [key, response] of Object.entries(responses)) {
+                    if (message.includes(key)) {
+                        return response;
+                    }
+                }
+
+                return responses.default;
+            }
+
+            addMessage(text, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', sender, 'message-animation');
+
+                const messageText = document.createElement('span');
+                messageText.textContent = text;
+
+                const timeSpan = document.createElement('span');
+                timeSpan.classList.add('message-time');
+                timeSpan.textContent = new Date().toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                messageDiv.appendChild(messageText);
+                messageDiv.appendChild(timeSpan);
+
+                this.chatMessages.appendChild(messageDiv);
+                this.scrollToBottom();
+                this.messages.push({ text, sender, time: new Date() });
+
+                // Save messages to localStorage
+                this.saveMessages();
+            }
+
+            saveMessages() {
+                localStorage.setItem('chatMessages', JSON.stringify(this.messages));
+            }
+        scrollToLatestMessage() {
+            // This ensures the chat window scrolls to the bottom where the latest message is
+            this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+        }
+            loadMessages() {
+                const savedMessages = localStorage.getItem('chatMessages');
+                if (savedMessages) {
+                    const messages = JSON.parse(savedMessages);
+                    messages.forEach(msg => this.addMessage(msg.text, msg.sender));
+                }
+            }
+
+            scrollToBottom() {
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+        }
+    //  class ChatWidget {
+    //         constructor() {
+    //             this.initializeElements();
+    //             this.bindEvents();
+    //             this.messages = [];
+    //             this.isMinimized = false;
+    //         }
+
+    //         initializeElements() {
+    //             this.chatToggle = document.getElementById('chat-toggle');
+    //             this.chatWindow = document.getElementById('chat-window');
+    //             this.chatMessages = document.getElementById('chat-messages');
+    //             this.chatForm = document.getElementById('chat-form');
+    //             this.chatInput = document.getElementById('chat-input');
+    //             this.minimizeButton = document.getElementById('minimize-chat');
+    //             this.closeButton = document.getElementById('close-chat');
+    //         }
+
+    //         bindEvents() {
+    //             this.chatToggle.addEventListener('click', () => this.toggleChat());
+    //             this.chatForm.addEventListener('submit', (e) => this.handleSubmit(e));
+    //             this.minimizeButton.addEventListener('click', () => this.minimizeChat());
+    //             this.closeButton.addEventListener('click', () => this.closeChat());
+    //         }
+
+    //         toggleChat() {
+    //             this.chatWindow.style.display = this.chatWindow.style.display === 'none' || !this.chatWindow.style.display ? 'flex' : 'none';
+    //             this.chatToggle.style.display = 'none';
+
+    //             if (this.chatWindow.style.display === 'flex' && this.messages.length === 0) {
+    //                 this.addMessage('Hello! How can I help you today?', 'support');
+    //             }
+    //         }
+
+    //         minimizeChat() {
+    //             this.isMinimized = !this.isMinimized;
+    //             this.chatWindow.classList.toggle('minimized');
+    //         }
+
+    //         closeChat() {
+    //             this.chatWindow.style.display = 'none';
+    //             this.chatToggle.style.display = 'flex';
+    //         }
+
+    //         handleSubmit(e) {
+    //             e.preventDefault();
+    //             const message = this.chatInput.value.trim();
+    //             if (!message) return;
+
+    //             this.addMessage(message, 'user');
+    //             this.chatInput.value = '';
+
+    //             // Simulate support response
+    //             setTimeout(() => {
+    //                 this.addMessage('Thank you for your message. Our team will get back to you shortly.', 'support');
+    //             }, 1000);
+    //         }
+
+    //         addMessage(text, sender) {
+    //             const messageDiv = document.createElement('div');
+    //             messageDiv.classList.add('message', sender, 'message-animation');
+
+    //             const messageText = document.createElement('span');
+    //             messageText.textContent = text;
+
+    //             const timeSpan = document.createElement('span');
+    //             timeSpan.classList.add('message-time');
+    //             timeSpan.textContent = new Date().toLocaleTimeString([], {
+    //                 hour: '2-digit',
+    //                 minute: '2-digit'
+    //             });
+
+    //             messageDiv.appendChild(messageText);
+    //             messageDiv.appendChild(timeSpan);
+
+    //             this.chatMessages.appendChild(messageDiv);
+    //             this.scrollToBottom();
+    //             this.messages.push({ text, sender, time: new Date() });
+    //         }
+
+    //         scrollToBottom() {
+    //             this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+    //         }
+    //     }   
+    // </script>
 </body>
 
 </html>

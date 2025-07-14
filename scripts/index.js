@@ -47,10 +47,11 @@ async function ensureGuestSession() {
   }
 };
 
-//CartManager
+//CART ADDITION FOR GUEST USER
 const CartEnhancements = {
-  initializeGuestMode() {
-    // Set guest user ID in localStorage for persistence
+
+ initializeGuestMode() {
+    // GuestID gets set in localStorage, due to complications
     if (!localStorage.getItem('guestId')) {
       localStorage.setItem('guestId', '999999');
     }
@@ -58,16 +59,31 @@ const CartEnhancements = {
     // Enhance all fetch requests with guest header
     const originalFetch = window.fetch;
     window.fetch = function(...args) {
-      if (args[0].includes('backend-3mvr.onrender.com/api/')) {
-        const options = args[1] || {};
+      // Only modify API calls to our backend
+      if (typeof args[0] === 'string' && args[0].includes('backend-3mvr.onrender.com/api/')) {
+        let options = args[1] || {};
+        
         options.headers = {
-          ...options.headers,
+          ...(options.headers || {}),
           'X-Guest-User': localStorage.getItem('guestId')
         };
+        
         args[1] = options;
       }
+      
+      // Call the original fetch with the modified arguments
       return originalFetch.apply(this, args);
     };
+  },
+
+  // Helper method to check if user is in guest mode
+  isGuestMode() {
+    return !currentUser && localStorage.getItem('guestId') !== null;
+  },
+
+  // Helper method to get current guest ID
+  getGuestId() {
+    return localStorage.getItem('guestId');
   },
 
   async setupGuestSession() {
@@ -96,6 +112,14 @@ const CartEnhancements = {
   }
 };
 
+// Safety check before initializing
+try {
+  if (typeof window !== 'undefined' && window.fetch) {
+    CartEnhancements.initializeGuestMode();
+  }
+} catch (error) {
+  console.error('Failed to initialize guest mode:', error);
+}
 // Initialize guest mode
 document.addEventListener('DOMContentLoaded', () => {
   CartEnhancements.initializeGuestMode();
@@ -113,13 +137,304 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
-// Cart state management
-const cartManager = {
+// CART MANAGER
+// const cartManager = {
 
+//   async fetchCart() {
+//     if (!currentUser) {
+//     await ensureGuestSession();
+//   }
+//     try {
+//       const response = await fetch('https://backend-3mvr.onrender.com/api/cart', {
+//         ...fetchConfig,
+//         credentials: 'include',
+//         headers: {
+//           ...fetchConfig.headers,
+//           'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
+//         }
+//       });
+      
+//       if (!response.ok) {
+//         return { items: [], total: 0 };
+//       }
+//       const data = await response.json();
+//       return data.cart;
+//     } catch (error) {
+//       console.error('Error fetching cart:', error);
+//       return { items: [], total: 0 };
+//     }
+//   },
+// async addItem(productId) {
+//   try {
+//     // First try to guest session
+//     if (!currentUser) {
+//       const guestLoginResponse = await fetch('https://backend-3mvr.onrender.com/api/guest-login', {
+//         method: 'POST',
+//         credentials: 'include',
+//         headers: {
+//           'Content-Type': 'application/json'
+//         },
+//         body: JSON.stringify({
+//           email: 'guest@example.com',
+//           password: 'not_accessible'
+//         })
+        
+//       });
+      
+//       if (!guestLoginResponse.ok) {
+//         throw new Error('Guest login failed');
+//       }
+//     }
+
+//     // Then try to add to cart
+//     const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
+//       method: 'POST',
+//       credentials: 'include',
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'X-Guest-User': !currentUser ? '999999' : undefined
+//       },
+//       body: JSON.stringify({ productId, quantity: 1 })
+//     });
+
+//     if (!response.ok) {
+//       const errorData = await response.json();
+//       throw new Error(errorData.message || 'Failed to add to cart');
+//     }
+
+//     await this.updateDisplay();
+//     showNotification('itemAddedToCart', 'success');
+//   } catch (error) {
+//     console.error('Error:', error);
+//     showNotification(i18nManager.translate('outOfStock'), 'error');
+//   }
+// },
+//   async removeItem(productId) {
+//     if (!currentUser) {
+//     await ensureGuestSession();
+//   }try {
+//       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/remove', {
+//         method: 'DELETE',
+//         headers: { 
+//           'Content-Type': 'application/json',
+//           'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
+//         },
+//         body: JSON.stringify({ productId }),
+//         credentials: 'include',
+//       });
+
+//       if (!response.ok) throw new Error('Failed to remove item');
+//       await this.updateDisplay();
+//       showNotification('itemRemovedFromCart', 'success');
+//     } catch (error) {
+//       console.error('Error:', error);
+//       showNotification(i18nManager.translate('failedToRemoveItem'), 'error');
+//     }
+//   },
+
+//   async completePurchase() {
+//     if (!currentUser) {
+//     await ensureGuestSession();
+//   }try {
+//       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/complete-purchase', {
+//         method: 'POST',
+//         credentials: 'include',
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
+//         }
+//       });
+
+//       if (!response.ok) {
+//         const errorData = await response.json();
+//         throw new Error(errorData.message);
+//       }
+
+//       await this.clearCart(true);
+//       return true;
+//     } catch (error) {
+//       console.error('Error completing purchase:', error);
+//       showNotification(i18nManager.translate('failedToCompletePurchase'), 'error');
+//       return false;
+//     }
+  
+//   },
+//   async updateQuantity(productId, quantity) {
+
+//     if (!currentUser) {
+//     await ensureGuestSession();
+//   }try {
+//       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/update', {
+//         method: 'PUT',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify({ productId, quantity }),
+//         credentials: 'include'
+//       });
+
+//       if (!response.ok) throw new Error('Failed to update quantity');
+//       await this.updateDisplay();
+//     } catch (error) {
+//       console.error('Error updating quantity:', error);
+//       showNotification(i18nManager.translate('failedToUpdateQuantity'), 'error');
+//     }
+//   },
+//   async clearCart(afterPurchase = false) {
+//     try {
+//       // First ensure guest session is active if needed
+//       if (!currentUser) {
+//         await ensureGuestSession();
+//       }
+
+//       // Add retry logic with proper error handling
+//       const clearCartWithRetry = async (retryCount = 0) => {
+//         try {
+//           const response = await fetch('https://backend-3mvr.onrender.com/api/cart/clear', {
+//             method: 'DELETE',
+//             credentials: 'include',
+//             headers: { 
+//               'Content-Type': 'application/json',
+//               'X-Guest-User': !currentUser ? localStorage.getItem('guestId') : undefined
+//             },
+//             body: JSON.stringify({ afterPurchase })
+//           });
+
+//           // Check if we got a 500 error
+//           if (response.status === 500 && retryCount < 1) {
+//             // Wait a short delay before retrying
+//             await new Promise(resolve => setTimeout(resolve, 1000));
+//             return await clearCartWithRetry(retryCount + 1);
+//           }
+
+//           if (!response.ok) {
+//             const errorData = await response.json().catch(() => ({ message: 'Failed to clear cart' }));
+//             throw new Error(errorData.message);
+//           }
+
+//           // Try to parse the response, but handle cases where it might be empty
+//           const result = await response.json().catch(() => ({}));
+
+//           // Update the UI
+//           const cartContainer = document.getElementById('cart-items');
+//           const cartTotal = document.getElementById('cart-total');
+
+//           if (cartContainer) {
+//             cartContainer.innerHTML = `<li data-i18n="ui.messages.cartEmpty">${i18nManager.translate('ui.messages.cartEmpty')}</li>`;
+//             cartContainer.classList.add('hidden');
+//           }
+
+//           if (cartTotal) {
+//             cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: 0`;
+//           }
+
+//           // Show success notification
+//           showNotification(
+//             afterPurchase ? 
+//               i18nManager.translate('purchaseCompleted') : 
+//               i18nManager.translate('cartCleared'), 
+//             'success'
+//           );
+
+//           return result;
+//         } catch (error) {
+//           if (retryCount < 1) {
+//             // Wait and retry once
+//             await new Promise(resolve => setTimeout(resolve, 1000));
+//             return await clearCartWithRetry(retryCount + 1);
+//           }
+//           throw error;
+//         }
+//       };
+
+//       // Execute the clear cart operation with retry logic
+//       await clearCartWithRetry();
+
+//     } catch (error) {
+//       console.error('Error clearing cart:', error);
+//       showNotification(i18nManager.translate('ui.errors.failedToClearCart'), 'error');
+//       throw error; // Re-throw to allow caller to handle if needed
+//     }
+//   },    
+// async updateDisplay() {
+//     const cart = await this.fetchCart();
+//     const cartContainer = document.getElementById('cart-items');
+//     const cartTotal = document.getElementById('cart-total');
+    
+//     cartContainer.innerHTML = '';
+
+//     if (!cart.items || cart.items.length === 0) {
+//       cartContainer.innerHTML = '<li>Your cart is empty</li>';
+//       cartTotal.textContent =  ': 0';
+//       cartContainer.classList.add('hidden');
+//       return;
+//     }
+
+//     cartContainer.classList.remove('hidden');
+//     let total = 0;
+
+//     cart.items.forEach(item => {
+//       const listItem = document.createElement('li');
+//       listItem.className = 'cart-item';
+
+//       const imageUrl = item.images?.[0] || item.image_url || '/images/1.jpg';
+//       const productName = item.name || 'Unknown Product';
+//       const productPrice = item.price || 0;
+//       const productId = item.product_id;
+
+//       listItem.innerHTML = `
+//       <img src="${imageUrl}" alt="${productName}" class="cart-item-image">
+//       <div class="cart-item-details">
+//         <span class="item-name">${productName} | </span>
+//         <span class="item-price">${parseFloat(productPrice).toFixed(2)} $ |</span>
+//         <span class="item-quantity">${i18nManager.translate('ui.labels.quantity')}: ${item.quantity}</span>
+//       </div>
+//       <div class="cart-item-controls">
+//         <button class="quantity-btn minus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.decreaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.decreaseQuantity')}">-</button>
+//         <button class="quantity-btn plus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.increaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.increaseQuantity')}">+</button>
+//         <button class="remove-btn" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.removeItem')}" aria-label="${i18nManager.translate('ui.ariaLabels.removeItem')}">${i18nManager.translate('ui.buttons.removeItem')}</button>
+//       </div>
+//     `;
+
+
+//       cartContainer.appendChild(listItem);
+//       total += productPrice * item.quantity;
+//     });
+
+//     cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: ${total.toFixed(2)}`;
+//     this.attachEventListeners();
+//   },
+
+//   attachEventListeners() {
+//     document.querySelectorAll('.quantity-btn').forEach(btn => {
+//       btn.addEventListener('click', (e) => {
+//         const productId = e.target.getAttribute('data-id');
+//         const listItem = e.target.closest('.cart-item');
+//         const quantityElement = listItem.querySelector('.item-quantity');
+//         let currentQuantity = parseInt(quantityElement.textContent.replace('Quantity: ', ''));
+        
+//         if (e.target.classList.contains('plus')) {
+//           currentQuantity += 1;
+//         } else {
+//           currentQuantity = Math.max(1, currentQuantity - 1);
+//         }
+        
+//         this.updateQuantity(productId, currentQuantity);
+//       });
+//     });
+
+// // Then append this button to your cart item or wherever it belongs
+//     document.querySelectorAll('.remove-btn').forEach(btn => {
+//       btn.addEventListener('click', (e) => {
+//         const productId = e.target.getAttribute('data-id');
+//         this.removeItem(productId);
+//       });
+//     });
+//   }
+// };
+const cartManager = {
   async fetchCart() {
     if (!currentUser) {
-    await ensureGuestSession();
-  }
+      await ensureGuestSession();
+    }
     try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/cart', {
         ...fetchConfig,
@@ -141,56 +456,49 @@ const cartManager = {
     }
   },
 
+<<<<<<< HEAD
 
 async addItem(productId) {
   try {
     // First ensure guest session
     if (!currentUser) {
       const guestLoginResponse = await fetch('https://backend-3mvr.onrender.com/api/guest-login', {
+=======
+  async addItem(productId) {
+    try {
+      if (!currentUser) {
+        await ensureGuestSession();
+      }
+
+      const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
+>>>>>>> af745224b3de15d1b4a213e941f7fda21b1642b0
         method: 'POST',
         credentials: 'include',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
         },
-        body: JSON.stringify({
-          email: 'guest@example.com',
-          password: 'not_accessible'
-        })
-        
+        body: JSON.stringify({ productId, quantity: 1 })
       });
-      
-      if (!guestLoginResponse.ok) {
-        throw new Error('Guest login failed');
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to add to cart');
       }
+
+      await this.updateDisplay();
+      showNotification('itemAddedToCart', 'success');
+    } catch (error) {
+      console.error('Error:', error);
+      showNotification(i18nManager.translate('outOfStock'), 'error');
     }
+  },
 
-    // Then try to add to cart
-    const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Guest-User': !currentUser ? '999999' : undefined
-      },
-      body: JSON.stringify({ productId, quantity: 1 })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to add to cart');
-    }
-
-    await this.updateDisplay();
-    showNotification('Added to cart!', 'success');
-  } catch (error) {
-    console.error('Error:', error);
-    showNotification(error.message || 'Out of stock!', 'error');
-  }
-},
   async removeItem(productId) {
     if (!currentUser) {
-    await ensureGuestSession();
-  }try {
+      await ensureGuestSession();
+    }
+    try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/remove', {
         method: 'DELETE',
         headers: { 
@@ -203,17 +511,18 @@ async addItem(productId) {
 
       if (!response.ok) throw new Error('Failed to remove item');
       await this.updateDisplay();
-      showNotification('Item removed from cart', 'success');
+      showNotification('itemRemovedFromCart', 'success');
     } catch (error) {
       console.error('Error:', error);
-      showNotification('Failed to remove item', 'error');
+      showNotification(i18nManager.translate('failedToRemoveItem'), 'error');
     }
   },
 
   async completePurchase() {
     if (!currentUser) {
-    await ensureGuestSession();
-  }try {
+      await ensureGuestSession();
+    }
+    try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/complete-purchase', {
         method: 'POST',
         credentials: 'include',
@@ -232,19 +541,22 @@ async addItem(productId) {
       return true;
     } catch (error) {
       console.error('Error completing purchase:', error);
-      showNotification(error.message || 'Failed to complete purchase', 'error');
+      showNotification(i18nManager.translate('failedToCompletePurchase'), 'error');
       return false;
     }
-  
   },
-  async updateQuantity(productId, quantity) {
 
+  async updateQuantity(productId, quantity) {
     if (!currentUser) {
-    await ensureGuestSession();
-  }try {
+      await ensureGuestSession();
+    }
+    try {
       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/update', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
+        },
         body: JSON.stringify({ productId, quantity }),
         credentials: 'include'
       });
@@ -253,66 +565,138 @@ async addItem(productId) {
       await this.updateDisplay();
     } catch (error) {
       console.error('Error updating quantity:', error);
-      showNotification('Failed to update quantity', 'error');
+      showNotification(i18nManager.translate('failedToUpdateQuantity'), 'error');
     }
   },
-    async clearCart(afterPurchase = false) {
+
+  async clearCart(afterPurchase = false) {
+    try {
       if (!currentUser) {
-    await ensureGuestSession();
-  }try {
-        const response = await fetch('https://backend-3mvr.onrender.com/api/cart/clear', {
-          method: 'DELETE',
-          credentials: 'include',
-          headers: { 
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ afterPurchase })
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message);
-        }
-
-        const result = await response.json();
-
-        // Update the UI
-        const cartContainer = document.getElementById('cart-items');
-        const cartTotal = document.getElementById('cart-total');
-
-        if (cartContainer) {
-          cartContainer.innerHTML = `<li data-i18n="ui.messages.cartEmpty">Your cart is empty</li>`;
-          cartContainer.classList.add('hidden');
-        }
-
-        if (cartTotal) {
-          cartTotal.textContent = i18nManager.translate('ui.labels.cartTotal') + ': 0';
-        }
-        // Update translations for the container text
-const emptyCartMessage = cartContainer.querySelector('li[data-i18n]');
-if (emptyCartMessage) {
-  emptyCartMessage.textContent = i18nManager.translate(emptyCartMessage.getAttribute('data-i18n'));
-}
-        showNotification(
-  afterPurchase ? 
-  i18nManager.translate('ui.messages.purchaseCompleted') : 
-  i18nManager.translate('ui.messages.cartCleared'), 
-  'success');
-      } catch (error) {
-        console.error('Error clearing cart:', error);
-        showNotification(error.message || 'Failed to clear cart', 'error');
+        await ensureGuestSession();
       }
-    },
-    async updateDisplay() {
+
+      const clearCartWithRetry = async (retryCount = 0) => {
+        try {
+          const response = await fetch('https://backend-3mvr.onrender.com/api/cart/clear', {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: { 
+              'Content-Type': 'application/json',
+              'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
+            },
+            body: JSON.stringify({ afterPurchase })
+          });
+
+          if (response.status === 500 && retryCount < 1) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return await clearCartWithRetry(retryCount + 1);
+          }
+
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ message: 'Failed to clear cart' }));
+            throw new Error(errorData.message);
+          }
+
+          const result = await response.json().catch(() => ({}));
+
+          const cartContainer = document.getElementById('cart-items');
+          const cartTotal = document.getElementById('cart-total');
+
+          if (cartContainer) {
+            cartContainer.innerHTML = `<li data-i18n="ui.messages.cartEmpty">${i18nManager.translate('ui.messages.cartEmpty')}</li>`;
+            cartContainer.classList.add('hidden');
+          }
+
+          if (cartTotal) {
+            cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: 0`;
+          }
+
+          showNotification(
+            afterPurchase ? 
+              i18nManager.translate('purchaseCompleted') : 
+              i18nManager.translate('cartCleared'), 
+            'success'
+          );
+
+          return result;
+        } catch (error) {
+          if (retryCount < 1) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return await clearCartWithRetry(retryCount + 1);
+          }
+          throw error;
+        }
+      };
+
+      await clearCartWithRetry();
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      showNotification(i18nManager.translate('ui.errors.failedToClearCart'), 'error');
+      throw error;
+    }
+  },
+
+  // async updateDisplay() {
+  //   const cart = await this.fetchCart();
+  //   const cartContainer = document.getElementById('cart-items');
+  //   const cartTotal = document.getElementById('cart-total');
+    
+  //   if (!cartContainer || !cartTotal) return;
+    
+  //   cartContainer.innerHTML = '';
+
+  //   if (!cart.items || cart.items.length === 0) {
+  //     cartContainer.innerHTML = `<li>${i18nManager.translate('ui.messages.cartEmpty')}</li>`;
+  //     cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: 0`;
+  //     cartContainer.classList.add('hidden');
+  //     return;
+  //   }
+
+  //   cartContainer.classList.remove('hidden');
+  //   let total = 0;
+
+  //   cart.items.forEach(item => {
+  //     const listItem = document.createElement('li');
+  //     listItem.className = 'cart-item';
+
+  //     const imageUrl = item.images?.[0] || item.image_url || '/images/1.jpg';
+  //     const productName = item.name || 'Unknown Product';
+  //     const productPrice = item.price || 0;
+  //     const productId = item.product_id;
+
+  //     listItem.innerHTML = `
+  //       <img src="${imageUrl}" alt="${productName}" class="cart-item-image">
+  //       <div class="cart-item-details">
+  //         <span class="item-name">${productName} | </span>
+  //         <span class="item-price">${parseFloat(productPrice).toFixed(2)} $ |</span>
+  //         <span class="item-quantity">${i18nManager.translate('ui.labels.quantity')}: ${item.quantity}</span>
+  //       </div>
+  //       <div class="cart-item-controls">
+  //         <button class="quantity-btn minus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.decreaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.decreaseQuantity')}">-</button>
+  //         <button class="quantity-btn plus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.increaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.increaseQuantity')}">+</button>
+  //         <button class="remove-btn" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.removeItem')}" aria-label="${i18nManager.translate('ui.ariaLabels.removeItem')}">${i18nManager.translate('ui.buttons.removeItem')}</button>
+  //       </div>
+  //     `;
+
+  //     cartContainer.appendChild(listItem);
+  //     total += productPrice * item.quantity;
+  //   });
+
+  //   cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: ${total.toFixed(2)}`;
+  //   this.attachEventListeners();
+  // },
+async updateDisplay() {
     const cart = await this.fetchCart();
     const cartContainer = document.getElementById('cart-items');
     const cartTotal = document.getElementById('cart-total');
     
+    if (!cartContainer || !cartTotal) return;
+    
     cartContainer.innerHTML = '';
 
     if (!cart.items || cart.items.length === 0) {
-      cartContainer.innerHTML = '<li>Your cart is empty</li>';
-      cartTotal.textContent =  ': 0';
+      cartContainer.innerHTML = `<li>${i18nManager.translate('ui.messages.cartEmpty')}</li>`;
+      cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: 0`;
       cartContainer.classList.add('hidden');
       return;
     }
@@ -329,20 +713,30 @@ if (emptyCartMessage) {
       const productPrice = item.price || 0;
       const productId = item.product_id;
 
-      listItem.innerHTML = `
-      <img src="${imageUrl}" alt="${productName}" class="cart-item-image">
-      <div class="cart-item-details">
-        <span class="item-name">${productName} | </span>
-        <span class="item-price">${parseFloat(productPrice).toFixed(2)} $ |</span>
-        <span class="item-quantity">${i18nManager.translate('ui.labels.quantity')}: ${item.quantity}</span>
-      </div>
-      <div class="cart-item-controls">
-        <button class="quantity-btn minus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.decreaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.decreaseQuantity')}">-</button>
-        <button class="quantity-btn plus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.increaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.increaseQuantity')}">+</button>
-        <button class="remove-btn" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.removeItem')}" aria-label="${i18nManager.translate('ui.ariaLabels.removeItem')}">${i18nManager.translate('ui.buttons.removeItem')}</button>
-      </div>
-    `;
+      // Create remove button separately to handle translation
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-btn';
+      removeBtn.setAttribute('data-id', productId);
+      removeBtn.setAttribute('title', i18nManager.translate('ui.tooltips.removeItem'));
+      removeBtn.setAttribute('aria-label', i18nManager.translate('ui.ariaLabels.removeItem'));
+      removeBtn.textContent = i18nManager.translate('ui.buttons.removeItem');
 
+      listItem.innerHTML = `
+        <img src="${imageUrl}" alt="${productName}" class="cart-item-image">
+        <div class="cart-item-details">
+          <span class="item-name">${productName} | </span>
+          <span class="item-price">${parseFloat(productPrice).toFixed(2)} $ |</span>
+          <span class="item-quantity">${i18nManager.translate('ui.labels.quantity')}: ${item.quantity}</span>
+        </div>
+        <div class="cart-item-controls">
+          <button class="quantity-btn minus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.decreaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.decreaseQuantity')}">-</button>
+          <button class="quantity-btn plus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.increaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.increaseQuantity')}">+</button>
+        </div>
+      `;
+
+      // Append the remove button to the controls div
+      const controlsDiv = listItem.querySelector('.cart-item-controls');
+      controlsDiv.appendChild(removeBtn);
 
       cartContainer.appendChild(listItem);
       total += productPrice * item.quantity;
@@ -351,26 +745,31 @@ if (emptyCartMessage) {
     cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: ${total.toFixed(2)}`;
     this.attachEventListeners();
   },
-
   attachEventListeners() {
     document.querySelectorAll('.quantity-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         const productId = e.target.getAttribute('data-id');
         const listItem = e.target.closest('.cart-item');
         const quantityElement = listItem.querySelector('.item-quantity');
-        let currentQuantity = parseInt(quantityElement.textContent.replace('Quantity: ', ''));
+        const currentText = quantityElement.textContent;
+        const matches = currentText.match(/\d+/);
+        const currentQuantity = matches ? parseInt(matches[0]) : 1;
         
+        let newQuantity = currentQuantity;
         if (e.target.classList.contains('plus')) {
-          currentQuantity += 1;
+          newQuantity = currentQuantity + 1;
         } else {
-          currentQuantity = Math.max(1, currentQuantity - 1);
+          newQuantity = Math.max(1, currentQuantity - 1);
         }
         
-        this.updateQuantity(productId, currentQuantity);
+        await this.updateQuantity(productId, newQuantity);
       });
     });
 
+<<<<<<< HEAD
 // Then, append this button to cart item
+=======
+>>>>>>> af745224b3de15d1b4a213e941f7fda21b1642b0
     document.querySelectorAll('.remove-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const productId = e.target.getAttribute('data-id');
@@ -379,7 +778,6 @@ if (emptyCartMessage) {
     });
   }
 };
-
 // UI Management
 const uiManager = {
   // Modal functions
@@ -402,7 +800,10 @@ const uiManager = {
     const registerContainer = document.querySelector("#register");
     registerContainer.style.display = "none";
   },
+<<<<<<< HEAD
 
+=======
+>>>>>>> af745224b3de15d1b4a213e941f7fda21b1642b0
   updateButtonVisibility: (currentUser) => {
     const loginBtn = document.getElementById("login-btn");
     const registerBtn = document.getElementById("register-btn");
@@ -474,33 +875,41 @@ async login(formData) {
     const response = await fetch("https://backend-3mvr.onrender.com/api/auth/login", {
       ...fetchConfig,
       method: "POST",
-      body: JSON.stringify({
-        email: formData.email,
-        password: formData.password
-      })
+      body: JSON.stringify(formData)
     });
 
     const data = await response.json();
     
     if (response.ok) {
+<<<<<<< HEAD
       showNotification('Login successful!', 'success');
       return true;  
+=======
+      // Clear guest ID here
+      delete fetchConfig.headers['X-Guest-User'];
+      
+      showNotification(i18nManager.translate('loginSuccessful'), 'success');
+      return true;
+>>>>>>> af745224b3de15d1b4a213e941f7fda21b1642b0
     } else {
       showNotification(data.message, 'error');
       return false;
     }
   } catch (error) {
-    showNotification(error.message, 'error');
+    showNotification(error.message, 'errorOccured');
     return false;
   }
 },
-
 // In AuthModal's handleLogin
 if (success) {
-    this.showMessage('login-message', 'Login successful!', 'success');
+    this.showMessage('login-message', 'Login Successful!', 'success');
     setTimeout(() => {
         this.hideModal();
+<<<<<<< HEAD
         window.location.reload();  
+=======
+        window.location.reload();
+>>>>>>> af745224b3de15d1b4a213e941f7fda21b1642b0
     }, 1500);
 },
 
@@ -521,7 +930,7 @@ if (success) {
       });
 
       if (response.ok) {
-        showNotification('Registration successful!', 'success');
+        showNotification(i18nManager.translate('registrationSuccessful'), 'success');
         return true;
       } else {
         const data = await response.json();
@@ -655,52 +1064,51 @@ const AuthModal = {
             const success = await this.loginUser(formData);
             
             if (success) {
-                this.showMessage('login-message', 'Login successful!', 'success');
+                this.showMessage('login-message', i18nManager.translate('loginSuccessful'), 'success');
                  setTimeout(() => {
                 this.hideModal();
                 window.location.reload();
             }, 1500);
             } else {
-                this.showMessage('login-message', 'Invalid credentials', 'error');
+                this.showMessage('login-message', i18nManager.translate('invalidCredentials'), 'error');
             }
         } catch (error) {
-            this.showMessage('login-message', 'An error occurred', 'error');
+             this.showMessage('login-message', i18nManager.translate('errorOccurred'), 'error');
         } finally {
             this.setLoading(submitBtn, false);
         }
     },
 
-    async handleRegister(e) {
-        e.preventDefault();
-        const form = e.target;
-        const submitBtn = form.querySelector('.submit-btn');
-        
-        try {
-            this.setLoading(submitBtn, true);
-            
-            const formData = {
-                username: form.querySelector('#register-username').value,
-                firstName: form.querySelector('#register-firstname').value,
-                lastName: form.querySelector('#register-lastname').value,
-                email: form.querySelector('#register-email').value,
-                password: form.querySelector('#register-password').value
-            };
+ async handleRegister(e) {
+    e.preventDefault();
+    const form = e.target;
+    const submitBtn = form.querySelector('.submit-btn');
+    
+    try {
+      this.setLoading(submitBtn, true);
+      
+      const formData = {
+        username: form.querySelector('#register-username').value,
+        firstName: form.querySelector('#register-firstname').value,
+        lastName: form.querySelector('#register-lastname').value,
+        email: form.querySelector('#register-email').value,
+        password: form.querySelector('#register-password').value
+      };
 
-           
-            const success = await this.registerUser(formData);
-            
-            if (success) {
-                this.showMessage('register-message', 'Registration successful!', 'success');
-                setTimeout(() => this.switchForm('login'), 1500);
-            } else {
-                this.showMessage('register-message', 'Registration failed', 'error');
-            }
-        } catch (error) {
-            this.showMessage('register-message', 'An error occurred', 'error');
-        } finally {
-            this.setLoading(submitBtn, false);
-        }
-    },
+      const success = await this.registerUser(formData);
+      
+      if (success) {
+        this.showMessage('register-message', i18nManager.translate('registrationSuccessful'), 'success');
+        setTimeout(() => this.switchForm('login'), 1500);
+      } else {
+        this.showMessage('register-message', i18nManager.translate('registrationFailed'), 'error');
+      }
+    } catch (error) {
+      this.showMessage('register-message', i18nManager.translate('errorOccurred'), 'error');
+    } finally {
+      this.setLoading(submitBtn, false);
+    }
+  },
 
   async loginUser(data) {
     return await authManager.login(data);
@@ -796,16 +1204,47 @@ const ratingManager = {
     modalContainer: null, 
     products: new Map(), 
   },
+// setProductData(products) {
+//     products.forEach(product => {
+//       this.state.products.set(product.product_id.toString(), {
+//         name: product.name,
+//         average_rating: product.average_rating || 0,
+//         total_ratings: product.total_ratings || 0
+//       });
+//     });
+//   },
 setProductData(products) {
+    console.log('setProductData called with:', JSON.stringify(products, null, 2));
+    
+    if (!Array.isArray(products)) {
+      console.error('Expected array of products, received:', typeof products);
+      return;
+    }
+    
+    console.log(`Processing ${products.length} products`);
+    
     products.forEach(product => {
-      this.state.products.set(product.product_id.toString(), {
-        name: product.name,
-        average_rating: product.average_rating || 0,
-        total_ratings: product.total_ratings || 0
-      });
+      if (product && product.product_id) {
+        const productData = {
+          name: product.name,
+          average_rating: parseFloat(product.average_rating) || 0,
+          total_ratings: parseInt(product.total_ratings) || 0
+        };
+        
+        console.log(`Storing product data for ID ${product.product_id}:`, productData);
+        this.state.products.set(product.product_id.toString(), productData);
+      } else {
+        console.warn('Invalid product data:', product);
+      }
     });
+    
+    console.log('Current products in state:', 
+      Array.from(this.state.products.entries())
+        .map(([id, data]) => ({id, ...data}))
+    );
+    
+    this.updateAllProductRatings();
   },
-
   findProduct(productId) {
     return this.state.products.get(productId.toString()) || {
       name: 'Product',
@@ -911,7 +1350,7 @@ setProductData(products) {
       
       this.state.userRatings.set(productId.toString(), rating);
       this.updateProductRatingDisplay(productId, result.averageRating, result.totalRatings);
-      showNotification('Rating submitted successfully!', 'success');
+      showNotification(i18nManager.translate('ratingSubmitted'), 'success');
       return result;
     } catch (error) {
       console.error('Error submitting rating:', error);
@@ -975,11 +1414,9 @@ setProductData(products) {
       // Remove from userRatings Map
       this.state.userRatings.delete(productId.toString());
       this.updateProductRatingDisplay(productId, result.averageRating, result.totalRatings);
-      showNotification('Rating removed successfully', 'success');
       return result;
     } catch (error) {
       console.error('Error removing rating:', error);
-      showNotification('Failed to remove rating', 'error');
       throw error;
     }
   },
@@ -1218,6 +1655,53 @@ createInteractiveStars(userRating = null) {
     </div>
   `;
 },
+   renderRecommendations(products) {
+    const container = document.createElement('div');
+    container.className = 'recommendations-container';
+    container.innerHTML = `
+      <h3>${i18nManager.translate('ui.labels.youMightAlsoLike')}</h3>
+      <div class="recommendations-grid"></div>
+    `;
+
+    const grid = container.querySelector('.recommendations-grid');
+
+    products.forEach(product => {
+      const productElement = document.createElement('div');
+      productElement.className = 'recommended-product';
+      productElement.setAttribute('data-product-id', product.product_id.toString());
+      
+      const ratingHTML = this.createProductRating(
+        product.product_id.toString(),
+        product.average_rating || 0,
+        product.total_ratings || 0
+      );
+
+      productElement.innerHTML = `
+        <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
+        <h4>${product.name}</h4>
+        <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
+        ${ratingHTML}
+        <button class="recommend-add-to-cart">Add to the cart</button>
+      `;
+
+      // Add click handler for cart button
+      const addButton = productElement.querySelector('.recommend-add-to-cart');
+      addButton.onclick = () => cartManager.addItem(product.product_id);
+
+      grid.appendChild(productElement);
+    });
+
+    // Find and update the recommendations section
+    const existingRecommendations = document.querySelector('.recommendations-container');
+    if (existingRecommendations) {
+      existingRecommendations.replaceWith(container);
+    } else {
+      const gridContainer = document.querySelector('.grid-container');
+      if (gridContainer) {
+        gridContainer.after(container);
+      }
+    }
+  },
   createRatingBreakdown(distribution) {
     console.log('Creating breakdown with distribution:', distribution);
     const total = distribution.reduce((a, b) => a + b, 0);
@@ -1507,7 +1991,10 @@ const cryptoManager = {
       setTimeout(() => this.fetchCryptoRates(), 60000);
     }
   },
+<<<<<<< HEAD
   // Create the toggle switch in the navbar
+=======
+>>>>>>> af745224b3de15d1b4a213e941f7fda21b1642b0
 createCryptoToggle() {
     const navbarRight = document.querySelector(".navbar-right");
     if (!navbarRight) return;
@@ -1628,97 +2115,77 @@ window.addEventListener('unload', () => {
 const recommendationManager = {
   state: {
     currentProduct: null,
-    recommendedProducts: []
+    recommendedProducts: [],
+    lastProductId: null // Add this to track last loaded product
   },
 
-  // Get recommendations based on current product's category
   async getRecommendations(productId) {
     try {
-      // First get all products
+      // Prevent duplicate loading of the same product
+      if (this.state.lastProductId === productId) {
+        return;
+      }
+      this.state.lastProductId = productId;
+
       const response = await fetch('https://backend-3mvr.onrender.com/api/products');
       if (!response.ok) throw new Error("Failed to fetch products");
       const data = await response.json();
       const products = data.success ? data.products : data;
 
+<<<<<<< HEAD
       // Find the current product
       // Convert productId to string, as product_id is a string in the API
+=======
+>>>>>>> af745224b3de15d1b4a213e941f7fda21b1642b0
       const currentProduct = products.find(p => p.product_id.toString() === productId.toString());
       if (!currentProduct) {
-        console.log('Available products:', products);
         console.log('Looking for product ID:', productId);
         throw new Error("Product not found");
       }
       
       this.state.currentProduct = currentProduct;
 
-      // Get products from the same category
       const categoryResponse = await fetch(`https://backend-3mvr.onrender.com/api/products/category/${currentProduct.category_id}`);
       if (!categoryResponse.ok) throw new Error("Failed to fetch recommendations");
       const categoryData = await categoryResponse.json();
       let recommendations = categoryData.success ? categoryData.products : categoryData;
 
+<<<<<<< HEAD
       // Filter out the current product and limit to 4 recommendations 
+=======
+      // Filter out current product and limit to 4
+>>>>>>> af745224b3de15d1b4a213e941f7fda21b1642b0
       recommendations = recommendations
         .filter(p => p.product_id.toString() !== productId.toString())
         .slice(0, 4);
 
-      this.state.recommendedProducts = recommendations;
-      await this.renderRecommendations();
+      // Wait for user ratings to be loaded
+      await ratingManager.fetchUserRatings();
+
+      if (JSON.stringify(this.state.recommendedProducts) !== JSON.stringify(recommendations)) {
+        this.state.recommendedProducts = recommendations;
+        
+        // Calculate average ratings from userRatings
+        const productsWithRatings = recommendations.map(product => {
+          const rating = ratingManager.state.userRatings.get(product.product_id.toString()) || 0;
+          return {
+            ...product,
+            average_rating: rating,
+            total_ratings: rating ? 1 : 0  // Count if rated
+          };
+        });
+
+        ratingManager.setProductData(productsWithRatings);
+        ratingManager.renderRecommendations(productsWithRatings); // Use new method from ratingManager
+      }
     } catch (error) {
       console.error("Error getting recommendations:", error);
       showNotification(error.message, "error");
     }
   },
 
-  // Render recommendations in the UI
-  async renderRecommendations() {
-    const container = document.createElement('div');
-    container.className = 'recommendations-container';
-    container.innerHTML = `
-      <h3>${i18nManager.translate('ui.labels.youMightAlsoLike')}</h3>
-      <div class="recommendations-grid"></div>
-    `;
-
-    const grid = container.querySelector('.recommendations-grid');
-
-    this.state.recommendedProducts.forEach(product => {
-      const productElement = document.createElement('div');
-      productElement.className = 'recommended-product';
-      
-      // Create rating HTML using ratingManager
-      const ratingHTML = ratingManager.createProductRating(
-        product.product_id,
-        product.average_rating || 0,
-        product.total_ratings || 0
-      );
-
-      productElement.innerHTML = `
-        <img src="${product.image_url || '/images/default-product-image.jpg'}" alt="${product.name}">
-        <h4>${product.name}</h4>
-        <p>${cryptoManager.formatCryptoPrice(product.price)}</p>
-        ${ratingHTML}
-        <button class="recommend-add-to-cart">Add to the cart</button>
-      `;
-
-      // Add click handler for cart button
-      const addButton = productElement.querySelector('.recommend-add-to-cart');
-      addButton.onclick = () => cartManager.addItem(product.product_id);
-
-      grid.appendChild(productElement);
-    });
-
-    // Find and update the recommendations section
-    const existingRecommendations = document.querySelector('.recommendations-container');
-    if (existingRecommendations) {
-      existingRecommendations.replaceWith(container);
-    } else {
-      document.querySelector('.grid-container').after(container);
-    }
-  },
-
   initialize() {
-    // Add click handlers to product grid items to show recommendations
-    document.querySelector('.grid-container').addEventListener('click', (e) => {
+    document.querySelector('.grid-container')?.addEventListener('click', (e) => {
       const gridItem = e.target.closest('.grid-item');
       if (gridItem) {
         const productId = gridItem.getAttribute('data-product-id');
@@ -1728,9 +2195,7 @@ const recommendationManager = {
       }
     });
   }
-}
-;
-
+};
 const productPageManager = {
   state: {
     products: [],
@@ -2052,11 +2517,6 @@ state: {
             share: "Share",
             rate: "Rate",
             all: "All",
-            login: "Login",
-            logout: "Logout",
-            register: "Register",
-            cart: "Cart",
-            orderHistory: "Order History",
             clearHistory: "Clear History",
             checkout: "Checkout",
             emptyCart: "Empty Cart",
@@ -2087,7 +2547,43 @@ state: {
             removeItem: "Remove this item from the cart",
             showCryptoPrices: "Show Crypto Prices",
             adminPanel: "Admin Panel",
-          }
+          },
+          messages: {
+            itemAddedToCart: "Item added to cart",
+            itemRemovedFromCart: "Item removed from cart",
+            errorOccurred: "An error occurred",
+            failedToClearCart: "Failed to clear cart",
+            itemAddedToCart: "Item added to cart",
+            itemRemovedFromCart: "Item removed from cart",
+            outOfStock: "Out of stock!",
+            failedToUpdateQuantity: "Failed to update quantity",
+            failedToRemoveItem: "Failed to remove item",
+            failedToCompletePurchase: "Failed to complete purchase",
+            errorOccurred: "An error occurred",
+            cartEmpty: "Your cart is empty",
+            purchaseCompleted: "Purchase completed",
+            cartCleared: "Cart cleared",
+            loginSuccessful: "Login successful!",
+            errorOccurred: "An error occurred.",
+            registrationSuccessful: "Registration successful!",
+            registrationFailed: "Registration failed.",
+            logoutFailed: "Failed to log out.",
+            errorLoggingOut: "Error logging out.",
+            checkoutFailed: "Failed to start checkout process.",
+            ratingSubmitted: "Rating submitted successfully!",
+            ratingSubmitFailed: "Failed to submit rating.",
+            ratingRemoved: "Rating removed successfully.",
+            ratingRemoveFailed: "Failed to remove rating.",
+            loadRatingDetailsFailed: "Failed to load rating details.",
+            invalidCredentials: "Invalid credentials."
+          },
+          nav: {
+            login: "Login",
+            logout: "Logout",
+            register: "Register",
+            cart: "Cart",
+            orderHistory: "Order History",
+          },
         }
       },
       srb: {
@@ -2097,11 +2593,7 @@ state: {
             share: "Подели",
             rate: "Оцени",
             all: "Све",
-            login: "Пријава",
-            logout: "Одјава",
-            register: "Регистрација",
-            cart: "Корпа",
-            orderHistory: "Историја поруџбина",
+            
             clearHistory: "Обриши историју претрага",
             checkout: "Купи",
             emptyCart: "Очисти корпу",
@@ -2132,7 +2624,36 @@ state: {
             removeItem: "Уклони овај производ из корпе",
             showCryptoPrices: "Прикажи цене криптовалута",
             adminPanel: "Админ Панел"
-          }
+          },
+          messages: {
+            itemAddedToCart: "Артикал је додат у корпу",
+            itemRemovedFromCart: "Артикал уклоњен из корпе",
+            outOfStock: "Нема на залихи!",
+            failedToUpdateQuantity: "Није успело ажурирање количине",
+            failedToRemoveItem: "Није успело уклањање артикла",
+            failedToCompletePurchase: "Није успело завршавање куповине",
+            errorOccurred: "Дошло је до грешке",
+            cartEmpty: "Ваша корпа је празна",
+            purchaseCompleted: "Куповина је завршена",
+            cartCleared: "Корпа је очишћена",
+             loginSuccessful: "Успешна пријава!",
+      registrationSuccessful: "Успешна регистрација!",
+      registrationFailed: "Регистрација није успела.",
+      logoutFailed: "Неуспела одјава.",
+      checkoutFailed: "Неуспела покретања процеса плаћања.",
+      ratingSubmitted: "Оцена је успешно послата!",
+      ratingSubmitFailed: "Неуспело слање оцене.",
+      ratingRemoved: "Оцена је успешно уклоњена.",
+      ratingRemoveFailed: "Неуспело уклањање оцене.",
+      loadRatingDetailsFailed: "Неуспело учитавање детаља оцене.",
+      invalidCredentials: "Неисправни подаци за пријаву."
+          },
+          nav: {
+            login: "Пријава",
+            logout: "Одјава",
+            register: "Регистрација",
+            cart: "Корпа",
+            orderHistory: "Историја поруџбина",},
         }
       },
       de: {
@@ -2142,13 +2663,9 @@ state: {
             share: "Teilen",
             rate: "Bewerten",
             all: "Alle",
-            login: "Anmelden",
-            logout: "Abmelden",
-            register: "Registrieren",
-            cart: "Warenkorb",
-            orderHistory: "Bestellverlauf",
+            
             clearHistory: "Suchverlauf löschen",
-            checkout: "Kassenbestellen",
+            checkout: "Kaufen",
             emptyCart: "Warenkorb leeren",
             removeItem: "Entfernen",
             adminPanel: "Admin-Bereich",
@@ -2177,11 +2694,51 @@ state: {
             removeItem: "Diesen Artikel aus dem Warenkorb entfernen",
             showCryptoPrices: "Krypto-Preise anzeigen",
             adminPanel: "Admin-Bereich",
-          }
+          },
+          messages: {
+            itemAddedToCart: "Artikel wurde zum Warenkorb hinzugefügt",
+            itemRemovedFromCart: "Artikel wurde aus dem Warenkorb entfernt",
+            errorOccurred: "Ein Fehler ist aufgetreten",
+            itemAddedToCart: "Artikel wurde zum Warenkorb hinzugefügt",
+            itemRemovedFromCart: "Artikal wurde aus dem Warenkorb entefrnt",
+            errorOccurred: "Es kam zu einem Fehler!",
+            failedToClearCart: "Kann Warenkorb nicht leeren!", 
+            itemAddedToCart: "Artikel wurde zum Warenkorb hinzugefügt",
+            itemRemovedFromCart: "Artikel wurde aus dem Warenkorb entfernt",
+            outOfStock: "Ausverkauft!",
+            failedToUpdateQuantity: "Menge konnte nicht aktualisiert werden",
+            failedToRemoveItem: "Artikel konnte nicht entfernt werden",
+            failedToCompletePurchase: "Einkauf konnte nicht abgeschlossen werden",
+            errorOccurred: "Ein Fehler ist aufgetreten",
+            cartEmpty: "Ihr Warenkorb ist leer",
+            purchaseCompleted: "Kauf abgeschlossen",
+            cartCleared: "Warenkorb geleert",
+            loginSuccessful: "Erfolgreich angemeldet!",
+            errorOccurred: "Ein Fehler ist aufgetreten.",
+            registrationSuccessful: "Registrierung erfolgreich!",
+            registrationFailed: "Registrierung fehlgeschlagen.",
+            logoutFailed: "Abmeldung fehlgeschlagen.",
+            errorLoggingOut: "Fehler beim Abmelden.",
+            checkoutFailed: "Fehler beim Starten der Kasse.",
+            ratingSubmitted: "Bewertung erfolgreich eingereicht!",
+            ratingSubmitFailed: "Fehler beim Einreichen der Bewertung.",
+            ratingRemoved: "Bewertung erfolgreich entfernt.",
+            ratingRemoveFailed: "Fehler beim Entfernen der Bewertung.",
+            loadRatingDetailsFailed: "Fehler beim Laden der Bewertungsdetails.",
+            invalidCredentials: "Ungültige Anmeldedaten."
+
+          },
+          nav: {
+            login: "Anmelden",
+            logout: "Abmelden",
+            register: "Registrieren",
+            cart: "Warenkorb",
+            orderHistory: "Bestellverlauf",},
         }
       }
     }
   },
+  
  initialize() {
     const savedLang = localStorage.getItem('preferred_language');
     const browserLang = navigator.language.split('-')[0];
@@ -2550,7 +3107,7 @@ async searchProducts(query) {
 
       // Show no results message in current language
       if (filteredProducts.length === 0) {
-        const noResultsMessage = i18nManager.translate('ui.messages.noProductsFound');
+        const noResultsMessage = i18nManager.translate('noProductsFound', 'error');
         showNotification(noResultsMessage, 'info');
       }
 
@@ -2709,7 +3266,10 @@ renderCategories() {
     container.appendChild(fragment);
     this.ensureCategoryStylesExist();
   },
+<<<<<<< HEAD
 
+=======
+>>>>>>> af745224b3de15d1b4a213e941f7fda21b1642b0
  async selectCategory(categoryId) {
     console.log('Selecting category:', categoryId);
     this.state.selectedCategory = categoryId;
@@ -3373,7 +3933,10 @@ async updateRelatedManagers() {
   this.initializeImageSliders();
 },
 };
+<<<<<<< HEAD
 
+=======
+>>>>>>> af745224b3de15d1b4a213e941f7fda21b1642b0
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     // Initialize all managers in parallel with proper error handling
@@ -3487,15 +4050,20 @@ function setupEventListeners() {
   if (elements.logoutBtn) {
     elements.logoutBtn.addEventListener("click", () => authManager.logout());
   }
+<<<<<<< HEAD
 
+=======
+ 
+>>>>>>> af745224b3de15d1b4a213e941f7fda21b1642b0
   uiManager.updateButtonVisibility(currentUser);
 };
+function showNotification(messageKey, type = 'success') {
+  // Use the i18nManager to get the translated message
+  const translatedMessage = i18nManager.translate(`ui.messages.${messageKey}`);
 
-
-function showNotification(message, type = 'success',) {
   const notification = document.createElement('div');
-  notification.textContent = message;
-  notification.className = `notification ${type}-message`;
+  notification.textContent = translatedMessage;
+  notification.className = `notification ${type}`;
   document.body.appendChild(notification);
 
   notification.style.animation = 'slideIn 0.3s ease-out';
