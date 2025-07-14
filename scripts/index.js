@@ -137,299 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
-// CART MANAGER
-// const cartManager = {
 
-//   async fetchCart() {
-//     if (!currentUser) {
-//     await ensureGuestSession();
-//   }
-//     try {
-//       const response = await fetch('https://backend-3mvr.onrender.com/api/cart', {
-//         ...fetchConfig,
-//         credentials: 'include',
-//         headers: {
-//           ...fetchConfig.headers,
-//           'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
-//         }
-//       });
-      
-//       if (!response.ok) {
-//         return { items: [], total: 0 };
-//       }
-//       const data = await response.json();
-//       return data.cart;
-//     } catch (error) {
-//       console.error('Error fetching cart:', error);
-//       return { items: [], total: 0 };
-//     }
-//   },
-// async addItem(productId) {
-//   try {
-//     // First try to guest session
-//     if (!currentUser) {
-//       const guestLoginResponse = await fetch('https://backend-3mvr.onrender.com/api/guest-login', {
-//         method: 'POST',
-//         credentials: 'include',
-//         headers: {
-//           'Content-Type': 'application/json'
-//         },
-//         body: JSON.stringify({
-//           email: 'guest@example.com',
-//           password: 'not_accessible'
-//         })
-        
-//       });
-      
-//       if (!guestLoginResponse.ok) {
-//         throw new Error('Guest login failed');
-//       }
-//     }
-
-//     // Then try to add to cart
-//     const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
-//       method: 'POST',
-//       credentials: 'include',
-//       headers: {
-//         'Content-Type': 'application/json',
-//         'X-Guest-User': !currentUser ? '999999' : undefined
-//       },
-//       body: JSON.stringify({ productId, quantity: 1 })
-//     });
-
-//     if (!response.ok) {
-//       const errorData = await response.json();
-//       throw new Error(errorData.message || 'Failed to add to cart');
-//     }
-
-//     await this.updateDisplay();
-//     showNotification('itemAddedToCart', 'success');
-//   } catch (error) {
-//     console.error('Error:', error);
-//     showNotification(i18nManager.translate('outOfStock'), 'error');
-//   }
-// },
-//   async removeItem(productId) {
-//     if (!currentUser) {
-//     await ensureGuestSession();
-//   }try {
-//       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/remove', {
-//         method: 'DELETE',
-//         headers: { 
-//           'Content-Type': 'application/json',
-//           'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
-//         },
-//         body: JSON.stringify({ productId }),
-//         credentials: 'include',
-//       });
-
-//       if (!response.ok) throw new Error('Failed to remove item');
-//       await this.updateDisplay();
-//       showNotification('itemRemovedFromCart', 'success');
-//     } catch (error) {
-//       console.error('Error:', error);
-//       showNotification(i18nManager.translate('failedToRemoveItem'), 'error');
-//     }
-//   },
-
-//   async completePurchase() {
-//     if (!currentUser) {
-//     await ensureGuestSession();
-//   }try {
-//       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/complete-purchase', {
-//         method: 'POST',
-//         credentials: 'include',
-//         headers: {
-//           'Content-Type': 'application/json',
-//           'X-Guest-User': !currentUser ? DEFAULT_USER_ID : undefined
-//         }
-//       });
-
-//       if (!response.ok) {
-//         const errorData = await response.json();
-//         throw new Error(errorData.message);
-//       }
-
-//       await this.clearCart(true);
-//       return true;
-//     } catch (error) {
-//       console.error('Error completing purchase:', error);
-//       showNotification(i18nManager.translate('failedToCompletePurchase'), 'error');
-//       return false;
-//     }
-  
-//   },
-//   async updateQuantity(productId, quantity) {
-
-//     if (!currentUser) {
-//     await ensureGuestSession();
-//   }try {
-//       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/update', {
-//         method: 'PUT',
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify({ productId, quantity }),
-//         credentials: 'include'
-//       });
-
-//       if (!response.ok) throw new Error('Failed to update quantity');
-//       await this.updateDisplay();
-//     } catch (error) {
-//       console.error('Error updating quantity:', error);
-//       showNotification(i18nManager.translate('failedToUpdateQuantity'), 'error');
-//     }
-//   },
-//   async clearCart(afterPurchase = false) {
-//     try {
-//       // First ensure guest session is active if needed
-//       if (!currentUser) {
-//         await ensureGuestSession();
-//       }
-
-//       // Add retry logic with proper error handling
-//       const clearCartWithRetry = async (retryCount = 0) => {
-//         try {
-//           const response = await fetch('https://backend-3mvr.onrender.com/api/cart/clear', {
-//             method: 'DELETE',
-//             credentials: 'include',
-//             headers: { 
-//               'Content-Type': 'application/json',
-//               'X-Guest-User': !currentUser ? localStorage.getItem('guestId') : undefined
-//             },
-//             body: JSON.stringify({ afterPurchase })
-//           });
-
-//           // Check if we got a 500 error
-//           if (response.status === 500 && retryCount < 1) {
-//             // Wait a short delay before retrying
-//             await new Promise(resolve => setTimeout(resolve, 1000));
-//             return await clearCartWithRetry(retryCount + 1);
-//           }
-
-//           if (!response.ok) {
-//             const errorData = await response.json().catch(() => ({ message: 'Failed to clear cart' }));
-//             throw new Error(errorData.message);
-//           }
-
-//           // Try to parse the response, but handle cases where it might be empty
-//           const result = await response.json().catch(() => ({}));
-
-//           // Update the UI
-//           const cartContainer = document.getElementById('cart-items');
-//           const cartTotal = document.getElementById('cart-total');
-
-//           if (cartContainer) {
-//             cartContainer.innerHTML = `<li data-i18n="ui.messages.cartEmpty">${i18nManager.translate('ui.messages.cartEmpty')}</li>`;
-//             cartContainer.classList.add('hidden');
-//           }
-
-//           if (cartTotal) {
-//             cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: 0`;
-//           }
-
-//           // Show success notification
-//           showNotification(
-//             afterPurchase ? 
-//               i18nManager.translate('purchaseCompleted') : 
-//               i18nManager.translate('cartCleared'), 
-//             'success'
-//           );
-
-//           return result;
-//         } catch (error) {
-//           if (retryCount < 1) {
-//             // Wait and retry once
-//             await new Promise(resolve => setTimeout(resolve, 1000));
-//             return await clearCartWithRetry(retryCount + 1);
-//           }
-//           throw error;
-//         }
-//       };
-
-//       // Execute the clear cart operation with retry logic
-//       await clearCartWithRetry();
-
-//     } catch (error) {
-//       console.error('Error clearing cart:', error);
-//       showNotification(i18nManager.translate('ui.errors.failedToClearCart'), 'error');
-//       throw error; // Re-throw to allow caller to handle if needed
-//     }
-//   },    
-// async updateDisplay() {
-//     const cart = await this.fetchCart();
-//     const cartContainer = document.getElementById('cart-items');
-//     const cartTotal = document.getElementById('cart-total');
-    
-//     cartContainer.innerHTML = '';
-
-//     if (!cart.items || cart.items.length === 0) {
-//       cartContainer.innerHTML = '<li>Your cart is empty</li>';
-//       cartTotal.textContent =  ': 0';
-//       cartContainer.classList.add('hidden');
-//       return;
-//     }
-
-//     cartContainer.classList.remove('hidden');
-//     let total = 0;
-
-//     cart.items.forEach(item => {
-//       const listItem = document.createElement('li');
-//       listItem.className = 'cart-item';
-
-//       const imageUrl = item.images?.[0] || item.image_url || '/images/1.jpg';
-//       const productName = item.name || 'Unknown Product';
-//       const productPrice = item.price || 0;
-//       const productId = item.product_id;
-
-//       listItem.innerHTML = `
-//       <img src="${imageUrl}" alt="${productName}" class="cart-item-image">
-//       <div class="cart-item-details">
-//         <span class="item-name">${productName} | </span>
-//         <span class="item-price">${parseFloat(productPrice).toFixed(2)} $ |</span>
-//         <span class="item-quantity">${i18nManager.translate('ui.labels.quantity')}: ${item.quantity}</span>
-//       </div>
-//       <div class="cart-item-controls">
-//         <button class="quantity-btn minus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.decreaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.decreaseQuantity')}">-</button>
-//         <button class="quantity-btn plus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.increaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.increaseQuantity')}">+</button>
-//         <button class="remove-btn" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.removeItem')}" aria-label="${i18nManager.translate('ui.ariaLabels.removeItem')}">${i18nManager.translate('ui.buttons.removeItem')}</button>
-//       </div>
-//     `;
-
-
-//       cartContainer.appendChild(listItem);
-//       total += productPrice * item.quantity;
-//     });
-
-//     cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: ${total.toFixed(2)}`;
-//     this.attachEventListeners();
-//   },
-
-//   attachEventListeners() {
-//     document.querySelectorAll('.quantity-btn').forEach(btn => {
-//       btn.addEventListener('click', (e) => {
-//         const productId = e.target.getAttribute('data-id');
-//         const listItem = e.target.closest('.cart-item');
-//         const quantityElement = listItem.querySelector('.item-quantity');
-//         let currentQuantity = parseInt(quantityElement.textContent.replace('Quantity: ', ''));
-        
-//         if (e.target.classList.contains('plus')) {
-//           currentQuantity += 1;
-//         } else {
-//           currentQuantity = Math.max(1, currentQuantity - 1);
-//         }
-        
-//         this.updateQuantity(productId, currentQuantity);
-//       });
-//     });
-
-// // Then append this button to your cart item or wherever it belongs
-//     document.querySelectorAll('.remove-btn').forEach(btn => {
-//       btn.addEventListener('click', (e) => {
-//         const productId = e.target.getAttribute('data-id');
-//         this.removeItem(productId);
-//       });
-//     });
-//   }
-// };
 const cartManager = {
   async fetchCart() {
     if (!currentUser) {
@@ -456,14 +164,6 @@ const cartManager = {
     }
   },
 
-<<<<<<< HEAD
-
-async addItem(productId) {
-  try {
-    // First ensure guest session
-    if (!currentUser) {
-      const guestLoginResponse = await fetch('https://backend-3mvr.onrender.com/api/guest-login', {
-=======
   async addItem(productId) {
     try {
       if (!currentUser) {
@@ -471,7 +171,6 @@ async addItem(productId) {
       }
 
       const response = await fetch('https://backend-3mvr.onrender.com/api/cart/add', {
->>>>>>> af745224b3de15d1b4a213e941f7fda21b1642b0
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -636,55 +335,7 @@ async addItem(productId) {
     }
   },
 
-  // async updateDisplay() {
-  //   const cart = await this.fetchCart();
-  //   const cartContainer = document.getElementById('cart-items');
-  //   const cartTotal = document.getElementById('cart-total');
-    
-  //   if (!cartContainer || !cartTotal) return;
-    
-  //   cartContainer.innerHTML = '';
 
-  //   if (!cart.items || cart.items.length === 0) {
-  //     cartContainer.innerHTML = `<li>${i18nManager.translate('ui.messages.cartEmpty')}</li>`;
-  //     cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: 0`;
-  //     cartContainer.classList.add('hidden');
-  //     return;
-  //   }
-
-  //   cartContainer.classList.remove('hidden');
-  //   let total = 0;
-
-  //   cart.items.forEach(item => {
-  //     const listItem = document.createElement('li');
-  //     listItem.className = 'cart-item';
-
-  //     const imageUrl = item.images?.[0] || item.image_url || '/images/1.jpg';
-  //     const productName = item.name || 'Unknown Product';
-  //     const productPrice = item.price || 0;
-  //     const productId = item.product_id;
-
-  //     listItem.innerHTML = `
-  //       <img src="${imageUrl}" alt="${productName}" class="cart-item-image">
-  //       <div class="cart-item-details">
-  //         <span class="item-name">${productName} | </span>
-  //         <span class="item-price">${parseFloat(productPrice).toFixed(2)} $ |</span>
-  //         <span class="item-quantity">${i18nManager.translate('ui.labels.quantity')}: ${item.quantity}</span>
-  //       </div>
-  //       <div class="cart-item-controls">
-  //         <button class="quantity-btn minus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.decreaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.decreaseQuantity')}">-</button>
-  //         <button class="quantity-btn plus" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.increaseQuantity')}" aria-label="${i18nManager.translate('ui.ariaLabels.increaseQuantity')}">+</button>
-  //         <button class="remove-btn" data-id="${productId}" title="${i18nManager.translate('ui.tooltips.removeItem')}" aria-label="${i18nManager.translate('ui.ariaLabels.removeItem')}">${i18nManager.translate('ui.buttons.removeItem')}</button>
-  //       </div>
-  //     `;
-
-  //     cartContainer.appendChild(listItem);
-  //     total += productPrice * item.quantity;
-  //   });
-
-  //   cartTotal.textContent = `${i18nManager.translate('ui.labels.cartTotal')}: ${total.toFixed(2)}`;
-  //   this.attachEventListeners();
-  // },
 async updateDisplay() {
     const cart = await this.fetchCart();
     const cartContainer = document.getElementById('cart-items');
@@ -766,10 +417,6 @@ async updateDisplay() {
       });
     });
 
-<<<<<<< HEAD
-// Then, append this button to cart item
-=======
->>>>>>> af745224b3de15d1b4a213e941f7fda21b1642b0
     document.querySelectorAll('.remove-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const productId = e.target.getAttribute('data-id');
@@ -800,10 +447,6 @@ const uiManager = {
     const registerContainer = document.querySelector("#register");
     registerContainer.style.display = "none";
   },
-<<<<<<< HEAD
-
-=======
->>>>>>> af745224b3de15d1b4a213e941f7fda21b1642b0
   updateButtonVisibility: (currentUser) => {
     const loginBtn = document.getElementById("login-btn");
     const registerBtn = document.getElementById("register-btn");
@@ -881,16 +524,11 @@ async login(formData) {
     const data = await response.json();
     
     if (response.ok) {
-<<<<<<< HEAD
-      showNotification('Login successful!', 'success');
-      return true;  
-=======
       // Clear guest ID here
       delete fetchConfig.headers['X-Guest-User'];
       
       showNotification(i18nManager.translate('loginSuccessful'), 'success');
       return true;
->>>>>>> af745224b3de15d1b4a213e941f7fda21b1642b0
     } else {
       showNotification(data.message, 'error');
       return false;
@@ -905,11 +543,7 @@ if (success) {
     this.showMessage('login-message', 'Login Successful!', 'success');
     setTimeout(() => {
         this.hideModal();
-<<<<<<< HEAD
-        window.location.reload();  
-=======
         window.location.reload();
->>>>>>> af745224b3de15d1b4a213e941f7fda21b1642b0
     }, 1500);
 },
 
@@ -1059,8 +693,6 @@ const AuthModal = {
                 email: form.querySelector('#login-email').value,
                 password: form.querySelector('#login-password').value
             };
-
-          
             const success = await this.loginUser(formData);
             
             if (success) {
@@ -1204,15 +836,6 @@ const ratingManager = {
     modalContainer: null, 
     products: new Map(), 
   },
-// setProductData(products) {
-//     products.forEach(product => {
-//       this.state.products.set(product.product_id.toString(), {
-//         name: product.name,
-//         average_rating: product.average_rating || 0,
-//         total_ratings: product.total_ratings || 0
-//       });
-//     });
-//   },
 setProductData(products) {
     console.log('setProductData called with:', JSON.stringify(products, null, 2));
     
@@ -1261,7 +884,6 @@ setProductData(products) {
     if (Array.isArray(ratings)) {
       ratings.forEach(ratingObj => {
         console.log('Processing rating:', ratingObj);
-        // Assuming the rating object has a 'rating' property
         const rating = parseInt(ratingObj.rating);
         if (rating >= 1 && rating <= 5) {
           distribution[rating - 1]++;
@@ -1276,15 +898,13 @@ setProductData(products) {
 
     async fetchUserRatings() {
     try {
-      console.log('Fetching user ratings...');
-      // Ensure user is logged in or guest session is active
       const response = await fetch('https://backend-3mvr.onrender.com/api/ratings/user', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           
         },
-        credentials: 'include'  // For sending cookies
+        credentials: 'include'  // Important for sending cookies
       });
       
       if (!response.ok) {
@@ -1314,7 +934,6 @@ setProductData(products) {
       this.updateAllProductRatings();
     } catch (error) {
       console.error('Error fetching user ratings:', error);
-      // No user notif., background loading
     }
   },
 
@@ -1450,8 +1069,6 @@ setProductData(products) {
         document.body.appendChild(this.state.modalContainer);
         console.log('Created new modal container');
       }
-
-      // Use the ratings array instead of looking for distribution
       console.log('Processing ratings array:', data.ratings);
       const distribution = data.ratings ? 
         this.processRatingDistribution(data.ratings) : 
@@ -1600,8 +1217,8 @@ setProductData(products) {
       }
       return;
     }
-    // Handle for star rating
-    if (e.target.matches('.star.interactive')) {  
+    // Handle star rating click
+    if (e.target.matches('.star.interactive')) {  // Fixed selector
       const productId = e.target.closest('[data-product-id]').dataset.productId;
       const rating = parseInt(e.target.dataset.rating);
       if (!isNaN(rating)) {
@@ -1625,7 +1242,7 @@ setProductData(products) {
     }
   });
 
-  // Hover effects for rating (stars)
+  // Star hover effects
   document.addEventListener('mouseover', (e) => {
     if (e.target.matches('.star.interactive')) {
       const stars = e.target.closest('.stars-container').querySelectorAll('.star.interactive');
@@ -1643,7 +1260,7 @@ setProductData(products) {
     }
   });
 },
-
+// Modify the createInteractiveStars method
 createInteractiveStars(userRating = null) {
   return `
     <div class="stars-container">
@@ -1991,10 +1608,6 @@ const cryptoManager = {
       setTimeout(() => this.fetchCryptoRates(), 60000);
     }
   },
-<<<<<<< HEAD
-  // Create the toggle switch in the navbar
-=======
->>>>>>> af745224b3de15d1b4a213e941f7fda21b1642b0
 createCryptoToggle() {
     const navbarRight = document.querySelector(".navbar-right");
     if (!navbarRight) return;
@@ -2116,7 +1729,7 @@ const recommendationManager = {
   state: {
     currentProduct: null,
     recommendedProducts: [],
-    lastProductId: null // Add this to track last loaded product
+    lastProductId: null 
   },
 
   async getRecommendations(productId) {
@@ -2132,11 +1745,6 @@ const recommendationManager = {
       const data = await response.json();
       const products = data.success ? data.products : data;
 
-<<<<<<< HEAD
-      // Find the current product
-      // Convert productId to string, as product_id is a string in the API
-=======
->>>>>>> af745224b3de15d1b4a213e941f7fda21b1642b0
       const currentProduct = products.find(p => p.product_id.toString() === productId.toString());
       if (!currentProduct) {
         console.log('Looking for product ID:', productId);
@@ -2150,11 +1758,7 @@ const recommendationManager = {
       const categoryData = await categoryResponse.json();
       let recommendations = categoryData.success ? categoryData.products : categoryData;
 
-<<<<<<< HEAD
-      // Filter out the current product and limit to 4 recommendations 
-=======
       // Filter out current product and limit to 4
->>>>>>> af745224b3de15d1b4a213e941f7fda21b1642b0
       recommendations = recommendations
         .filter(p => p.product_id.toString() !== productId.toString())
         .slice(0, 4);
@@ -2176,7 +1780,7 @@ const recommendationManager = {
         });
 
         ratingManager.setProductData(productsWithRatings);
-        ratingManager.renderRecommendations(productsWithRatings); // Use new method from ratingManager
+        ratingManager.renderRecommendations(productsWithRatings); 
       }
     } catch (error) {
       console.error("Error getting recommendations:", error);
@@ -2441,7 +2045,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 const socialSharingManager = {
   getBaseUrl() {
-    
+  
     return window.location.origin;
   },
 
@@ -3155,7 +2759,7 @@ async searchProducts(query) {
       if (!this.state.searchHistoryDropdown.contains(document.activeElement)) {
         this.hideSearchHistory();
       }
-    }, 100); // A short delay to allow for quick interactions
+    }, 100); 
   });
 
   // Handle form submission
@@ -3215,8 +2819,7 @@ async searchProducts(query) {
       if (!response.ok) throw new Error("Failed to fetch products");
       const data = await response.json();
       
-      console.log('Raw API response:', data); // Debug log
-      
+      console.log('Raw API response:', data); 
       // Clear existing products first
       this.state.products = [];
       
@@ -3229,7 +2832,7 @@ async searchProducts(query) {
         i18nManager.transformProductData(product)
       );
       
-      console.log('Processed products:', this.state.products); // Debug log
+      console.log('Processed products:', this.state.products); 
       
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -3266,10 +2869,6 @@ renderCategories() {
     container.appendChild(fragment);
     this.ensureCategoryStylesExist();
   },
-<<<<<<< HEAD
-
-=======
->>>>>>> af745224b3de15d1b4a213e941f7fda21b1642b0
  async selectCategory(categoryId) {
     console.log('Selecting category:', categoryId);
     this.state.selectedCategory = categoryId;
@@ -3933,10 +3532,6 @@ async updateRelatedManagers() {
   this.initializeImageSliders();
 },
 };
-<<<<<<< HEAD
-
-=======
->>>>>>> af745224b3de15d1b4a213e941f7fda21b1642b0
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     // Initialize all managers in parallel with proper error handling
@@ -4050,11 +3645,7 @@ function setupEventListeners() {
   if (elements.logoutBtn) {
     elements.logoutBtn.addEventListener("click", () => authManager.logout());
   }
-<<<<<<< HEAD
-
-=======
  
->>>>>>> af745224b3de15d1b4a213e941f7fda21b1642b0
   uiManager.updateButtonVisibility(currentUser);
 };
 function showNotification(messageKey, type = 'success') {
